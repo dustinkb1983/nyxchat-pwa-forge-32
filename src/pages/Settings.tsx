@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from "@/components/ui/slider";
 import { Trash2, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +26,7 @@ interface AppSettings {
   systemPrompt: string;
   maxContextLength: number;
   apiKey: string;
+  temperature: number; // New field
 }
 
 const defaultModels = [
@@ -42,9 +45,10 @@ const Settings = () => {
     customModels: [],
     systemPrompt: '',
     maxContextLength: 20,
-    apiKey: ''
+    apiKey: '',
+    temperature: 0.7 // Default value
   });
-  
+
   const [customModelForm, setCustomModelForm] = useState({
     name: '',
     modelId: '',
@@ -59,7 +63,13 @@ const Settings = () => {
     const savedSettings = localStorage.getItem('app-settings');
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
-      setSettings(prev => ({ ...prev, ...parsed }));
+      setSettings(prev => ({
+        ...prev,
+        ...parsed,
+        temperature: parsed?.temperature ?? 0.7, // fallback for old settings
+      }));
+    } else {
+      setSettings(prev => ({ ...prev, temperature: 0.7 }));
     }
 
     // Load API key separately for security
@@ -70,16 +80,16 @@ const Settings = () => {
   const saveSettings = (updatedSettings: Partial<AppSettings>) => {
     const newSettings = { ...settings, ...updatedSettings };
     setSettings(newSettings);
-    
+
     // Save most settings
     const { apiKey, ...settingsToSave } = newSettings;
     localStorage.setItem('app-settings', JSON.stringify(settingsToSave));
-    
+
     // Save API key separately
     if (apiKey) {
       localStorage.setItem('openrouter-api-key', apiKey);
     }
-    
+
     toast({
       title: "Settings Saved",
       description: "Your settings have been saved successfully."
@@ -105,9 +115,9 @@ const Settings = () => {
 
     const updatedCustomModels = [...settings.customModels, newModel];
     saveSettings({ customModels: updatedCustomModels });
-    
+
     setCustomModelForm({ name: '', modelId: '', provider: '' });
-    
+
     toast({
       title: "Custom Model Added",
       description: `Model "${newModel.name}" has been added successfully.`
@@ -117,7 +127,7 @@ const Settings = () => {
   const deleteCustomModel = (modelId: string) => {
     const updatedCustomModels = settings.customModels.filter(m => m.id !== modelId);
     saveSettings({ customModels: updatedCustomModels });
-    
+
     toast({
       title: "Custom Model Deleted",
       description: "Custom model has been removed successfully."
@@ -240,6 +250,29 @@ const Settings = () => {
             />
           </div>
 
+          {/* Temperature Control */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-medium">Model Creativity (Temperature)</h3>
+            <label className="text-sm font-medium">Temperature: {settings.temperature.toFixed(2)}</label>
+            <Slider
+              value={[settings.temperature]}
+              onValueChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  temperature: value[0],
+                }))
+              }
+              max={1}
+              min={0}
+              step={0.01}
+              className="mt-2"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>More Predictable</span>
+              <span>More Creative</span>
+            </div>
+          </div>
+
           {/* Context Settings */}
           <div className="space-y-3">
             <h3 className="text-lg font-medium">Context Settings</h3>
@@ -279,3 +312,4 @@ const Settings = () => {
 };
 
 export default Settings;
+
