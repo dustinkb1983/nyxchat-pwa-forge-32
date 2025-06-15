@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, StopCircle } from "lucide-react";
+import { Send, Mic, StopCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
@@ -72,6 +72,29 @@ const ChatInterface = () => {
     setTimeout(() => handleSend(), 100);
   };
 
+  const handleDownload = () => {
+    if (!currentConversation) return;
+
+    const content = currentConversation.messages
+      .map(
+        (msg) =>
+          `[${new Date(msg.createdAt).toLocaleString()}] ${msg.role}:\n${
+            msg.content
+          }`
+      )
+      .join('\n\n' + '-'.repeat(20) + '\n\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `conversation-${currentConversation.id}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Chat Header */}
@@ -80,15 +103,35 @@ const ChatInterface = () => {
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <span className="text-sm font-bold text-primary">N</span>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
             <h1 className="font-semibold">NYX</h1>
-            <p className="text-xs text-muted-foreground">
-              {isTyping ? "Thinking..." : "Online"}
-            </p>
+            <div className="relative flex h-2.5 w-2.5">
+              <div
+                className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
+                  isTyping ? 'bg-red-400' : 'bg-green-400'
+                }`}
+              ></div>
+              <div
+                className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  isTyping ? 'bg-red-500' : 'bg-green-500'
+                }`}
+              ></div>
+            </div>
           </div>
         </div>
         
-        <ProfileSelector value={currentProfile} onChange={setCurrentProfile} />
+        <div className="flex items-center gap-2">
+          <ProfileSelector value={currentProfile} onChange={setCurrentProfile} />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDownload}
+            disabled={!currentConversation || messages.length === 0}
+            title="Download conversation"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
       {/* Chat Body */}

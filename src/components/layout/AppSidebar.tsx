@@ -68,13 +68,9 @@ export function AppSidebar() {
           <div className="flex flex-col h-full">
             {/* Logo/Header */}
             <div className="p-4 border-b flex items-center gap-2 mb-2 justify-center">
-              <img
-                src={theme === 'dark' ? '/logo.png' : '/logo2.png'}
-                alt="NyxChat Logo"
-                className="w-8 h-8 object-contain rounded-xl select-none"
-                style={{ background: 'none' }}
-                draggable={false}
-              />
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center select-none">
+                <span className="font-bold text-primary text-lg">N</span>
+              </div>
               {!isCollapsed && <h2 className="font-semibold ml-2">NyxChat</h2>}
             </div>
 
