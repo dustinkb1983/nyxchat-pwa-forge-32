@@ -18,7 +18,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
   SidebarInput
 } from '@/components/ui/sidebar';
@@ -71,7 +70,6 @@ export function AppSidebar() {
   return (
     <>
       <Sidebar className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`} collapsible="icon">
-        <SidebarTrigger className="m-2 self-end" />
         <SidebarContent>
           <div className="flex flex-col h-full">
             {/* Removed sidebar header logo */}
