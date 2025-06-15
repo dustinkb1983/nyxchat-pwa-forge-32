@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,7 +94,7 @@
   }
 }
 
-// Universal round corners for all major elements
+/* Universal round corners for all major elements */
 @layer base {
   * {
     @apply border-border;
@@ -112,10 +113,11 @@
     border-radius: 16px !important;
   }
 
-  // Ensure modals/dropdowns/tooltips have slight rounding
+  /* Ensure modals/dropdowns/tooltips have slight rounding */
   .popover,
   .modal,
   .dropdown-menu {
     border-radius: 16px !important;
   }
 }
+
