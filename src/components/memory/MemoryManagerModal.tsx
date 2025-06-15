@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useMemory } from "@/contexts/MemoryContext";
 import {
@@ -8,15 +7,15 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Collapse } from "framer-motion";
-import { Pin, Trash2, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Pin, Trash2, Plus, ChevronDown } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { type MemoryEntry } from "@/lib/indexedDB";
 
 interface MemoryManagerModalProps {
   open: boolean;
@@ -38,17 +37,17 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
 }) => {
   const { memories, addMemory, updateMemory, deleteMemory, refreshMemories } = useMemory();
 
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    pinned: true,
-    recent: true,
-    byProfile: false,
-    timeline: false
-  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [profileFilter, setProfileFilter] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const [newMem, setNewMem] = useState({
+  const [newMem, setNewMem] = useState<{
+    type: MemoryEntry['type'];
+    content: string;
+    importance: number;
+    tags: string;
+    profileId: string;
+  }>({
     type: "fact",
     content: "",
     importance: 5,
@@ -104,13 +103,16 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
   };
   const handleAdd = async () => {
     if (!newMem.content?.trim()) return;
-    await addMemory({
-      ...newMem,
-      tags: [
-        ...(newMem.tags ? newMem.tags.split(",").map(t => t.trim()) : []),
-        newMem.profileId ? `profile:${newMem.profileId}` : "",
-      ].filter(Boolean),
-    });
+    const memoryToAdd: Omit<MemoryEntry, 'id' | 'createdAt' | 'lastAccessed'> = {
+        content: newMem.content,
+        type: newMem.type,
+        importance: newMem.importance,
+        tags: [
+            ...(newMem.tags ? newMem.tags.split(",").map(t => t.trim()) : []),
+            newMem.profileId ? `profile:${newMem.profileId}` : "",
+        ].filter(Boolean),
+    };
+    await addMemory(memoryToAdd);
     setNewMem({ type: "fact", content: "", importance: 5, tags: "", profileId: "" });
     setAdding(false);
     refreshMemories();
@@ -126,31 +128,6 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
     setClearConfirm(false);
     refreshMemories();
   };
-
-  // Collapsible section
-  const CollapseSection: React.FC<{ label: string; expandedKey: string; children: React.ReactNode; count?: number; icon?: React.ReactNode }> = ({
-    label, expandedKey, children, count, icon
-  }) => (
-    <div className="border-b last:border-none">
-      <button
-        className="flex items-center w-full px-2 py-2 hover:bg-muted/40 transition-colors"
-        onClick={() => setExpanded(e => ({ ...e, [expandedKey]: !e[expandedKey] }))}
-        aria-expanded={expanded[expandedKey]}
-      >
-        {icon}
-        <span className="flex-1 text-left font-medium">{label}</span>
-        {count !== undefined && (
-          <span className="ml-1 rounded px-1 text-xs bg-muted">{count}</span>
-        )}
-        {expanded[expandedKey] ? <ChevronUp className="ml-2 w-4 h-4" /> : <ChevronDown className="ml-2 w-4 h-4" />}
-      </button>
-      <div className="overflow-hidden">
-        {expanded[expandedKey] && (
-          <div className="animate-fade-in">{children}</div>
-        )}
-      </div>
-    </div>
-  );
 
   // Memory entry card
   const MemoryEntryCard: React.FC<{ entry: typeof memories[0] }> = ({ entry }) => (
@@ -179,7 +156,7 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
               value={editValue}
               className="w-full bg-background border mt-1 text-sm"
               autoFocus
-              minRows={2}
+              rows={2}
               onChange={e => setEditValue(e.target.value)}
             />
             <Button
@@ -226,43 +203,77 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[65vh] overflow-y-auto transition-all">
-          <CollapseSection expandedKey="pinned" label="Pinned" icon={<Pin className="w-4 h-4" />} count={pinned.length}>
-            {pinned.length === 0 && <div className="p-2 text-muted-foreground text-sm">No pinned memories yet.</div>}
-            {pinned.map(entry => (
-              <MemoryEntryCard key={entry.id} entry={entry} />
-            ))}
-          </CollapseSection>
-          <CollapseSection expandedKey="recent" label="Recent" icon={<ChevronDown className="w-4 h-4" />} count={recent.length}>
-            {recent.length === 0 && <div className="p-2 text-muted-foreground text-sm">No recent memories.</div>}
-            {recent.map(entry => (
-              <MemoryEntryCard key={entry.id} entry={entry} />
-            ))}
-          </CollapseSection>
-          <CollapseSection expandedKey="byProfile" label="By Profile" icon={<ChevronDown className="w-4 h-4" />}>
-            <div className="flex flex-col gap-2 px-1">
-              {Object.entries(byProfileGroups).map(([profileId, entries]) =>
-                <div key={profileId} className="mb-2">
-                  <div className="font-semibold text-xs mb-1">
-                    {profileId === "none" ? "Other" : (profiles.find(p => p.id === profileId)?.name || profileId)}
+          <Collapsible defaultOpen className="border-b">
+            <CollapsibleTrigger className="flex items-center w-full px-2 py-3 text-sm font-medium hover:bg-muted/50 group">
+                <Pin className="h-4 w-4 mr-2" />
+                <span className="flex-1 text-left">Pinned</span>
+                <span className="ml-auto mr-2 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {pinned.length}
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="p-2 pt-0">
+                {pinned.length === 0 && <div className="p-2 text-muted-foreground text-sm">No pinned memories yet.</div>}
+                {pinned.map(entry => (
+                  <MemoryEntryCard key={entry.id} entry={entry} />
+                ))}
+            </CollapsibleContent>
+          </Collapsible>
+          <Collapsible defaultOpen className="border-b">
+            <CollapsibleTrigger className="flex items-center w-full px-2 py-3 text-sm font-medium hover:bg-muted/50 group">
+                <ChevronDown className="h-4 w-4 mr-2" />
+                <span className="flex-1 text-left">Recent</span>
+                <span className="ml-auto mr-2 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {recent.length}
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="p-2 pt-0">
+                {recent.length === 0 && <div className="p-2 text-muted-foreground text-sm">No recent memories.</div>}
+                {recent.map(entry => (
+                  <MemoryEntryCard key={entry.id} entry={entry} />
+                ))}
+            </CollapsibleContent>
+          </Collapsible>
+          <Collapsible className="border-b">
+            <CollapsibleTrigger className="flex items-center w-full px-2 py-3 text-sm font-medium hover:bg-muted/50 group">
+                <ChevronDown className="h-4 w-4 mr-2" />
+                <span className="flex-1 text-left">By Profile</span>
+                <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="p-2 pt-0">
+              <div className="flex flex-col gap-2 px-1">
+                {Object.entries(byProfileGroups).map(([profileId, entries]) =>
+                  <div key={profileId} className="mb-2">
+                    <div className="font-semibold text-xs mb-1">
+                      {profileId === "none" ? "Other" : (profiles.find(p => p.id === profileId)?.name || profileId)}
+                    </div>
+                    {entries.map(entry => (
+                      <MemoryEntryCard key={entry.id} entry={entry} />
+                    ))}
                   </div>
-                  {entries.map(entry => (
-                    <MemoryEntryCard key={entry.id} entry={entry} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </CollapseSection>
-          <CollapseSection expandedKey="timeline" label="Memory Timeline" icon={<ChevronDown className="w-4 h-4" />}>
-            <div className="flex flex-col gap-1 px-2">
-              {timeline.map(entry => (
-                <div key={entry.id} className="border-l-2 border-muted pl-3 relative">
-                  <span className="absolute left-[-11px] top-2 w-2 h-2 rounded-full bg-muted-foreground" />
-                  < span className="text-xs text-muted-foreground">{formatDistanceToNow(entry.createdAt, { addSuffix: true })}</span>
-                  <div className="text-sm">{entry.content}</div>
-                </div>
-              ))}
-            </div>
-          </CollapseSection>
+                )}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+          <Collapsible className="border-b">
+            <CollapsibleTrigger className="flex items-center w-full px-2 py-3 text-sm font-medium hover:bg-muted/50 group">
+                <ChevronDown className="h-4 w-4 mr-2" />
+                <span className="flex-1 text-left">Memory Timeline</span>
+                <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="p-2 pt-0">
+              <div className="flex flex-col gap-1 px-2">
+                {timeline.map(entry => (
+                  <div key={entry.id} className="border-l-2 border-muted pl-3 relative">
+                    <span className="absolute left-[-11px] top-2 w-2 h-2 rounded-full bg-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{formatDistanceToNow(entry.createdAt, { addSuffix: true })}</span>
+                    <div className="text-sm">{entry.content}</div>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
         <DialogFooter className="flex flex-col gap-2 mt-4">
           <div className="flex items-center gap-2 w-full">
@@ -270,8 +281,10 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setAdding(v => !v)}
-              leftIcon={<Plus />}
-            >New Memory</Button>
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Memory
+            </Button>
             <Button
               variant="destructive"
               size="sm"
@@ -304,7 +317,7 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
                   onChange={e => setNewMem(v => ({ ...v, content: e.target.value }))}
                   className="flex-1"
                 />
-                <Select value={newMem.type} onValueChange={v => setNewMem(m => ({ ...m, type: v }))}>
+                <Select value={newMem.type} onValueChange={v => setNewMem(m => ({ ...m, type: v as MemoryEntry['type'] }))}>
                   <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="fact">Fact</SelectItem>
