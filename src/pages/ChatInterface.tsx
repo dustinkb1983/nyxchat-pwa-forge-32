@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, StopCircle, Download } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
@@ -67,8 +68,12 @@ const ChatInterface = () => {
 
   const handleQuickPrompt = (prompt: string) => {
     setInputValue(prompt);
-    // Auto-send the quick prompt
-    setTimeout(() => handleSend(), 100);
+    sendMessage(prompt);
+  };
+  
+  const handleProfileChange = (profileId: string) => {
+    setCurrentProfile(profileId);
+    toast.success(`Profile switched!`);
   };
 
   const handleDownload = () => {
@@ -120,7 +125,7 @@ const ChatInterface = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <ProfileSelector value={currentProfile} onChange={setCurrentProfile} />
+          <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
           <Button
             variant="ghost"
             size="icon"

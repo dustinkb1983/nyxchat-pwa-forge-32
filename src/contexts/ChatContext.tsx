@@ -11,6 +11,7 @@ interface ChatContextType {
   currentProfile: string;
   setCurrentProfile: (profileId: string) => void;
   sendMessage: (content: string, model?: string) => Promise<void>;
+  retryMessage: () => Promise<void>;
   newConversation: () => void;
   loadConversation: (id: string) => void;
   deleteConversation: (id: string) => void;
@@ -45,12 +46,23 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    loadConversations();
-    // Load saved profile
-    const savedProfile = localStorage.getItem('current-profile');
-    if (savedProfile) {
-      setCurrentProfile(savedProfile);
-    }
+    const initialize = async () => {
+      await loadConversations();
+      const savedProfile = localStorage.getItem('current-profile');
+      if (savedProfile) {
+        setCurrentProfile(savedProfile);
+      }
+      const lastConversationId = localStorage.getItem('last-conversation-id');
+      if (lastConversationId) {
+        // This part is a bit tricky with the initial load, let's load it from the fetched conversations
+        const loadedConversations = await dbManager.getConversations();
+        const lastConvo = loadedConversations.find(c => c.id === lastConversationId);
+        if (lastConvo) {
+          setCurrentConversation(lastConvo);
+        }
+      }
+    };
+    initialize();
   }, []);
 
   const getCurrentProfile = (): Profile | null => {
@@ -104,39 +116,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setCurrentProfile(profileId);
     localStorage.setItem('current-profile', profileId);
   };
-
-  const sendMessage = async (content: string) => {
-    if (!content.trim()) return;
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: content.trim(),
-      timestamp: new Date(),
-    };
-
-    // Create new conversation if none exists
-    let conversation = currentConversation;
-    if (!conversation) {
-      conversation = {
-        id: crypto.randomUUID(),
-        title: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setCurrentConversation(conversation);
+  
+  useEffect(() => {
+    if (currentConversation) {
+      localStorage.setItem('last-conversation-id', currentConversation.id);
+    } else {
+      localStorage.removeItem('last-conversation-id');
     }
+  }, [currentConversation]);
 
-    // Add user message
-    const updatedMessages = [...conversation.messages, userMessage];
-    const updatedConversation = {
-      ...conversation,
-      messages: updatedMessages,
-      updatedAt: new Date(),
-    };
-
-    setCurrentConversation(updatedConversation);
+  const _fetchAndProcessResponse = async (conversation: Conversation) => {
     setIsTyping(true);
 
     try {
@@ -147,7 +136,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const systemPrompt = buildSystemPrompt();
       const apiMessages = [
         { role: 'system', content: systemPrompt },
-        ...updatedMessages.filter(m => m.role !== 'system').map(m => ({
+        ...conversation.messages.filter(m => m.role !== 'system').map(m => ({
           role: m.role,
           content: m.content,
         }))
@@ -175,7 +164,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData?.error?.message || `${response.status} ${response.statusText}`;
+        throw new Error(`API request failed: ${errorMessage}`);
       }
 
       const data = await response.json();
@@ -192,9 +183,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         timestamp: new Date(),
       };
 
-      const finalMessages = [...updatedMessages, assistantMessage];
+      const finalMessages = [...conversation.messages, assistantMessage];
       const finalConversation = {
-        ...updatedConversation,
+        ...conversation,
         messages: finalMessages,
       };
 
@@ -214,8 +205,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       };
 
       const errorConversation = {
-        ...updatedConversation,
-        messages: [...updatedMessages, errorMessage],
+        ...conversation,
+        messages: [...conversation.messages, errorMessage],
       };
 
       setCurrentConversation(errorConversation);
@@ -224,6 +215,53 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       setIsTyping(false);
     }
   };
+
+  const sendMessage = async (content: string) => {
+    if (!content.trim()) return;
+
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: content.trim(),
+      timestamp: new Date(),
+    };
+
+    let conversationToUpdate = currentConversation;
+    if (!conversationToUpdate) {
+      conversationToUpdate = {
+        id: crypto.randomUUID(),
+        title: content.substring(0, 30) + (content.length > 30 ? '...' : ''),
+        messages: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }
+
+    const updatedMessages = [...conversationToUpdate.messages, userMessage];
+    const updatedConversation = {
+      ...conversationToUpdate,
+      messages: updatedMessages,
+      title: conversationToUpdate.messages.length === 0 ? (content.substring(0, 30) + (content.length > 30 ? '...' : '')) : conversationToUpdate.title,
+      updatedAt: new Date(),
+    };
+
+    setCurrentConversation(updatedConversation);
+    await _fetchAndProcessResponse(updatedConversation);
+  };
+  
+  const retryMessage = async () => {
+    if (!currentConversation) return;
+
+    const messagesWithoutError = currentConversation.messages.filter(m => !m.error);
+    const conversationToRetry = {
+      ...currentConversation,
+      messages: messagesWithoutError,
+    };
+    
+    setCurrentConversation(conversationToRetry);
+    await _fetchAndProcessResponse(conversationToRetry);
+  };
+
 
   const newConversation = () => {
     setCurrentConversation(null);
@@ -261,6 +299,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       currentProfile,
       setCurrentProfile: handleProfileChange,
       sendMessage,
+      retryMessage,
       newConversation,
       loadConversation,
       deleteConversation,

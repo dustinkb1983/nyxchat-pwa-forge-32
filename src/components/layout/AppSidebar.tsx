@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   MessageSquare,
@@ -8,6 +9,8 @@ import {
   Plus,
   Trash2,
   User,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -37,7 +40,7 @@ const staticMenuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
 
   // Profile list for modal (loaded from localStorage for now; see ProfileSelector logic)
@@ -159,6 +162,18 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground w-full"
+                      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    >
+                      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      {!isCollapsed && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </div>
           </div>
