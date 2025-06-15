@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dbManager, Conversation, Message } from '@/lib/indexedDB';
 import { useMemory } from './MemoryContext';
+import { useMemoryAutoSave } from '@/hooks/useMemoryAutoSave';
 
 interface ChatContextType {
   currentConversation: Conversation | null;
@@ -35,6 +35,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isTyping, setIsTyping] = useState(false);
   const [currentProfile, setCurrentProfile] = useState('default');
   const { getRelevantMemories } = useMemory();
+  const { extractMemoryFromMessage } = useMemoryAutoSave();
 
   const loadConversations = async () => {
     try {
@@ -54,7 +55,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
       const lastConversationId = localStorage.getItem('last-conversation-id');
       if (lastConversationId) {
-        // This part is a bit tricky with the initial load, let's load it from the fetched conversations
         const loadedConversations = await dbManager.getConversations();
         const lastConvo = loadedConversations.find(c => c.id === lastConversationId);
         if (lastConvo) {
@@ -84,14 +84,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    // Fallback to global settings
     const appSettings = localStorage.getItem('app-settings');
     if (appSettings) {
       const settings = JSON.parse(appSettings);
       return {
         systemPrompt: settings.systemPrompt || 'You are a helpful AI assistant.',
         model: settings.selectedModel || 'openai/gpt-4o',
-        temperature: 0.7
+        temperature: settings.temperature || 0.7
       };
     }
 
@@ -104,10 +103,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const buildSystemPrompt = () => {
     const { systemPrompt } = getEffectiveSettings();
-    // Prune memories for token efficiency (token-usage estimation: count chars)
-    const MAX_TOKENS = 800; // ~4 chars = 1 token
+    const MAX_TOKENS = 800;
     let accumulated = 0;
-    const memories = getRelevantMemories(40).filter(m => !!m.content); // up to 40 (in-memory sort by importance)
+    const memories = getRelevantMemories(40).filter(m => !!m.content);
     let selected = [];
     for (const m of memories) {
       accumulated += m.content.length;
@@ -137,10 +135,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setIsTyping(true);
 
     try {
-      // Get effective settings
       const { model, temperature } = getEffectiveSettings();
       
-      // Prepare messages for API
       const systemPrompt = buildSystemPrompt();
       const apiMessages = [
         { role: 'system', content: systemPrompt },
@@ -150,11 +146,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }))
       ];
 
-      // Call OpenRouter API
       const apiKey = localStorage.getItem('openrouter-api-key');
       if (!apiKey) {
         throw new Error('OpenRouter API key not found. Please set it in Settings.');
       }
+
+      console.log('Making OpenRouter API call:', {
+        model,
+        temperature,
+        messageCount: apiMessages.length,
+        systemPromptLength: systemPrompt.length
+      });
 
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -200,6 +202,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       setCurrentConversation(finalConversation);
       await dbManager.saveConversation(finalConversation);
       await loadConversations();
+
+      // Auto-extract memories from the conversation
+      const userMessage = conversation.messages[conversation.messages.length - 1];
+      if (userMessage && userMessage.role === 'user') {
+        console.log('Extracting memories from conversation...');
+        const extractedCount = await extractMemoryFromMessage(
+          userMessage.content,
+          assistantContent,
+          currentProfile !== 'default' ? currentProfile : undefined
+        );
+        console.log(`Extracted ${extractedCount} new memories`);
+      }
 
     } catch (error) {
       console.error('Chat error:', error);
@@ -269,7 +283,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setCurrentConversation(conversationToRetry);
     await _fetchAndProcessResponse(conversationToRetry);
   };
-
 
   const newConversation = () => {
     setCurrentConversation(null);
