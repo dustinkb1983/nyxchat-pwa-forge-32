@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { useMemory } from "@/contexts/MemoryContext";
 import {
@@ -44,7 +45,7 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
   const [editValue, setEditValue] = useState("");
   const [profileFilter, setProfileFilter] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const [activeTab, setActiveTab<'organize' | 'insights' | 'timeline'>(
+  const [activeTab, setActiveTab] = useState<'organize' | 'insights' | 'timeline'>(
     'organize'
   );
   const [newMem, setNewMem] = useState<{
