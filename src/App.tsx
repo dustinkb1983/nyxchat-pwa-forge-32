@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -40,11 +39,11 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <MemoryProvider>
-          <ChatProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ChatProvider>
                 <div className="min-h-screen bg-background transition-colors duration-300">
                   <Routes>
                     <Route path="/" element={<MainLayout />}>
@@ -57,9 +56,9 @@ const App = () => {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ChatProvider>
+              </ChatProvider>
+            </BrowserRouter>
+          </TooltipProvider>
         </MemoryProvider>
       </ThemeProvider>
     </QueryClientProvider>

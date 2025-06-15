@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -74,8 +75,14 @@ export function AppSidebar() {
         <SidebarContent>
           <div className="flex flex-col h-full">
             {/* Sidebar Header */}
-            <div className={`flex items-center p-3 border-b mb-2 ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
+            <div className={`flex items-center p-3 border-b mb-2 gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
               <SidebarTrigger />
+              {!isCollapsed && (
+                <span className="text-base font-semibold flex items-center gap-2">
+                  NYX
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online"></div>
+                </span>
+              )}
             </div>
 
             {/* New Chat Button */}
