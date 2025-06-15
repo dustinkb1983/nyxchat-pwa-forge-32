@@ -91,14 +91,8 @@ export function AppSidebar() {
         <SidebarContent>
           <div className="flex flex-col h-full">
             {/* Sidebar Header */}
-            <div className={`flex items-center p-3 border-b mb-2 gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
+            <div className={`flex items-center p-2 ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
               <SidebarTrigger />
-              {!isCollapsed && (
-                <span className="text-base font-semibold flex items-center gap-2">
-                  NYX
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online"></div>
-                </span>
-              )}
             </div>
 
             {/* New Chat Button */}
