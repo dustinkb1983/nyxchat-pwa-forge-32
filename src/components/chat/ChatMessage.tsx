@@ -38,7 +38,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
     await retryMessage();
   };
 
-  const CodeBlock = {
+  const customRenderers = {
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
@@ -58,6 +58,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
         </code>
       );
     },
+    a: ({ node, ...props }: any) => <a {...props} target="_blank" rel="noopener noreferrer" />
   };
 
   const validRemarkPlugins = [remarkGfm];
@@ -111,8 +112,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
             <ReactMarkdown
               remarkPlugins={validRemarkPlugins}
               rehypePlugins={validRehypePlugins}
-              components={CodeBlock}
-              linkTarget="_blank"
+              components={customRenderers}
             >
               {message.content || ""}
             </ReactMarkdown>
