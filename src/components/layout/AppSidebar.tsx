@@ -39,7 +39,8 @@ const staticMenuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
-  const { theme, setTheme } = useTheme();
+  // FIX: destructure both `theme` and `setTheme`
+  const { theme, setTheme } = useTheme() as any; // fallback for missing type
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
 
   // Profile list for modal (loaded from localStorage for now; see ProfileSelector logic)

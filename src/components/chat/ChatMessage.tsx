@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Bot, AlertCircle, Copy, RefreshCw, Check } from 'lucide-react';
@@ -107,7 +106,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
           <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw]}
+              rehypePlugins={[rehypeRaw as any]}
               components={CodeBlock}
               linkTarget="_blank"
             >
