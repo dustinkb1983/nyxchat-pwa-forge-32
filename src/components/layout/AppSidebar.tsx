@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -71,17 +70,11 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar collapsible className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`}>
+      <Sidebar collapsible="icon" className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`}>
         <SidebarContent>
           <div className="flex flex-col h-full">
             {/* Sidebar Header */}
-            <div className={`flex items-center p-3 border-b mb-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-              {!isCollapsed && (
-                <span className="text-base font-semibold flex items-center gap-2">
-                  NYX
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online"></div>
-                </span>
-              )}
+            <div className={`flex items-center p-3 border-b mb-2 ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
               <SidebarTrigger />
             </div>
 
