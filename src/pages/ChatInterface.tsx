@@ -1,7 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
--import { Send, Mic, StopCircle, Download } from "lucide-react";
-+import { Send, Mic, StopCircle, Download, Moon, Sun } from "lucide-react";
+import { Send, Mic, StopCircle, Download, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,9 +9,8 @@ import { ChatMessage } from "@/components/chat/ChatMessage";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { ProfileSelector } from "@/components/promptforge/ProfileSelector";
 import { useChat } from "@/contexts/ChatContext";
--import { AnimatePresence } from "framer-motion";
-+import { AnimatePresence } from "framer-motion";
-+import { useTheme } from "@/contexts/ThemeContext";
+import { AnimatePresence } from "framer-motion";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const QUICK_PROMPT_KEY = "nyxchat-quick-prompts-v1";
 const DEFAULT_QUICK_PROMPTS = [
@@ -30,7 +28,7 @@ const ChatInterface = () => {
     setCurrentProfile,
     sendMessage,
   } = useChat();
-+  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const [inputValue, setInputValue] = useState("");
   const [quickPrompts, setQuickPrompts] = useState<string[]>(DEFAULT_QUICK_PROMPTS);
@@ -161,15 +159,15 @@ const ChatInterface = () => {
           >
             <Download className="h-4 w-4" />
           </Button>
-+         {/* Theme toggle icon button */}
-+         <Button
-+           variant="ghost"
-+           size="icon"
-+           onClick={toggleTheme}
-+           title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-+         >
-+           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-+         </Button>
+          {/* Theme toggle icon button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
         </div>
       </header>
 
@@ -247,3 +245,4 @@ const ChatInterface = () => {
 };
 
 export default ChatInterface;
+
