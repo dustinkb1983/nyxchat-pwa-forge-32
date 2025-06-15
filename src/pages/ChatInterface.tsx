@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, StopCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -78,7 +77,7 @@ const ChatInterface = () => {
     const content = currentConversation.messages
       .map(
         (msg) =>
-          `[${new Date(msg.createdAt).toLocaleString()}] ${msg.role}:\n${
+          `[${new Date(msg.timestamp).toLocaleString()}] ${msg.role}:\n${
             msg.content
           }`
       )
