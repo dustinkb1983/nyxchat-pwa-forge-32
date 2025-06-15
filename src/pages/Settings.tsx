@@ -225,8 +225,9 @@ const Settings = () => {
                   <SelectItem key={model.id} value={model.id}>
                     <div className="flex items-center gap-2">
                       {model.name}
-                      {model.id !== model.modelId && <> </>}
-                      {(model as any).isCustom && <span className="text-xs bg-primary/20 px-1 rounded">Custom</span>}
+                      {'isCustom' in model && (model as any).isCustom && (
+                        <span className="text-xs bg-primary/20 px-1 rounded">Custom</span>
+                      )}
                     </div>
                   </SelectItem>
                 ))}

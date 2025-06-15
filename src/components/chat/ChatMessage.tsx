@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Bot, AlertCircle, Copy, RefreshCw, Check } from 'lucide-react';
@@ -61,16 +62,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
   };
 
   // SAFETY: Only add plugin if defined, and always provide a string to {message.content}
-  const validRemarkPlugins = [remarkGfm].filter(Boolean);
-  const validRehypePlugins = [rehypeRaw].filter(Boolean);
+  // Fixed: avoid array mismatch, pass rehypeRaw directly.
+  const validRemarkPlugins = [remarkGfm]; // always correct format
+  // @ts-expect-error rehypeRaw type conflict workaround
+  const validRehypePlugins = rehypeRaw;
 
   return (
     <motion.div
       className={`group/message flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ 
-        duration: 0.4, 
+      transition={{
+        duration: 0.4,
         delay: index * 0.1,
         ease: "easeOut"
       }}
@@ -101,10 +104,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
         transition={{ duration: 0.3, delay: index * 0.1 + 0.1 }}
       >
         <Card className={`p-4 group/card relative ${
-          isUser 
-            ? 'bg-primary text-primary-foreground ml-auto' 
-            : isError 
-              ? 'bg-destructive/5 border-destructive/20' 
+          isUser
+            ? 'bg-primary text-primary-foreground ml-auto'
+            : isError
+              ? 'bg-destructive/5 border-destructive/20'
               : 'bg-muted/50'
         }`}>
           <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed">
@@ -122,7 +125,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
           }`}>
             {new Date(message.timestamp).toLocaleTimeString()}
           </div>
-          
+
           <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
             {isError && (
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRetry} disabled={isTyping} title="Retry">
