@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -11,14 +11,6 @@ const MainLayout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background flex-col">
-        {/* Header with always-visible SidebarTrigger */}
-        <header className="flex items-center gap-2 px-4 border-b h-12 bg-card/50 sticky top-0 z-20">
-          <SidebarTrigger className="mr-2" />
-          <span className="text-base font-semibold flex items-center gap-2">
-            NYX
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online"></div>
-          </span>
-        </header>
         <div className="flex flex-1 w-full">
           <AppSidebar />
           {/* AnimatePresence and motion.div for smooth transitions */}
