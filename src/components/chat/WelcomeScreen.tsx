@@ -77,7 +77,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
 
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-2xl">
-          {quick Actions.map((action) => (
+          {quickActions.map((action) => (
             <Button
               key={action.label}
               variant="outline"
