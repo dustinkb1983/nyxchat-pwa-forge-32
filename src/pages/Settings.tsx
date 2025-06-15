@@ -15,7 +15,6 @@ interface CustomModel {
   id: string;
   name: string;
   modelId: string;
-  provider: string;
 }
 
 interface AppSettings {
@@ -45,13 +44,12 @@ const Settings = () => {
     systemPrompt: '',
     maxContextLength: 20,
     apiKey: '',
-    temperature: 0.7 // Default value
+    temperature: 0.7
   });
 
   const [customModelForm, setCustomModelForm] = useState({
     name: '',
-    modelId: '',
-    provider: ''
+    modelId: ''
   });
 
   // Track deleted default models
@@ -91,7 +89,7 @@ const Settings = () => {
     const newSettings = { ...settings, ...updatedSettings };
     setSettings(newSettings);
 
-    // Save most settings
+    // Save most settings except for apiKey
     const { apiKey, ...settingsToSave } = newSettings;
     localStorage.setItem('app-settings', JSON.stringify(settingsToSave));
 
@@ -112,10 +110,10 @@ const Settings = () => {
   };
 
   const addCustomModel = () => {
-    if (!customModelForm.name.trim() || !customModelForm.modelId.trim() || !customModelForm.provider.trim()) {
+    if (!customModelForm.name.trim() || !customModelForm.modelId.trim()) {
       toast({
         title: "Validation Error",
-        description: "All fields are required for custom models.",
+        description: "Both name and model ID are required for custom models.",
         variant: "destructive"
       });
       return;
@@ -125,13 +123,12 @@ const Settings = () => {
       id: crypto.randomUUID(),
       name: customModelForm.name.trim(),
       modelId: customModelForm.modelId.trim(),
-      provider: customModelForm.provider.trim()
     };
 
     const updatedCustomModels = [...settings.customModels, newModel];
     saveSettings({ customModels: updatedCustomModels });
 
-    setCustomModelForm({ name: '', modelId: '', provider: '' });
+    setCustomModelForm({ name: '', modelId: '' });
 
     toast({
       title: "Custom Model Added",
@@ -169,7 +166,6 @@ const Settings = () => {
       saveSettings({ selectedModel: newSelected });
     }
 
-    // Toast
     toast({
       title: "Default Model Deleted",
       description: "Default model has been removed from the selection list."
@@ -184,7 +180,7 @@ const Settings = () => {
     ...settings.customModels.map(m => ({
       id: m.modelId,
       name: m.name,
-      provider: m.provider,
+      provider: '', // No provider for custom models any more
       isCustom: true,
     })),
   ];
@@ -235,7 +231,8 @@ const Settings = () => {
                 {allModels.map(model => (
                   <SelectItem key={model.id} value={model.id}>
                     <div className="flex items-center gap-2">
-                      {model.name} ({model.provider})
+                      {model.name}
+                      {model.id !== model.modelId && model.provider && <> ({model.provider})</>}
                       {(model as any).isCustom && <span className="text-xs bg-primary/20 px-1 rounded">Custom</span>}
                     </div>
                   </SelectItem>
@@ -247,26 +244,21 @@ const Settings = () => {
           {/* Custom Model Management */}
           <div className="space-y-3">
             <h3 className="text-lg font-medium">Custom Model Management</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Input
-                placeholder="Model Name"
+                placeholder="Model Name (e.g. Meta)"
                 value={customModelForm.name}
                 onChange={(e) => setCustomModelForm(prev => ({ ...prev, name: e.target.value }))}
               />
               <Input
-                placeholder="Model ID"
+                placeholder="Model ID (e.g. meta-llama/llama-3.3-70b-instruct:free)"
                 value={customModelForm.modelId}
                 onChange={(e) => setCustomModelForm(prev => ({ ...prev, modelId: e.target.value }))}
-              />
-              <Input
-                placeholder="Provider"
-                value={customModelForm.provider}
-                onChange={(e) => setCustomModelForm(prev => ({ ...prev, provider: e.target.value }))}
               />
             </div>
             <Button 
               onClick={addCustomModel}
-              disabled={!customModelForm.name.trim() || !customModelForm.modelId.trim() || !customModelForm.provider.trim()}
+              disabled={!customModelForm.name.trim() || !customModelForm.modelId.trim()}
             >
               Add Model
             </Button>
@@ -278,7 +270,7 @@ const Settings = () => {
                 {/* Default (preloaded) models with delete */}
                 {filteredDefaultModels.map(model => (
                   <div key={model.id} className="flex items-center justify-between p-2 border rounded">
-                    <span>{model.name} ({model.provider})</span>
+                    <span>{model.name} {model.provider ? `(${model.provider})` : ""}</span>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -292,7 +284,7 @@ const Settings = () => {
                 {/* Custom models with delete */}
                 {settings.customModels.map(model => (
                   <div key={model.id} className="flex items-center justify-between p-2 border rounded">
-                    <span>{model.name} ({model.provider})</span>
+                    <span>{model.name} ({model.modelId})</span>
                     <Button 
                       variant="outline" 
                       size="sm"
