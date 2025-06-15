@@ -10,6 +10,7 @@ import { Trash2, Moon, Sun, LightbulbOff } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
+import { availableModels } from '@/constants/models';
 
 interface CustomModel {
   id: string;
@@ -26,13 +27,6 @@ interface AppSettings {
   apiKey: string;
   temperature: number; // New field
 }
-
-const defaultModels = [
-  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic' },
-];
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
@@ -157,7 +151,7 @@ const Settings = () => {
 
     // If the deleted model is selected, auto-switch to first available
     if (settings.selectedModel === modelId) {
-      const allDefaults = defaultModels.filter(d => !newDeleted.includes(d.id));
+      const allDefaults = availableModels.filter(d => !newDeleted.includes(d.id));
       const newSelected =
         allDefaults.length > 0
           ? allDefaults[0].id
@@ -173,14 +167,13 @@ const Settings = () => {
   };
 
   // Only show non-deleted default models
-  const filteredDefaultModels = defaultModels.filter(d => !deletedDefaultModels.includes(d.id));
+  const filteredDefaultModels = availableModels.filter(d => !deletedDefaultModels.includes(d.id));
 
   const allModels = [
     ...filteredDefaultModels,
     ...settings.customModels.map(m => ({
       id: m.modelId,
       name: m.name,
-      provider: '', // No provider for custom models any more
       isCustom: true,
     })),
   ];
@@ -232,7 +225,7 @@ const Settings = () => {
                   <SelectItem key={model.id} value={model.id}>
                     <div className="flex items-center gap-2">
                       {model.name}
-                      {model.id !== model.modelId && model.provider && <> ({model.provider})</>}
+                      {model.id !== model.modelId && <> </>}
                       {(model as any).isCustom && <span className="text-xs bg-primary/20 px-1 rounded">Custom</span>}
                     </div>
                   </SelectItem>
@@ -270,7 +263,7 @@ const Settings = () => {
                 {/* Default (preloaded) models with delete */}
                 {filteredDefaultModels.map(model => (
                   <div key={model.id} className="flex items-center justify-between p-2 border rounded">
-                    <span>{model.name} {model.provider ? `(${model.provider})` : ""}</span>
+                    <span>{model.name}</span>
                     <Button 
                       variant="outline" 
                       size="sm"

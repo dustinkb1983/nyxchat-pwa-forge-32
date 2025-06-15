@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { availableModels } from '@/constants/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,13 +21,6 @@ interface Profile {
   createdAt: Date;
   updatedAt: Date;
 }
-
-const availableModels = [
-  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic' },
-];
 
 const ProfileManager = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -223,7 +217,7 @@ const ProfileManager = () => {
 
   const getModelName = (modelId: string) => {
     const model = availableModels.find(m => m.id === modelId);
-    return model ? `${model.name} (${model.provider})` : modelId;
+    return model ? model.name : modelId;
   };
 
   return (
@@ -275,7 +269,7 @@ const ProfileManager = () => {
                   <SelectContent>
                     {availableModels.map(model => (
                       <SelectItem key={model.id} value={model.id}>
-                        {model.name} ({model.provider})
+                        {model.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -403,7 +397,7 @@ const ProfileManager = () => {
                 <SelectContent>
                   {availableModels.map(model => (
                     <SelectItem key={model.id} value={model.id}>
-                      {model.name} ({model.provider})
+                      {model.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
