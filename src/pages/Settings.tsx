@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Trash2, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
+import { BackToChatButton } from "@/components/ui/BackToChatButton";
 
 interface CustomModel {
   id: string;
@@ -137,6 +137,7 @@ const Settings = () => {
 
   return (
     <div className="h-full flex flex-col p-6">
+      <BackToChatButton />
       <Card className="flex-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

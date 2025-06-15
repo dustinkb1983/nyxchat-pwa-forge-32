@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Copy, Edit, Trash2, Send } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { BackToChatButton } from "@/components/ui/BackToChatButton";
 
 const QUICK_PROMPT_KEY = "nyxchat-quick-prompts-v1";
 const DEFAULT_QUICK_PROMPTS = [
@@ -134,6 +135,7 @@ export default function PromptForge() {
   // Main UI
   return (
     <div className="max-w-3xl mx-auto py-6 px-2">
+      <BackToChatButton />
       <h1 className="text-2xl font-bold mb-4">PromptForge</h1>
       <p className="text-muted-foreground mb-6">
         Create, enhance, and manage prompts for your AI assistant.

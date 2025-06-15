@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { BackToChatButton } from "@/components/ui/BackToChatButton";
 
 interface Profile {
   id: string;
@@ -227,6 +228,7 @@ const ProfileManager = () => {
 
   return (
     <div className="h-full flex flex-col p-6">
+      <BackToChatButton />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Profile Manager</h1>
