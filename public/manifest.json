@@ -1,0 +1,24 @@
+
+{
+  "name": "nyxchat-pwa-forge",
+  "short_name": "NyxChat",
+  "description": "Lovable Generated Project",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "theme_color": "#101827",
+  "background_color": "#101827",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
