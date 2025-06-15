@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -66,20 +65,12 @@ export function AppSidebar() {
     e.preventDefault();
     e.stopPropagation();
 
-    const content = conversation.messages
-      .map(
-        (msg) =>
-          `[${new Date(msg.timestamp).toLocaleString()}] ${msg.role}:\n${
-            msg.content
-          }`
-      )
-      .join('\n\n' + '-'.repeat(20) + '\n\n');
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const jsonString = JSON.stringify(conversation, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `conversation-${conversation.id}.txt`;
+    link.download = `${conversation.title}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -1,7 +1,10 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dbManager, Conversation, Message } from '@/lib/indexedDB';
 import { useMemory } from './MemoryContext';
 import { useMemoryAutoSave } from '@/hooks/useMemoryAutoSave';
+
+export type { Conversation, Message };
 
 interface ChatContextType {
   currentConversation: Conversation | null;
