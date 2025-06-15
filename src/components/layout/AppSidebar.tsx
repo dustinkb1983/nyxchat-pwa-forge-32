@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -24,6 +23,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useChat } from '@/contexts/ChatContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const staticMenuItems = [
   { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
@@ -36,6 +36,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { conversations, newConversation } = useChat();
+  const { theme } = useTheme();
 
   const isCollapsed = state === 'collapsed';
 
@@ -44,10 +45,16 @@ export function AppSidebar() {
       <SidebarTrigger className="m-2 self-end" />
       <SidebarContent>
         <div className="flex flex-col h-full">
-          {/* Logo/Header */}
-          <div className="p-4 border-b flex items-center gap-2 mb-2">
-            <MessageSquare className="h-6 w-6 text-primary" />
-            {!isCollapsed && <h2 className="font-semibold">NyxChat</h2>}
+          {/* Logo/Header - use image logo in dark/light mode */}
+          <div className="p-4 border-b flex items-center gap-2 mb-2 justify-center">
+            <img
+              src={theme === 'dark' ? '/logo.png' : '/logo2.png'}
+              alt="NyxChat Logo"
+              className="w-8 h-8 object-contain rounded-xl select-none"
+              style={{ background: 'none' }}
+              draggable={false}
+            />
+            {!isCollapsed && <h2 className="font-semibold ml-2">NyxChat</h2>}
           </div>
           {/* Independent scroll for conversations */}
           <div className="flex-1 overflow-y-auto rounded-md px-1 pb-2">

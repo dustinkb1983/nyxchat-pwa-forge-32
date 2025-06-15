@@ -34,16 +34,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
   return (
     <div className="h-full flex items-center justify-center p-8">
       <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
-        {/* Logo */}
+        {/* Centered Logo (outline style for dark mode on black) */}
         <div className="mb-8">
-          <div className="w-32 h-32 mx-auto rounded-full flex items-center justify-center shadow-card bg-none">
+          <div className="w-40 h-40 mx-auto rounded-full flex items-center justify-center shadow-card bg-none border-4 border-white/60 dark:border-white/80">
             <img
               src={theme === 'dark' ? '/logo.png' : '/logo2.png'}
               alt="NyxChat Logo"
-              className="w-32 h-32 object-contain select-none"
+              className="w-36 h-36 object-contain select-none"
+              style={{
+                filter: theme === 'dark' ? "invert(1) brightness(3)" : "none", // force white on dark
+                opacity: 0.85
+              }}
               draggable={false}
               onError={(e) => {
-                // Show fallback if logo can't be loaded
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
               }}
             />
@@ -57,13 +60,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
           </p>
         </div>
 
-        {/* Four uniform quick actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-md">
+        {/* Uniform quick actions */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-md">
           {quickActions.map((action) => (
             <Button
               key={action.label}
               variant="outline"
-              className="h-24 w-full flex flex-col items-center justify-center gap-3 rounded-lg shadow transition-all duration-200 border-2 bg-card hover:bg-accent/50"
+              className="h-24 w-full flex flex-col items-center justify-center gap-3 rounded-lg shadow transition-all duration-200 border-2 bg-neutral-900 hover:bg-neutral-800 text-white dark:text-white"
               onClick={() => onQuickPrompt(action.prompt)}
             >
               <action.icon className="w-6 h-6 text-primary" />
@@ -75,4 +78,3 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
     </div>
   );
 };
-

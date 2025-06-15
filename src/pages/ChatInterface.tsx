@@ -13,7 +13,10 @@ const ChatInterface = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header */}
-      <header className="flex items-center justify-between px-5 py-3 border-b bg-background/80 rounded-t-xl shadow-sm z-10">
+      <header className="flex items-center justify-between px-5 py-3 border-b bg-background/90 rounded-t-xl shadow-sm z-10"
+        style={{
+          background: 'var(--background)',
+        }}>
         <div className="flex items-center gap-2">
           {/* Could add conversation title or icon */}
           <span className="font-bold text-lg">NyxChat</span>
@@ -29,7 +32,7 @@ const ChatInterface = () => {
       </header>
 
       {/* Chat Body */}
-      <div className="flex-1 overflow-y-auto px-2 md:px-6 py-5 rounded-b-xl bg-card transition-colors">
+      <div className="flex-1 overflow-y-auto px-2 md:px-6 py-5 rounded-b-xl bg-background transition-colors">
         {showWelcome ? (
           <WelcomeScreen
             onQuickPrompt={(prompt) => {
