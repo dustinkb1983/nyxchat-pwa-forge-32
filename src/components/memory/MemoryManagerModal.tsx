@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { Pin, Trash2, Plus, ChevronDown, Brain, BarChart3, Timeline } from "lucide-react";
+import { Pin, Trash2, Plus, ChevronDown, Brain, BarChart3, History } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type MemoryEntry } from "@/lib/indexedDB";
@@ -237,7 +237,7 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
   const tabs = [
     { id: 'organize', label: 'Organize', icon: Brain },
     { id: 'insights', label: 'Insights', icon: BarChart3 },
-    { id: 'timeline', label: 'Timeline', icon: Timeline },
+    { id: 'timeline', label: 'Timeline', icon: History },
   ];
 
   return (
