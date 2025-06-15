@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   MessageSquare,
@@ -7,9 +8,7 @@ import {
   Settings,
   Plus,
   Trash2,
-  User,
-  Moon,
-  Sun,
+  User
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,12 +21,12 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
+  SidebarInput
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useChat } from '@/contexts/ChatContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
-import { useEffect } from "react";
 
 const staticMenuItems = [
   { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
@@ -39,8 +38,7 @@ const staticMenuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
-  // FIX: destructure both `theme` and `setTheme`
-  const { theme } = useTheme(); // Only use theme, toggle is now in header
+  const { theme } = useTheme();
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
 
   // Profile list for modal (loaded from localStorage for now; see ProfileSelector logic)
@@ -63,22 +61,29 @@ export function AppSidebar() {
     }
   };
 
+  // Conversation search/filter state
+  const [search, setSearch] = useState('');
+  const filteredConversations = search.trim().length === 0
+    ? conversations
+    : conversations.filter((c) =>
+        c.title.toLowerCase().includes(search.trim().toLowerCase())
+      );
+
   return (
     <>
       <Sidebar className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`} collapsible="icon">
         <SidebarTrigger className="m-2 self-end" />
         <SidebarContent>
           <div className="flex flex-col h-full">
-            {/* Logo/Header */}
+            {/* Sidebar logo only */}
             <div className="p-4 border-b flex items-center gap-2 mb-2 justify-center">
               <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center select-none">
                 <span className="font-bold text-primary text-lg">N</span>
               </div>
-              {!isCollapsed && <h2 className="font-semibold ml-2">NyxChat</h2>}
             </div>
 
             {/* New Chat Button */}
-            <div className="px-2 mb-4">
+            <div className="px-2 mb-3">
               <Button
                 onClick={newConversation}
                 className="w-full justify-start rounded-md"
@@ -89,41 +94,59 @@ export function AppSidebar() {
               </Button>
             </div>
 
+            {/* Conversation Search Input */}
+            {!isCollapsed && (
+              <div className="px-2 mb-2">
+                <SidebarInput
+                  placeholder="Search conversations..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="rounded-md bg-background"
+                />
+              </div>
+            )}
+
             {/* Conversations - Scrollable */}
             <div className="flex-1 overflow-y-auto px-2 pb-4">
               <SidebarGroup>
                 <SidebarGroupLabel>Conversations</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {conversations.map((conversation) => (
-                      <SidebarMenuItem key={conversation.id}>
-                        <SidebarMenuButton asChild>
-                          <button
-                            onClick={() => loadConversation(conversation.id)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ${
-                              currentConversation?.id === conversation.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'hover:bg-accent hover:text-accent-foreground'
-                            }`}
-                          >
-                            <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                            {!isCollapsed && (
-                              <>
-                                <span className="truncate flex-1">{conversation.title}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                  onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </>
-                            )}
-                          </button>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
+                    {filteredConversations.length === 0 ? (
+                      <div className={`px-3 py-2 text-xs text-muted-foreground ${isCollapsed ? 'hidden' : ''}`}>
+                        No conversations found.
+                      </div>
+                    ) : (
+                      filteredConversations.map((conversation) => (
+                        <SidebarMenuItem key={conversation.id}>
+                          <SidebarMenuButton asChild>
+                            <button
+                              onClick={() => loadConversation(conversation.id)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ${
+                                currentConversation?.id === conversation.id
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'hover:bg-accent hover:text-accent-foreground'
+                              }`}
+                            >
+                              <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                              {!isCollapsed && (
+                                <>
+                                  <span className="truncate flex-1">{conversation.title}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                    onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              )}
+                            </button>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))
+                    )}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
@@ -175,3 +198,4 @@ export function AppSidebar() {
     </>
   );
 }
+
