@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Lightbulb, Brain, Code } from 'lucide-react';
+import { Mail, Lightbulb, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -21,15 +21,11 @@ const quickActions = [
     prompt: 'Explain a complex concept'
   },
   {
-    icon: Brain,
-    label: 'Brainstorm',
-    prompt: 'Help me brainstorm ideas'
-  },
-  {
     icon: Code,
     label: 'Code Review',
     prompt: 'Review my code'
   }
+  // Brain icon removed as per previous request (replaced with logo)
 ];
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) => {
@@ -40,12 +36,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
       <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
         {/* Logo */}
         <div className="mb-8">
-          <div className="w-32 h-32 mx-auto rounded-full flex items-center justify-center bg-none shadow-card">
+          <div className="w-32 h-32 mx-auto rounded-full flex items-center justify-center shadow-card bg-none">
             <img
               src={theme === 'dark' ? '/logo.png' : '/logo2.png'}
               alt="NyxChat Logo"
-              className="w-32 h-32 select-none"
+              className="w-32 h-32 object-contain select-none"
               draggable={false}
+              onError={(e) => {
+                // Show fallback if logo can't be loaded
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+              }}
             />
           </div>
         </div>
@@ -75,3 +75,4 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
     </div>
   );
 };
+
