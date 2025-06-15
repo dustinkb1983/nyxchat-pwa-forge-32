@@ -14,7 +14,10 @@ const MainLayout = () => {
         {/* Header with always-visible SidebarTrigger */}
         <header className="flex items-center gap-2 px-4 border-b h-12 bg-card/50 sticky top-0 z-20">
           <SidebarTrigger className="mr-2" />
-          <span className="text-base font-semibold">NYX</span>
+          <span className="text-base font-semibold flex items-center gap-2">
+            NYX
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online"></div>
+          </span>
         </header>
         <div className="flex flex-1 w-full">
           <AppSidebar />

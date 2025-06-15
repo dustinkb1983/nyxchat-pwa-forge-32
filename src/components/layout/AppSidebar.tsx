@@ -69,7 +69,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`} collapsible="icon">
+      <Sidebar className={`bg-sidebar rounded-xl m-2 shadow group/sidebar w-60 transition-all duration-300`}>
         <SidebarContent>
           <div className="flex flex-col h-full">
             {/* Removed sidebar header logo */}
