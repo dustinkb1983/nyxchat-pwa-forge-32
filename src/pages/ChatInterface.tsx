@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, StopCircle, Download, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
@@ -121,9 +120,6 @@ const ChatInterface = () => {
       {/* Chat Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">N</span>
-          </div>
           <div className="flex items-center gap-2">
             <h1 className="font-semibold">NYX</h1>
             <div className="relative flex h-2.5 w-2.5" title={isTyping ? "AI Typing" : "Ready"}>
@@ -138,13 +134,6 @@ const ChatInterface = () => {
                 }`}
               ></div>
             </div>
-            {/* ADD: Active profile display */}
-            <span className="ml-3 px-2 py-1 rounded bg-muted/30 text-xs text-muted-foreground" title="Active Profile">
-              Profile: 
-              <span className="font-semibold text-primary ml-1">
-                {currentProfile}
-              </span>
-            </span>
           </div>
         </div>
         
@@ -245,4 +234,3 @@ const ChatInterface = () => {
 };
 
 export default ChatInterface;
-

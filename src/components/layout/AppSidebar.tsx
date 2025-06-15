@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -75,12 +74,7 @@ export function AppSidebar() {
         <SidebarTrigger className="m-2 self-end" />
         <SidebarContent>
           <div className="flex flex-col h-full">
-            {/* Sidebar logo only */}
-            <div className="p-4 border-b flex items-center gap-2 mb-2 justify-center">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center select-none">
-                <span className="font-bold text-primary text-lg">N</span>
-              </div>
-            </div>
+            {/* Removed sidebar header logo */}
 
             {/* New Chat Button */}
             <div className="px-2 mb-3">
@@ -198,4 +192,3 @@ export function AppSidebar() {
     </>
   );
 }
-

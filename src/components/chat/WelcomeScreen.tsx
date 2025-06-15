@@ -41,8 +41,21 @@ const quickActions = [
   }
 ];
 
+const isMobile = () => window.innerWidth < 640; // sm breakpoint
+
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) => {
   const { theme } = useTheme();
+  const [isMobileDevice, setIsMobileDevice] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobileDevice(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Pick fewer quick actions for mobile
+  const actionsToShow = isMobileDevice ? quickActions.slice(0, 4) : quickActions;
 
   return (
     <div className="h-full flex items-center justify-center p-8">
@@ -60,7 +73,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
               }}
               draggable={false}
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                (e.currentTarget as HTMLImageElement).src = '/logo.png';
               }}
             />
           </div>
@@ -70,14 +83,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Welcome to NyxChat
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
-            Your intelligent AI companion is ready to help. Start a conversation below or choose from these quick prompts to get started.
-          </p>
+          {/* Hide subtitle on mobile */}
+          {!isMobileDevice && (
+            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
+              Your intelligent AI companion is ready to help. Start a conversation below or choose from these quick prompts to get started.
+            </p>
+          )}
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-2xl">
-          {quickActions.map((action) => (
+        <div className={`${isMobileDevice ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'} grid gap-4 w-full max-w-2xl`}>
+          {actionsToShow.map((action) => (
             <Button
               key={action.label}
               variant="outline"
