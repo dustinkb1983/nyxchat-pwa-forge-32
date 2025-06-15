@@ -163,7 +163,7 @@ const ChatInterface = () => {
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {showWelcome ? (
           // WelcomeScreen with dynamic quickPrompts
-          <WelcomeScreen onQuickPrompt={handleQuickPrompt} prompts={quickPrompts} />
+          <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
             <AnimatePresence>
