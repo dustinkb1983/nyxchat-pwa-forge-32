@@ -1,21 +1,21 @@
 
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  MessageSquare, 
-  Wrench, 
-  Brain, 
-  Settings, 
-  Moon, 
-  Sun,
-  Plus
+import {
+  MessageSquare,
+  Wrench,
+  Brain,
+  Settings,
+  Plus,
+  ArrowRight,
+  ArrowLeft // in case needed
 } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -23,86 +23,77 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useChat } from '@/contexts/ChatContext';
 
-const navigationItems = [
-  { title: 'Chat', url: '/', icon: MessageSquare },
+const staticMenuItems = [
   { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
+  { title: 'Profiles', url: '/profiles', icon: ArrowRight }, // Placeholder, route as needed.
   { title: 'Memory', url: '/memory', icon: Brain },
-  { title: 'Settings', url: '/settings', icon: Settings },
+  { title: 'Settings', url: '/settings', icon: Settings }
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const { conversations, newConversation } = useChat();
-  
+
   const isCollapsed = state === 'collapsed';
-  const isActive = (path: string) => location.pathname === path;
-  
+
   return (
-    <Sidebar className={isCollapsed ? 'w-14' : 'w-60'} collapsible="icon">
+    <Sidebar className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`} collapsible="icon">
       <SidebarTrigger className="m-2 self-end" />
-      
       <SidebarContent>
-        {/* Header with New Chat */}
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-col h-full">
+          {/* Logo/Header */}
+          <div className="p-4 border-b flex items-center gap-2 mb-2">
             <MessageSquare className="h-6 w-6 text-primary" />
             {!isCollapsed && <h2 className="font-semibold">NyxChat</h2>}
           </div>
-          <Button 
-            onClick={newConversation}
-            className="w-full justify-start"
-            variant="outline"
-          >
-            <Plus className="h-4 w-4" />
-            {!isCollapsed && <span>New Chat</span>}
-          </Button>
-        </div>
-
-        {/* Conversations List */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Conversations</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <div className="max-h-64 overflow-y-auto">
-              <SidebarMenu>
-                {conversations.map((conversation) => (
-                  <SidebarMenuItem key={conversation.id}>
-                    <SidebarMenuButton asChild>
-                      <button 
-                        onClick={() => {/* TODO: Load conversation */}}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                        {!isCollapsed && (
-                          <span className="truncate">{conversation.title}</span>
-                        )}
-                      </button>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        
-        {/* Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
+          {/* Independent scroll for conversations */}
+          <div className="flex-1 overflow-y-auto rounded-md px-1 pb-2">
+            <SidebarGroup>
+              <SidebarGroupLabel>Conversations</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {conversations.map((conversation) => (
+                    <SidebarMenuItem key={conversation.id}>
+                      <SidebarMenuButton asChild>
+                        <button
+                          onClick={() => {/* TODO: Load conversation logic */}}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          {!isCollapsed && (
+                            <span className="truncate">{conversation.title}</span>
+                          )}
+                        </button>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
+          {/* Static menu always anchored at bottom */}
+          <div className="border-t pt-2 px-2 pb-2 rounded-b-xl bg-background/70 relative z-10">
+            <Button
+              onClick={newConversation}
+              className="w-full justify-start mb-2 rounded-md"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4" />
+              {!isCollapsed && <span>New Chat</span>}
+            </Button>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {staticMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={({ isActive }) => 
-                        `flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                          isActive 
-                            ? 'bg-primary text-primary-foreground' 
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                          isActive
+                            ? 'bg-primary text-primary-foreground'
                             : 'hover:bg-accent hover:text-accent-foreground'
                         }`
                       }
@@ -114,22 +105,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        
-        {/* Theme Toggle at Bottom */}
-        <div className="mt-auto p-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={toggleTheme}
-            className="w-full justify-start"
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            {!isCollapsed && <span className="ml-2">
-              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </span>}
-          </Button>
+          </div>
         </div>
       </SidebarContent>
     </Sidebar>

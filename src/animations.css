@@ -1,4 +1,3 @@
-
 /* Page Transitions */
 .page-enter {
   opacity: 0;
@@ -145,4 +144,43 @@
 @keyframes shimmer {
   0% { background-position: 300% 0; }
   100% { background-position: -300% 0; }
+}
+
+/* Add/override round corners for major UI blocks */
+.bg-card,
+.bg-background,
+.rounded-xl,
+.rounded-lg,
+.rounded-md {
+  border-radius: 14px !important;
+}
+
+.sidebar,
+.sidebar-header,
+.sidebar-content,
+.sidebar-footer {
+  border-radius: 14px;
+}
+
+/* Fade transition as fallback for page routes */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 320ms ease-out, transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity 320ms ease-out, transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
 }
