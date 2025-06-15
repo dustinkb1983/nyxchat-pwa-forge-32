@@ -54,8 +54,12 @@ const Settings = () => {
     provider: ''
   });
 
+  // Track deleted default models
+  const [deletedDefaultModels, setDeletedDefaultModels] = useState<string[]>([]);
+
   useEffect(() => {
     loadSettings();
+    loadDeletedDefaultModels();
   }, []);
 
   const loadSettings = () => {
@@ -76,6 +80,13 @@ const Settings = () => {
     setSettings(prev => ({ ...prev, apiKey }));
   };
 
+  const loadDeletedDefaultModels = () => {
+    const deleted = localStorage.getItem('deleted-default-models');
+    if (deleted) {
+      setDeletedDefaultModels(JSON.parse(deleted));
+    }
+  };
+
   const saveSettings = (updatedSettings: Partial<AppSettings>) => {
     const newSettings = { ...settings, ...updatedSettings };
     setSettings(newSettings);
@@ -93,6 +104,11 @@ const Settings = () => {
       title: "Settings Saved",
       description: "Your settings have been saved successfully."
     });
+  };
+
+  const saveDeletedDefaultModels = (deletedIds: string[]) => {
+    localStorage.setItem('deleted-default-models', JSON.stringify(deletedIds));
+    setDeletedDefaultModels(deletedIds);
   };
 
   const addCustomModel = () => {
@@ -137,12 +153,41 @@ const Settings = () => {
     saveSettings(settings);
   };
 
-  const allModels = [...defaultModels, ...settings.customModels.map(m => ({
-    id: m.modelId,
-    name: m.name,
-    provider: m.provider,
-    isCustom: true
-  }))];
+  // Add delete for default models
+  const handleDeleteDefaultModel = (modelId: string) => {
+    const newDeleted = [...deletedDefaultModels, modelId];
+    saveDeletedDefaultModels(newDeleted);
+
+    // If the deleted model is selected, auto-switch to first available
+    if (settings.selectedModel === modelId) {
+      const allDefaults = defaultModels.filter(d => !newDeleted.includes(d.id));
+      const newSelected =
+        allDefaults.length > 0
+          ? allDefaults[0].id
+          : settings.customModels[0]?.modelId || '';
+      setSettings(prev => ({ ...prev, selectedModel: newSelected }));
+      saveSettings({ selectedModel: newSelected });
+    }
+
+    // Toast
+    toast({
+      title: "Default Model Deleted",
+      description: "Default model has been removed from the selection list."
+    });
+  };
+
+  // Only show non-deleted default models
+  const filteredDefaultModels = defaultModels.filter(d => !deletedDefaultModels.includes(d.id));
+
+  const allModels = [
+    ...filteredDefaultModels,
+    ...settings.customModels.map(m => ({
+      id: m.modelId,
+      name: m.name,
+      provider: m.provider,
+      isCustom: true,
+    })),
+  ];
 
   return (
     <div className="h-full flex flex-col p-6">
@@ -226,9 +271,25 @@ const Settings = () => {
               Add Model
             </Button>
             
-            {settings.customModels.length > 0 && (
+            {/* Show both default and custom models with delete buttons */}
+            {(filteredDefaultModels.length > 0 || settings.customModels.length > 0) && (
               <div className="space-y-2">
-                <h4 className="font-medium">Custom Models:</h4>
+                <h4 className="font-medium">Available Models:</h4>
+                {/* Default (preloaded) models with delete */}
+                {filteredDefaultModels.map(model => (
+                  <div key={model.id} className="flex items-center justify-between p-2 border rounded">
+                    <span>{model.name} ({model.provider})</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteDefaultModel(model.id)}
+                      title="Delete this default model"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                {/* Custom models with delete */}
                 {settings.customModels.map(model => (
                   <div key={model.id} className="flex items-center justify-between p-2 border rounded">
                     <span>{model.name} ({model.provider})</span>
@@ -236,6 +297,7 @@ const Settings = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => deleteCustomModel(model.id)}
+                      title="Delete this custom model"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
