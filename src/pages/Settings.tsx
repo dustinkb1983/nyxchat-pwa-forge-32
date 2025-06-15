@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from "@/components/ui/slider";
-import { Trash2, Moon, Sun } from 'lucide-react';
+import { Trash2, Moon, Sun, LightbulbOff } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
@@ -156,7 +156,7 @@ const Settings = () => {
         <CardContent className="space-y-6">
           {/* Instructional/Tips Area */}
           <div className="rounded-md bg-muted/30 px-4 py-3 text-muted-foreground text-sm flex items-center gap-2 select-none">
-            <span className="text-xl">💡</span>
+            <LightbulbOff className="h-5 w-5" />
             <span>
               Tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, <kbd className="px-2 py-1 bg-muted rounded text-xs">Shift+Enter</kbd> for new line.
             </span>
