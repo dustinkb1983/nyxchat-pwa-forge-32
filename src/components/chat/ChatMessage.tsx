@@ -60,6 +60,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
     },
   };
 
+  // SAFETY: Only add plugin if defined, and always provide a string to {message.content}
+  const validRemarkPlugins = [remarkGfm].filter(Boolean);
+  const validRehypePlugins = [rehypeRaw].filter(Boolean);
+
   return (
     <motion.div
       className={`group/message flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
@@ -105,12 +109,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
         }`}>
           <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed">
             <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw as any]}
+              remarkPlugins={validRemarkPlugins}
+              rehypePlugins={validRehypePlugins}
               components={CodeBlock}
               linkTarget="_blank"
             >
-              {message.content}
+              {message.content || ""}
             </ReactMarkdown>
           </div>
           <div className={`text-xs mt-2 opacity-70 ${
