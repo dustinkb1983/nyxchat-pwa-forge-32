@@ -21,7 +21,6 @@ import {
   SidebarMenuItem,
   useSidebar,
   SidebarInput,
-  SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useChat, type Conversation } from '@/contexts/ChatContext';
@@ -90,13 +89,8 @@ export function AppSidebar() {
       <Sidebar collapsible="icon" className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`}>
         <SidebarContent>
           <div className="flex flex-col h-full">
-            {/* Sidebar Header */}
-            <div className={`flex items-center p-2 ${isCollapsed ? 'justify-center' : 'justify-end'}`}>
-              <SidebarTrigger />
-            </div>
-
             {/* New Chat Button */}
-            <div className="px-2 mb-3">
+            <div className="px-2 mt-2 mb-3">
               <Button
                 onClick={newConversation}
                 className="w-full justify-start rounded-md"
