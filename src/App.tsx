@@ -11,7 +11,6 @@ import { MemoryProvider } from "@/contexts/MemoryContext";
 import MainLayout from "@/components/layout/MainLayout";
 import ChatInterface from "@/pages/ChatInterface";
 import PromptForge from "@/pages/PromptForge";
-import PromptGenerator from "@/pages/PromptGenerator";
 import MemoryManager from "@/pages/MemoryManager";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -50,7 +49,6 @@ const App = () => {
                     <Route path="/" element={<MainLayout />}>
                       <Route index element={<ChatInterface />} />
                       <Route path="prompt-forge" element={<PromptForge />} />
-                      <Route path="prompt-generator" element={<PromptGenerator />} />
                       <Route path="memory" element={<MemoryManager />} />
                       <Route path="settings" element={<Settings />} />
                     </Route>

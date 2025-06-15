@@ -66,9 +66,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
           </p>
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Updated to be uniform like HTML example */}
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
@@ -84,10 +84,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
             >
               <Button
                 variant="outline"
-                className="h-auto p-6 flex flex-col items-center gap-3 hover:bg-accent/50 transition-all duration-200"
+                className="h-24 w-full flex flex-col items-center justify-center gap-3 hover:bg-accent/50 transition-all duration-200 border-2"
                 onClick={() => onQuickPrompt(action.prompt)}
               >
-                <action.icon className="w-8 h-8 text-primary" />
+                <action.icon className="w-6 h-6 text-primary" />
                 <span className="text-sm font-medium">{action.label}</span>
               </Button>
             </motion.div>

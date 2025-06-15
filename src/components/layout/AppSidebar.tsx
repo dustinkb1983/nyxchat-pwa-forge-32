@@ -4,7 +4,6 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { 
   MessageSquare, 
   Wrench, 
-  Sparkles, 
   Brain, 
   Settings, 
   Moon, 
@@ -29,8 +28,7 @@ import { useChat } from '@/contexts/ChatContext';
 
 const navigationItems = [
   { title: 'Chat', url: '/', icon: MessageSquare },
-  { title: 'Prompt Forge', url: '/prompt-forge', icon: Wrench },
-  { title: 'Prompt Generator', url: '/prompt-generator', icon: Sparkles },
+  { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
   { title: 'Memory', url: '/memory', icon: Brain },
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
