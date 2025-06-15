@@ -78,19 +78,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
             />
           </div>
         </div>
-
         <div className="mb-10">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Welcome to NyxChat
           </h1>
           {/* Hide subtitle on mobile */}
-          {!isMobileDevice && (
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
-              Your intelligent AI companion is ready to help. Start a conversation below or choose from these quick prompts to get started.
-            </p>
-          )}
+          {/* Subtitle removed for minimalist style */}
         </div>
-
         {/* Quick Actions Grid */}
         <div className={`${isMobileDevice ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'} grid gap-4 w-full max-w-2xl`}>
           {actionsToShow.map((action) => (
@@ -105,10 +99,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
             </Button>
           ))}
         </div>
-
-        <div className="mt-8 text-sm text-muted-foreground">
-          <p>💡 Tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, <kbd className="px-2 py-1 bg-muted rounded text-xs">Shift+Enter</kbd> for new line</p>
-        </div>
+        {/* Removed: Tip at the bottom for minimalist style */}
       </div>
     </div>
   );

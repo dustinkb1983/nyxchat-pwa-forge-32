@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -155,6 +154,13 @@ const Settings = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Instructional/Tips Area */}
+          <div className="rounded-md bg-muted/30 px-4 py-3 text-muted-foreground text-sm flex items-center gap-2 select-none">
+            <span className="text-xl">💡</span>
+            <span>
+              Tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, <kbd className="px-2 py-1 bg-muted rounded text-xs">Shift+Enter</kbd> for new line.
+            </span>
+          </div>
           {/* Theme Settings */}
           <div className="space-y-3">
             <h3 className="text-lg font-medium">Theme Settings</h3>
@@ -312,4 +318,3 @@ const Settings = () => {
 };
 
 export default Settings;
-

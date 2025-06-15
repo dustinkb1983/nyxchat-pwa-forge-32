@@ -118,10 +118,10 @@ const ChatInterface = () => {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Chat Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <h1 className="font-semibold">NYX</h1>
+            <h1 className="font-semibold text-base">NYX</h1>
             <div className="relative flex h-2.5 w-2.5" title={isTyping ? "AI Typing" : "Ready"}>
               <div
                 className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
@@ -136,7 +136,6 @@ const ChatInterface = () => {
             </div>
           </div>
         </div>
-        
         <div className="flex items-center gap-2">
           <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
           <Button
@@ -148,7 +147,6 @@ const ChatInterface = () => {
           >
             <Download className="h-4 w-4" />
           </Button>
-          {/* Theme toggle icon button */}
           <Button
             variant="ghost"
             size="icon"
@@ -163,7 +161,6 @@ const ChatInterface = () => {
       {/* Chat Body */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {showWelcome ? (
-          // WelcomeScreen with dynamic quickPrompts
           <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
@@ -176,11 +173,9 @@ const ChatInterface = () => {
                 />
               ))}
             </AnimatePresence>
-            
             {isTyping && (
               <TypingIndicator />
             )}
-            
             <div ref={messagesEndRef} />
           </div>
         )}
@@ -212,7 +207,6 @@ const ChatInterface = () => {
                 </Button>
               </div>
             </div>
-            
             <Button
               onClick={handleSend}
               disabled={!inputValue.trim() || isTyping}
@@ -222,9 +216,12 @@ const ChatInterface = () => {
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          
-          <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+          {/* Removed: below-input single-line tips for minimalist style */}
+          {/* <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
             <span>Enter to send • Shift+Enter for new line</span>
+            <span>{inputValue.length}/2000</span>
+          </div> */}
+          <div className="flex justify-end items-center mt-2 text-xs text-muted-foreground">
             <span>{inputValue.length}/2000</span>
           </div>
         </div>
