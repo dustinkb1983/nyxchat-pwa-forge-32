@@ -14,11 +14,12 @@ const ChatInterface = () => {
   const {
     currentConversation,
     isTyping,
+    currentProfile,
+    setCurrentProfile,
     sendMessage,
   } = useChat();
 
   const [inputValue, setInputValue] = useState("");
-  const [profile, setProfile] = useState("default");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +88,7 @@ const ChatInterface = () => {
           </div>
         </div>
         
-        <ProfileSelector value={profile} onChange={setProfile} />
+        <ProfileSelector value={currentProfile} onChange={setCurrentProfile} />
       </header>
 
       {/* Chat Body */}

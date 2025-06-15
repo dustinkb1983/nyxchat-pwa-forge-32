@@ -7,8 +7,8 @@ import {
   Brain,
   Settings,
   Plus,
-  ArrowRight,
   Trash2,
+  User,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,6 +29,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 const staticMenuItems = [
   { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
   { title: 'Memory', url: '/memory', icon: Brain },
+  { title: 'Profiles', url: '/profiles', icon: User },
   { title: 'Settings', url: '/settings', icon: Settings }
 ];
 

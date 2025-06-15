@@ -12,6 +12,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import ChatInterface from "@/pages/ChatInterface";
 import PromptForge from "@/pages/PromptForge";
 import MemoryManager from "@/pages/MemoryManager";
+import ProfileManager from "@/pages/ProfileManager";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
 import "./animations.css";
@@ -50,6 +51,7 @@ const App = () => {
                       <Route index element={<ChatInterface />} />
                       <Route path="prompt-forge" element={<PromptForge />} />
                       <Route path="memory" element={<MemoryManager />} />
+                      <Route path="profiles" element={<ProfileManager />} />
                       <Route path="settings" element={<Settings />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />

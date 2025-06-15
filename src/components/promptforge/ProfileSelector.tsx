@@ -1,46 +1,58 @@
 
-import React from 'react';
-import { ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type Profile = {
-  value: string;
-  label: string;
-};
-
-const PROFILES: Profile[] = [
-  { value: 'default', label: 'Default' },
-  { value: 'writer', label: 'Writer' },
-  { value: 'developer', label: 'Developer' },
-  { value: 'analyst', label: 'Analyst' },
-  { value: 'business', label: 'Business' },
-];
+interface Profile {
+  id: string;
+  name: string;
+  systemPrompt: string;
+  model: string;
+  temperature: number;
+}
 
 interface ProfileSelectorProps {
   value: string;
-  onChange: (profile: string) => void;
+  onChange: (value: string) => void;
 }
 
-export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
-  value,
-  onChange,
-}) => {
+export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChange }) => {
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    loadProfiles();
+  }, []);
+
+  const loadProfiles = () => {
+    const savedProfiles = localStorage.getItem('ai-profiles');
+    if (savedProfiles) {
+      const parsed = JSON.parse(savedProfiles);
+      setProfiles(parsed);
+    } else {
+      // Create default profile if none exist
+      const defaultProfile: Profile = {
+        id: 'default',
+        name: 'Default Assistant',
+        systemPrompt: 'You are a helpful AI assistant. Be concise, accurate, and friendly.',
+        model: 'openai/gpt-4o',
+        temperature: 0.7
+      };
+      setProfiles([defaultProfile]);
+      localStorage.setItem('ai-profiles', JSON.stringify([defaultProfile]));
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <span className="font-medium">Profile:</span>
-      <select
-        className="rounded-md border bg-card px-3 py-1 pr-8 font-medium appearance-none shadow text-foreground"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{ minWidth: 120 }}
-      >
-        {PROFILES.map((profile) => (
-          <option key={profile.value} value={profile.value}>
-            {profile.label}
-          </option>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="w-40">
+        <SelectValue placeholder="Select Profile" />
+      </SelectTrigger>
+      <SelectContent>
+        {profiles.map((profile) => (
+          <SelectItem key={profile.id} value={profile.id}>
+            {profile.name}
+          </SelectItem>
         ))}
-      </select>
-      <ChevronDown className="-ml-7 h-4 w-4 pointer-events-none text-muted-foreground" />
-    </div>
+      </SelectContent>
+    </Select>
   );
 };

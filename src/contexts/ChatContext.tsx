@@ -8,11 +8,21 @@ interface ChatContextType {
   conversations: Conversation[];
   isLoading: boolean;
   isTyping: boolean;
+  currentProfile: string;
+  setCurrentProfile: (profileId: string) => void;
   sendMessage: (content: string, model?: string) => Promise<void>;
   newConversation: () => void;
   loadConversation: (id: string) => void;
   deleteConversation: (id: string) => void;
   refreshConversations: () => Promise<void>;
+}
+
+interface Profile {
+  id: string;
+  name: string;
+  systemPrompt: string;
+  model: string;
+  temperature: number;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -22,6 +32,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [currentProfile, setCurrentProfile] = useState('default');
   const { getRelevantMemories } = useMemory();
 
   const loadConversations = async () => {
@@ -35,18 +46,66 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     loadConversations();
+    // Load saved profile
+    const savedProfile = localStorage.getItem('current-profile');
+    if (savedProfile) {
+      setCurrentProfile(savedProfile);
+    }
   }, []);
 
+  const getCurrentProfile = (): Profile | null => {
+    const savedProfiles = localStorage.getItem('ai-profiles');
+    if (savedProfiles) {
+      const profiles = JSON.parse(savedProfiles);
+      return profiles.find((p: Profile) => p.id === currentProfile) || null;
+    }
+    return null;
+  };
+
+  const getEffectiveSettings = () => {
+    const profile = getCurrentProfile();
+    if (profile) {
+      return {
+        systemPrompt: profile.systemPrompt,
+        model: profile.model,
+        temperature: profile.temperature
+      };
+    }
+
+    // Fallback to global settings
+    const appSettings = localStorage.getItem('app-settings');
+    if (appSettings) {
+      const settings = JSON.parse(appSettings);
+      return {
+        systemPrompt: settings.systemPrompt || 'You are a helpful AI assistant.',
+        model: settings.selectedModel || 'openai/gpt-4o',
+        temperature: 0.7
+      };
+    }
+
+    return {
+      systemPrompt: 'You are a helpful AI assistant.',
+      model: 'openai/gpt-4o',
+      temperature: 0.7
+    };
+  };
+
   const buildSystemPrompt = () => {
+    const { systemPrompt } = getEffectiveSettings();
     const memories = getRelevantMemories(5);
     const memoryContext = memories.length > 0 
       ? `\n\nContext about the user:\n${memories.map(m => `- ${m.content}`).join('\n')}`
       : '';
     
-    return `You are Vivica, an intelligent and helpful AI assistant. You have a warm, conversational tone and provide thoughtful, detailed responses.${memoryContext}`;
+    return systemPrompt + memoryContext;
   };
 
-  const sendMessage = async (content: string, model = 'openai/gpt-4o') => {
+  const handleProfileChange = (profileId: string) => {
+    setCurrentProfile(profileId);
+    localStorage.setItem('current-profile', profileId);
+  };
+
+  const sendMessage = async (content: string) => {
     if (!content.trim()) return;
 
     const userMessage: Message = {
@@ -81,6 +140,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setIsTyping(true);
 
     try {
+      // Get effective settings
+      const { model, temperature } = getEffectiveSettings();
+      
       // Prepare messages for API
       const systemPrompt = buildSystemPrompt();
       const apiMessages = [
@@ -103,12 +165,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': window.location.origin,
-          'X-Title': 'Vivica AI Assistant',
+          'X-Title': 'NyxChat AI Assistant',
         },
         body: JSON.stringify({
           model,
           messages: apiMessages,
-          temperature: 0.7,
+          temperature,
         }),
       });
 
@@ -196,6 +258,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       conversations,
       isLoading,
       isTyping,
+      currentProfile,
+      setCurrentProfile: handleProfileChange,
       sendMessage,
       newConversation,
       loadConversation,
