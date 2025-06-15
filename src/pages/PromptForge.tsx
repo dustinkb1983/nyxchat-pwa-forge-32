@@ -1,408 +1,306 @@
+import React, { useState, useEffect } from "react";
+import { useChat } from "@/contexts/ChatContext";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Copy, Edit, Trash2, Send } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, Filter, SortAsc, Copy, Edit, Trash, Wand2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { ProfileSelector } from '@/components/promptforge/ProfileSelector';
-import { PromptCard } from '@/components/promptforge/PromptCard';
-import { dbManager, PromptTemplate } from '@/lib/indexedDB';
-
-const TEMPLATES = [
-  { value: 'none', label: 'No Template' },
-  { value: 'writer', label: 'Creative Writer' },
-  { value: 'therapist', label: 'Therapist' },
-  { value: 'coding', label: 'Coding Assistant' },
-  { value: 'business', label: 'Business Analyst' },
+const QUICK_PROMPT_KEY = "nyxchat-quick-prompts-v1";
+const DEFAULT_QUICK_PROMPTS = [
+  "Explain Quantum Physics in simple terms",
+  "Write a haiku about the moon",
+  "Fix a bug in my code",
+  "How do I stay motivated?"
 ];
 
-const CREATIVITY_LEVELS = [
-  { value: 'conservative', label: 'Conservative' },
-  { value: 'balanced', label: 'Balanced' },
-  { value: 'creative', label: 'Creative' },
-];
+export default function PromptForge() {
+  const [inputPrompt, setInputPrompt] = useState("");
+  const [enrichedPrompt, setEnrichedPrompt] = useState("");
+  const [template, setTemplate] = useState("none");
+  const [creativity, setCreativity] = useState(0.5);
+  const [focus, setFocus] = useState("balanced");
+  const [sortedPrompts, setSortedPrompts] = useState<any[]>([]);
+  const [editingPrompt, setEditingPrompt] = useState<any>(null);
+  const { currentProfile, sendMessage } = useChat();
 
-const FOCUS_OPTIONS = [
-  { value: 'clarity', label: 'Clarity' },
-  { value: 'detail', label: 'Detail' },
-  { value: 'structure', label: 'Structure' },
-];
-
-const TAGS = ['All', 'Writing', 'Coding', 'Analysis', 'Creative', 'Business'];
-
-const PromptForge = () => {
-  const [profile, setProfile] = useState('default');
-  const [basePrompt, setBasePrompt] = useState('');
-  const [template, setTemplate] = useState('none');
-  const [creativity, setCreativity] = useState('balanced');
-  const [focus, setFocus] = useState('clarity');
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  
-  const [savedPrompts, setSavedPrompts] = useState<PromptTemplate[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState('All');
-  const [sortBy, setSortBy] = useState('newest');
-  const [editingPrompt, setEditingPrompt] = useState<PromptTemplate | null>(null);
-
-  const { toast } = useToast();
-
+  // Quick Prompts (Settings Control)
+  const [quickPrompts, setQuickPrompts] = useState<string[]>(DEFAULT_QUICK_PROMPTS);
   useEffect(() => {
-    loadPrompts();
+    const stored = localStorage.getItem(QUICK_PROMPT_KEY);
+    if (stored) setQuickPrompts(JSON.parse(stored));
   }, []);
-
-  const loadPrompts = async () => {
-    try {
-      const prompts = await dbManager.getPrompts();
-      setSavedPrompts(prompts);
-    } catch (error) {
-      console.error('Failed to load prompts:', error);
-    }
+  const handleQuickPromptChange = (idx: number, txt: string) => {
+    const updated = [...quickPrompts];
+    updated[idx] = txt;
+    setQuickPrompts(updated);
+    localStorage.setItem(QUICK_PROMPT_KEY, JSON.stringify(updated));
+  };
+  const handleQuickPromptReorder = (from: number, to: number) => {
+    const moved = [...quickPrompts];
+    const [item] = moved.splice(from, 1);
+    moved.splice(to, 0, item);
+    setQuickPrompts(moved);
+    localStorage.setItem(QUICK_PROMPT_KEY, JSON.stringify(moved));
+  };
+  const handleRestoreDefaults = () => {
+    setQuickPrompts(DEFAULT_QUICK_PROMPTS);
+    localStorage.setItem(QUICK_PROMPT_KEY, JSON.stringify(DEFAULT_QUICK_PROMPTS));
   };
 
-  const generatePrompt = async () => {
-    if (!basePrompt.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter a base prompt first.',
-        variant: 'destructive',
-      });
+  // Send Prompt to Chat
+  const handleSendToChat = (enrichedPrompt: string) => {
+    sendMessage(enrichedPrompt);
+    toast.success("Prompt sent to chat!");
+  };
+
+  // Generate enhanced prompt
+  const handleGeneratePrompt = async () => {
+    if (!inputPrompt.trim()) {
+      toast.error("Please enter a base prompt first");
       return;
     }
 
-    setIsGenerating(true);
+    // In a real implementation, this would call an API to enhance the prompt
+    // For now, we'll just simulate it
+    const templatePrefix = template === "none" ? "" : 
+      template === "creative" ? "As a creative writer, " :
+      template === "coder" ? "As a software developer, " :
+      template === "analyst" ? "As a data analyst, " : "";
     
-    try {
-      // Simulate AI prompt generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      let enhancedPrompt = basePrompt;
-      
-      if (template !== 'none') {
-        const templateLabel = TEMPLATES.find(t => t.value === template)?.label;
-        enhancedPrompt = `As a ${templateLabel}, ${enhancedPrompt}`;
-      }
-      
-      if (creativity === 'creative') {
-        enhancedPrompt += ' Be innovative and think outside the box.';
-      } else if (creativity === 'conservative') {
-        enhancedPrompt += ' Provide well-established and proven approaches.';
-      }
-      
-      if (focus === 'detail') {
-        enhancedPrompt += ' Include comprehensive details and examples.';
-      } else if (focus === 'structure') {
-        enhancedPrompt += ' Organize your response with clear structure and headings.';
-      } else {
-        enhancedPrompt += ' Provide a clear and concise response.';
-      }
-      
-      setGeneratedPrompt(enhancedPrompt);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to generate prompt.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+    const creativityAdjective = creativity < 0.3 ? "conservative" : 
+      creativity > 0.7 ? "creative and imaginative" : "balanced";
+    
+    const focusDirective = focus === "clarity" ? "Focus on clarity and simplicity. " :
+      focus === "detail" ? "Provide detailed and comprehensive information. " :
+      "Maintain a balanced approach. ";
+    
+    const enhanced = `${templatePrefix}${focusDirective}Please respond in a ${creativityAdjective} way to the following: ${inputPrompt}`;
+    
+    setEnrichedPrompt(enhanced);
+    toast.success("Prompt enhanced!");
   };
 
-  const savePrompt = async () => {
-    if (!generatedPrompt.trim()) {
-      toast({
-        title: 'Error',
-        description: 'No prompt to save.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const promptToSave: PromptTemplate = {
+  // Save prompt to library
+  const savePromptToLibrary = () => {
+    if (!enrichedPrompt) return;
+    
+    const newPrompt = {
       id: crypto.randomUUID(),
-      name: basePrompt.substring(0, 50) + (basePrompt.length > 50 ? '...' : ''),
-      content: generatedPrompt,
-      tags: [template !== 'none' ? template : 'general'],
+      title: inputPrompt.substring(0, 30) + (inputPrompt.length > 30 ? "..." : ""),
+      content: enrichedPrompt,
+      tags: [template !== "none" ? template : "general", focus, creativityLevel()],
       createdAt: new Date(),
       updatedAt: new Date(),
+      usageCount: 0
     };
+    
+    // In a real implementation, this would save to IndexedDB
+    // For now, we'll just simulate it with localStorage
+    const savedPrompts = JSON.parse(localStorage.getItem("promptforge-library") || "[]");
+    savedPrompts.push(newPrompt);
+    localStorage.setItem("promptforge-library", JSON.stringify(savedPrompts));
+    
+    setSortedPrompts([newPrompt, ...sortedPrompts]);
+    toast.success("Prompt saved to library!");
+  };
 
-    try {
-      await dbManager.savePrompt(promptToSave);
-      await loadPrompts();
-      toast({
-        title: 'Success',
-        description: 'Prompt saved to library!',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to save prompt.',
-        variant: 'destructive',
-      });
+  // Helper for creativity level text
+  const creativityLevel = () => {
+    if (creativity < 0.3) return "conservative";
+    if (creativity > 0.7) return "creative";
+    return "balanced";
+  };
+
+  // Load prompts on mount
+  useEffect(() => {
+    const savedPrompts = JSON.parse(localStorage.getItem("promptforge-library") || "[]");
+    setSortedPrompts(savedPrompts);
+  }, []);
+
+  // Delete prompt
+  const confirmDeletePrompt = (prompt: any) => {
+    if (confirm("Are you sure you want to delete this prompt?")) {
+      const updatedPrompts = sortedPrompts.filter(p => p.id !== prompt.id);
+      setSortedPrompts(updatedPrompts);
+      localStorage.setItem("promptforge-library", JSON.stringify(updatedPrompts));
+      toast.success("Prompt deleted!");
     }
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast({
-        title: 'Success',
-        description: 'Copied to clipboard!',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to copy to clipboard.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const filteredAndSortedPrompts = () => {
-    let filtered = savedPrompts.filter(prompt => {
-      const matchesSearch = searchQuery === '' || 
-        prompt.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prompt.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        prompt.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const matchesTag = selectedTag === 'All' || 
-        prompt.tags?.some(tag => tag.toLowerCase() === selectedTag.toLowerCase());
-      
-      return matchesSearch && matchesTag;
-    });
-
-    // Sort prompts
-    switch (sortBy) {
-      case 'oldest':
-        filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        break;
-      case 'alphabetical':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'newest':
-      default:
-        filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        break;
-    }
-
-    return filtered.map(p => ({
-      id: p.id,
-      title: p.name,
-      content: p.content,
-      tags: p.tags || [],
-      usage: 0, // We'll implement usage tracking later
-      createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt.toISOString(),
-    }));
-  };
-
-  const handleEdit = (id: string) => {
-    const prompt = savedPrompts.find(p => p.id === id);
-    if (prompt) {
-      setEditingPrompt(prompt);
-      setBasePrompt(prompt.content);
-      setGeneratedPrompt(prompt.content);
-    }
-  };
-
-  const handleCopy = (id: string) => {
-    const promptData = filteredAndSortedPrompts().find(p => p.id === id);
-    if (promptData) {
-      copyToClipboard(promptData.content);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this prompt?')) {
-      try {
-        await dbManager.deletePrompt(id);
-        await loadPrompts();
-        toast({
-          title: 'Success',
-          description: 'Prompt deleted successfully.',
-        });
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete prompt.',
-          variant: 'destructive',
-        });
-      }
-    }
-  };
-
+  // Main UI
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b">
-        <h1 className="text-2xl font-bold">PromptForge</h1>
-        <ProfileSelector value={profile} onChange={setProfile} />
-      </header>
+    <div className="max-w-3xl mx-auto py-6 px-2">
+      <h1 className="text-2xl font-bold mb-4">PromptForge</h1>
+      <p className="text-muted-foreground mb-6">
+        Create, enhance, and manage prompts for your AI assistant.
+      </p>
+      
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex-1">
+          <label className="text-sm font-medium mb-1 block">Template</label>
+          <Select value={template} onValueChange={setTemplate}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No Template</SelectItem>
+              <SelectItem value="creative">Creative Writer</SelectItem>
+              <SelectItem value="coder">Coder</SelectItem>
+              <SelectItem value="analyst">Analyst</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex-1">
+          <label className="text-sm font-medium mb-1 block">Creativity: {creativityLevel()}</label>
+          <Slider 
+            value={[creativity]} 
+            min={0} 
+            max={1} 
+            step={0.1} 
+            onValueChange={([val]) => setCreativity(val)} 
+          />
+        </div>
+        
+        <div className="flex-1">
+          <label className="text-sm font-medium mb-1 block">Focus</label>
+          <Select value={focus} onValueChange={setFocus}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="clarity">Clarity</SelectItem>
+              <SelectItem value="balanced">Balanced</SelectItem>
+              <SelectItem value="detail">Detail</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <Textarea 
+        className="mt-4 font-mono bg-card border-accent min-h-[88px]"
+        value={inputPrompt}
+        onChange={e => setInputPrompt(e.target.value)}
+        rows={4}
+        placeholder="Write your base prompt..."
+      />
+      
+      <div className="flex gap-2 mt-3">
+        <Button onClick={handleGeneratePrompt}>Generate Prompt</Button>
+        {enrichedPrompt && (
+          <>
+            <Button variant="outline" onClick={() => navigator.clipboard.writeText(enrichedPrompt)}>
+              Copy to Clipboard
+            </Button>
+            <Button onClick={() => handleSendToChat(enrichedPrompt)} variant="secondary">
+              Send to Chat
+            </Button>
+            <Button onClick={savePromptToLibrary} variant="ghost">
+              Save to Library
+            </Button>
+          </>
+        )}
+      </div>
+      
+      {/* Output */}
+      {enrichedPrompt && (
+        <div className="mt-4 bg-muted rounded p-4 shadow-inner animate-fade-in font-mono">
+          {enrichedPrompt}
+        </div>
+      )}
 
-      <div className="flex-1 overflow-hidden p-6">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 h-full">
-          {/* Left Panel - AI Prompt Generator */}
-          <div className="space-y-6">
-            <Card className="p-6 bg-card">
-              <h2 className="text-xl font-semibold mb-4">AI Prompt Generator</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Base Prompt</label>
-                  <Textarea
-                    placeholder="Enter your base idea or prompt..."
-                    value={basePrompt}
-                    onChange={(e) => setBasePrompt(e.target.value)}
-                    rows={4}
-                    className="bg-background"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Template</label>
-                    <select
-                      value={template}
-                      onChange={(e) => setTemplate(e.target.value)}
-                      className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    >
-                      {TEMPLATES.map((t) => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Creativity</label>
-                    <select
-                      value={creativity}
-                      onChange={(e) => setCreativity(e.target.value)}
-                      className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    >
-                      {CREATIVITY_LEVELS.map((c) => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Focus</label>
-                    <select
-                      value={focus}
-                      onChange={(e) => setFocus(e.target.value)}
-                      className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    >
-                      {FOCUS_OPTIONS.map((f) => (
-                        <option key={f.value} value={f.value}>{f.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={generatePrompt}
-                  disabled={isGenerating || !basePrompt.trim()}
-                  className="w-full"
-                >
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  {isGenerating ? 'Generating...' : 'Generate Enhanced Prompt'}
-                </Button>
-              </div>
-            </Card>
-
-            {/* Generated Prompt */}
-            {generatedPrompt && (
-              <Card className="p-6 bg-card">
-                <h3 className="text-lg font-semibold mb-3">Enhanced Prompt</h3>
-                <div className="bg-muted/50 p-4 rounded-md mb-4">
-                  <p className="text-sm whitespace-pre-wrap">{generatedPrompt}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={() => copyToClipboard(generatedPrompt)} variant="outline">
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy
-                  </Button>
-                  <Button onClick={savePrompt}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Save to Library
-                  </Button>
-                </div>
-              </Card>
-            )}
+      {/* --- Quick Prompt Management UI --- */}
+      <div className="mt-8">
+        <h3 className="font-bold text-lg mb-2">Manage Quick Prompts</h3>
+        {quickPrompts.map((q, idx) => (
+          <div key={idx} className="flex gap-2 items-center mb-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={idx === 0}
+              onClick={() => handleQuickPromptReorder(idx, idx - 1)}
+              title="Move up"
+            >↑</Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={idx === quickPrompts.length - 1}
+              onClick={() => handleQuickPromptReorder(idx, idx + 1)}
+              title="Move down"
+            >↓</Button>
+            <Input
+              value={q}
+              className="flex-1"
+              onChange={e => handleQuickPromptChange(idx, e.target.value)}
+            />
           </div>
-
-          {/* Right Panel - Prompt Library */}
-          <div className="space-y-6">
-            <Card className="p-6 bg-card">
-              <h2 className="text-xl font-semibold mb-4">Prompt Library</h2>
-              
-              {/* Search and Filters */}
-              <div className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search prompts..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {TAGS.map((tag) => (
-                    <Button
-                      key={tag}
-                      variant={selectedTag === tag ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedTag(tag)}
-                    >
-                      {tag}
-                    </Button>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <SortAsc className="h-4 w-4" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="rounded-md border bg-background px-3 py-1 text-sm"
-                  >
-                    <option value="newest">Newest</option>
-                    <option value="oldest">Oldest</option>
-                    <option value="alphabetical">Alphabetical</option>
-                  </select>
-                </div>
+        ))}
+        <div className="flex gap-2 mt-2">
+          <Button variant="outline" onClick={handleRestoreDefaults}>Restore Defaults</Button>
+        </div>
+      </div>
+      
+      {/* --- Prompt Library: Card Grid --- */}
+      <div className="mt-12">
+        <h3 className="font-bold text-xl mb-4">Prompt Library</h3>
+        {/* Cards: responsive grid, show title/preview/tags/date/stats/actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedPrompts.map(p => (
+            <div className="bg-background rounded-lg p-4 shadow group hover:shadow-lg transition relative" key={p.id}>
+              <div className="flex flex-col">
+                <span className="font-semibold text-primary group-hover:underline">{p.title}</span>
+                <span className="text-xs opacity-80 mt-1">{p.tags?.slice(0,3).join(", ")}</span>
+                <span className="text-xs opacity-60 mt-1">Created {formatDistanceToNow(new Date(p.createdAt))} · Used {p.usageCount || 0}x</span>
+                <div className="text-sm mt-2 line-clamp-3">{p.content.slice(0, 120)}</div>
               </div>
-            </Card>
-
-            {/* Prompt Cards */}
-            <div className="space-y-4 overflow-y-auto">
-              {filteredAndSortedPrompts().map((prompt) => (
-                <PromptCard
-                  key={prompt.id}
-                  prompt={prompt}
-                  onEdit={handleEdit}
-                  onCopy={handleCopy}
-                  onDelete={handleDelete}
-                />
-              ))}
-              
-              {filteredAndSortedPrompts().length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No prompts found. Generate and save your first prompt!</p>
-                </div>
-              )}
+              <div className="absolute top-2 right-2 flex gap-1">
+                <Button size="icon" variant="ghost" onClick={() => navigator.clipboard.writeText(p.content)} title="Copy"><Copy className="w-4 h-4"/></Button>
+                <Button size="icon" variant="ghost" onClick={() => setEditingPrompt(p)} title="Edit"><Edit className="w-4 h-4"/></Button>
+                <Button size="icon" variant="destructive" onClick={() => confirmDeletePrompt(p)} title="Delete"><Trash2 className="w-4 h-4"/></Button>
+                <Button size="icon" variant="secondary" onClick={() => handleSendToChat(p.content)} title="Send to Chat"><Send className="w-4 h-4"/></Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Edit Modal (placeholder) */}
+        {editingPrompt && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background p-4 rounded-lg w-full max-w-md">
+              <h3 className="font-bold mb-2">Edit Prompt</h3>
+              <Input 
+                value={editingPrompt.title} 
+                onChange={e => setEditingPrompt({...editingPrompt, title: e.target.value})}
+                className="mb-2"
+                placeholder="Title"
+              />
+              <Textarea 
+                value={editingPrompt.content}
+                onChange={e => setEditingPrompt({...editingPrompt, content: e.target.value})}
+                className="mb-2"
+                placeholder="Content"
+                rows={5}
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditingPrompt(null)}>Cancel</Button>
+                <Button onClick={() => {
+                  const updated = sortedPrompts.map(p => 
+                    p.id === editingPrompt.id ? {...editingPrompt, updatedAt: new Date()} : p
+                  );
+                  setSortedPrompts(updated);
+                  localStorage.setItem("promptforge-library", JSON.stringify(updated));
+                  setEditingPrompt(null);
+                  toast.success("Prompt updated!");
+                }}>Save</Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
-};
-
-export default PromptForge;
+}

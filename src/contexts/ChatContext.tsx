@@ -104,11 +104,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const buildSystemPrompt = () => {
     const { systemPrompt } = getEffectiveSettings();
-    const memories = getRelevantMemories(5);
-    const memoryContext = memories.length > 0 
-      ? `\n\nContext about the user:\n${memories.map(m => `- ${m.content}`).join('\n')}`
+    // Prune memories for token efficiency (token-usage estimation: count chars)
+    const MAX_TOKENS = 800; // ~4 chars = 1 token
+    let accumulated = 0;
+    const memories = getRelevantMemories(40).filter(m => !!m.content); // up to 40 (in-memory sort by importance)
+    let selected = [];
+    for (const m of memories) {
+      accumulated += m.content.length;
+      if (accumulated > MAX_TOKENS * 4) break;
+      selected.push(m);
+    }
+    const memoryContext = selected.length > 0
+      ? `\n\nContext about the user:\n${selected.map(m => `- ${m.content} (${m.type}${m.tags?.find(t => t.startsWith("profile:")) ? `, ${m.tags?.find(t => t.startsWith("profile:"))}` : ""})`).join('\n')}`
       : '';
-    
     return systemPrompt + memoryContext;
   };
 

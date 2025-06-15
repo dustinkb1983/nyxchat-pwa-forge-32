@@ -10,6 +10,14 @@ import { ProfileSelector } from "@/components/promptforge/ProfileSelector";
 import { useChat } from "@/contexts/ChatContext";
 import { AnimatePresence } from "framer-motion";
 
+const QUICK_PROMPT_KEY = "nyxchat-quick-prompts-v1";
+const DEFAULT_QUICK_PROMPTS = [
+  "Explain Quantum Physics in simple terms",
+  "Write a haiku about the moon",
+  "Fix a bug in my code",
+  "How do I stay motivated?"
+];
+
 const ChatInterface = () => {
   const {
     currentConversation,
@@ -20,6 +28,7 @@ const ChatInterface = () => {
   } = useChat();
 
   const [inputValue, setInputValue] = useState("");
+  const [quickPrompts, setQuickPrompts] = useState<string[]>(DEFAULT_QUICK_PROMPTS);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +47,11 @@ const ChatInterface = () => {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [inputValue]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(QUICK_PROMPT_KEY);
+    if (stored) setQuickPrompts(JSON.parse(stored));
+  }, []);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
@@ -132,9 +146,7 @@ const ChatInterface = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          {/* ... ProfileSelector (same as before) ... */}
           <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
-          {/* ... Download button ... */}
           <Button
             variant="ghost"
             size="icon"
@@ -150,7 +162,8 @@ const ChatInterface = () => {
       {/* Chat Body */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {showWelcome ? (
-          <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
+          // WelcomeScreen with dynamic quickPrompts
+          <WelcomeScreen onQuickPrompt={handleQuickPrompt} quickPrompts={quickPrompts} />
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
             <AnimatePresence>
