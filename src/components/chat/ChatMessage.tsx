@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Bot, AlertCircle, Copy, RefreshCw, Check } from 'lucide-react';
@@ -61,11 +60,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
     },
   };
 
-  // SAFETY: Only add plugin if defined, and always provide a string to {message.content}
-  // Fixed: avoid array mismatch, pass rehypeRaw directly.
-  const validRemarkPlugins = [remarkGfm]; // always correct format
-  // @ts-expect-error rehypeRaw type conflict workaround
-  const validRehypePlugins = rehypeRaw;
+  const validRemarkPlugins = [remarkGfm];
+  // The rehypeRaw plugin must be passed in an array.
+  const validRehypePlugins = [rehypeRaw];
 
   return (
     <motion.div
