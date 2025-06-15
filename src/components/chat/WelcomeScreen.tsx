@@ -2,6 +2,7 @@
 import React from 'react';
 import { Mail, Lightbulb, Brain, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface WelcomeScreenProps {
   onQuickPrompt: (prompt: string) => void;
@@ -32,13 +33,20 @@ const quickActions = [
 ];
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) => {
+  const { theme } = useTheme();
+
   return (
     <div className="h-full flex items-center justify-center p-8">
       <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
-        {/* Logo/Icon */}
+        {/* Logo */}
         <div className="mb-8">
-          <div className="w-32 h-32 mx-auto bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center">
-            <Brain className="w-16 h-16 text-primary" />
+          <div className="w-32 h-32 mx-auto rounded-full flex items-center justify-center bg-none shadow-card">
+            <img
+              src={theme === 'dark' ? '/logo.png' : '/logo2.png'}
+              alt="NyxChat Logo"
+              className="w-32 h-32 select-none"
+              draggable={false}
+            />
           </div>
         </div>
 
