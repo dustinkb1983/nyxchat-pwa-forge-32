@@ -1,52 +1,163 @@
-import React from "react";
-import { ArrowLeft, ArrowRight, Download, Sun, Moon } from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
+
+import React, { useState, useRef, useEffect } from "react";
+import { Send, Mic, StopCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
+import { ChatMessage } from "@/components/chat/ChatMessage";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { ProfileSelector } from "@/components/promptforge/ProfileSelector";
+import { useChat } from "@/contexts/ChatContext";
+import { AnimatePresence } from "framer-motion";
 
 const ChatInterface = () => {
-  const [messages, setMessages] = React.useState([]);
-  const [showWelcome, setShowWelcome] = React.useState(true); // Placeholder
-  const { theme, toggleTheme } = useTheme();
+  const {
+    currentConversation,
+    isTyping,
+    sendMessage,
+  } = useChat();
 
-  // Placeholder chat header actions
+  const [inputValue, setInputValue] = useState("");
+  const [profile, setProfile] = useState("default");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const messages = currentConversation?.messages || [];
+  const showWelcome = messages.length === 0;
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [inputValue]);
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || isTyping) return;
+
+    const message = inputValue.trim();
+    setInputValue("");
+    
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
+    await sendMessage(message);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // Shift+Enter: new line (default behavior)
+        return;
+      } else {
+        // Enter: send message
+        e.preventDefault();
+        handleSend();
+      }
+    }
+  };
+
+  const handleQuickPrompt = (prompt: string) => {
+    setInputValue(prompt);
+    // Auto-send the quick prompt
+    setTimeout(() => handleSend(), 100);
+  };
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
       {/* Chat Header */}
-      <header className="flex items-center justify-between px-5 py-3 border-b bg-background/90 rounded-t-xl shadow-sm z-10"
-        style={{
-          background: 'var(--background)',
-        }}>
-        <div className="flex items-center gap-2">
-          {/* Could add conversation title or icon */}
-          <span className="font-bold text-lg">NyxChat</span>
+      <header className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-sm font-bold text-primary">N</span>
+          </div>
+          <div>
+            <h1 className="font-semibold">NYX</h1>
+            <p className="text-xs text-muted-foreground">
+              {isTyping ? "Thinking..." : "Online"}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="icon" variant="ghost" aria-label="Download/Export" className="rounded-md">
-            <Download className="h-5 w-5" />
-          </Button>
-          <Button size="icon" variant="ghost" onClick={toggleTheme} aria-label="Toggle Theme" className="rounded-md">
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-        </div>
+        
+        <ProfileSelector value={profile} onChange={setProfile} />
       </header>
 
       {/* Chat Body */}
-      <div className="flex-1 overflow-y-auto px-2 md:px-6 py-5 rounded-b-xl bg-background transition-colors">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {showWelcome ? (
-          <WelcomeScreen
-            onQuickPrompt={(prompt) => {
-              setShowWelcome(false);
-              // TODO: send prompt, add to messages
-            }}
-          />
+          <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
         ) : (
-          <div className="flex flex-col gap-3">
-            {/* Map over chat messages */}
+          <div className="max-w-4xl mx-auto space-y-6">
+            <AnimatePresence>
+              {messages.map((message, index) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  index={index}
+                />
+              ))}
+            </AnimatePresence>
+            
+            {isTyping && (
+              <TypingIndicator />
+            )}
+            
+            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
-      {/* Chat Footer would go here */}
+
+      {/* Chat Input */}
+      <div className="border-t bg-card/50 backdrop-blur-sm p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end gap-3">
+            <div className="flex-1 relative">
+              <Textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+                className="min-h-[44px] max-h-32 resize-none pr-12 bg-background"
+                disabled={isTyping}
+              />
+              <div className="absolute right-2 bottom-2 flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setInputValue("")}
+                  disabled={!inputValue.trim()}
+                  className="h-8 w-8 p-0"
+                >
+                  <StopCircle className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <Button
+              onClick={handleSend}
+              disabled={!inputValue.trim() || isTyping}
+              size="icon"
+              className="h-11 w-11 rounded-full"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+            <span>Enter to send • Shift+Enter for new line</span>
+            <span>{inputValue.length}/2000</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   MessageSquare,
   Wrench,
@@ -7,7 +8,7 @@ import {
   Settings,
   Plus,
   ArrowRight,
-  ArrowLeft // in case needed
+  Trash2,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -27,25 +28,31 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 const staticMenuItems = [
   { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
-  { title: 'Profiles', url: '/profiles', icon: ArrowRight }, // Placeholder, route as needed.
   { title: 'Memory', url: '/memory', icon: Brain },
   { title: 'Settings', url: '/settings', icon: Settings }
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const location = useLocation();
-  const { conversations, newConversation } = useChat();
+  const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
   const { theme } = useTheme();
 
   const isCollapsed = state === 'collapsed';
+
+  const handleDeleteConversation = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (confirm('Delete this conversation?')) {
+      deleteConversation(id);
+    }
+  };
 
   return (
     <Sidebar className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`} collapsible="icon">
       <SidebarTrigger className="m-2 self-end" />
       <SidebarContent>
         <div className="flex flex-col h-full">
-          {/* Logo/Header - use image logo in dark/light mode */}
+          {/* Logo/Header */}
           <div className="p-4 border-b flex items-center gap-2 mb-2 justify-center">
             <img
               src={theme === 'dark' ? '/logo.png' : '/logo2.png'}
@@ -56,8 +63,21 @@ export function AppSidebar() {
             />
             {!isCollapsed && <h2 className="font-semibold ml-2">NyxChat</h2>}
           </div>
-          {/* Independent scroll for conversations */}
-          <div className="flex-1 overflow-y-auto rounded-md px-1 pb-2">
+
+          {/* New Chat Button */}
+          <div className="px-2 mb-4">
+            <Button
+              onClick={newConversation}
+              className="w-full justify-start rounded-md"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4" />
+              {!isCollapsed && <span className="ml-2">New Chat</span>}
+            </Button>
+          </div>
+
+          {/* Conversations - Scrollable */}
+          <div className="flex-1 overflow-y-auto px-2 pb-4">
             <SidebarGroup>
               <SidebarGroupLabel>Conversations</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -66,12 +86,26 @@ export function AppSidebar() {
                     <SidebarMenuItem key={conversation.id}>
                       <SidebarMenuButton asChild>
                         <button
-                          onClick={() => {/* TODO: Load conversation logic */}}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left"
+                          onClick={() => loadConversation(conversation.id)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ${
+                            currentConversation?.id === conversation.id
+                              ? 'bg-primary text-primary-foreground'
+                              : 'hover:bg-accent hover:text-accent-foreground'
+                          }`}
                         >
-                          <MessageSquare className="h-4 w-4" />
+                          <MessageSquare className="h-4 w-4 flex-shrink-0" />
                           {!isCollapsed && (
-                            <span className="truncate">{conversation.title}</span>
+                            <>
+                              <span className="truncate flex-1">{conversation.title}</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </>
                           )}
                         </button>
                       </SidebarMenuButton>
@@ -81,16 +115,9 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
           </div>
-          {/* Static menu always anchored at bottom */}
-          <div className="border-t pt-2 px-2 pb-2 rounded-b-xl bg-background/70 relative z-10">
-            <Button
-              onClick={newConversation}
-              className="w-full justify-start mb-2 rounded-md"
-              variant="outline"
-            >
-              <Plus className="h-4 w-4" />
-              {!isCollapsed && <span>New Chat</span>}
-            </Button>
+
+          {/* Static menu anchored at bottom */}
+          <div className="border-t pt-2 px-2 pb-2 bg-background/70">
             <SidebarMenu>
               {staticMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
