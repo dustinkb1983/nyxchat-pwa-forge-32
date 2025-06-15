@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,10 +38,36 @@ const ProfileManager = () => {
     temperature: 0.7
   });
   const { toast } = useToast();
+  
+  // New: add error state for form
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfiles();
   }, []);
+
+  // Enhance live validation (name and systemPrompt)
+  useEffect(() => {
+    if (!formData.name.trim()) {
+      setFormError('Profile name is required.');
+      return;
+    }
+    if (!formData.systemPrompt.trim()) {
+      setFormError('System prompt is required.');
+      return;
+    }
+    // Check for duplicate name (other than currently editing)
+    const duplicate = profiles.some(
+      (p) =>
+        p.name.trim().toLowerCase() === formData.name.trim().toLowerCase() &&
+        (!editingProfile || p.id !== editingProfile.id)
+    );
+    if (duplicate) {
+      setFormError('Profile name must be unique.');
+      return;
+    }
+    setFormError(null);
+  }, [formData, profiles, editingProfile]);
 
   const loadProfiles = () => {
     const savedProfiles = localStorage.getItem('ai-profiles');
@@ -75,6 +100,8 @@ const ProfileManager = () => {
   };
 
   const handleCreateProfile = () => {
+    if (formError) return;
+    
     if (!formData.name.trim() || !formData.systemPrompt.trim()) {
       toast({
         title: "Validation Error",
@@ -117,6 +144,8 @@ const ProfileManager = () => {
   };
 
   const handleUpdateProfile = () => {
+    if (formError) return;
+    
     if (!editingProfile || !formData.name.trim() || !formData.systemPrompt.trim()) {
       toast({
         title: "Validation Error",
@@ -147,23 +176,43 @@ const ProfileManager = () => {
     });
   };
 
-  const handleDeleteProfile = (profileId: string) => {
-    if (profiles.length <= 1) {
-      toast({
-        title: "Cannot Delete",
-        description: "You must keep at least one profile.",
-        variant: "destructive"
-      });
-      return;
-    }
+  // Confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-    const updatedProfiles = profiles.filter(p => p.id !== profileId);
+  // Profile delete with confirmation
+  const handleDeleteProfileRequest = (profileId: string) => {
+    setPendingDeleteId(profileId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteProfile = () => {
+    if (!pendingDeleteId) return;
+    // If deleting current profile, switch to another available
+    if (profiles.length <= 1) return;
+    let nextProfileId = 'default';
+    if (pendingDeleteId === (localStorage.getItem('current-profile') || 'default')) {
+      const fallback = profiles.find((p) => p.id !== pendingDeleteId);
+      nextProfileId = fallback ? fallback.id : 'default';
+      localStorage.setItem('current-profile', nextProfileId);
+      // If the app uses a context or function, also update it:
+      if (typeof window !== "undefined" && window.dispatchEvent) {
+        window.dispatchEvent(new Event("profile-changed")); // let other components know
+      }
+    }
+    const updatedProfiles = profiles.filter(p => p.id !== pendingDeleteId);
     saveProfiles(updatedProfiles);
-    
+    setPendingDeleteId(null);
+    setDeleteDialogOpen(false);
     toast({
       title: "Profile Deleted",
       description: "Profile has been deleted successfully."
     });
+  };
+
+  const cancelDeleteProfile = () => {
+    setPendingDeleteId(null);
+    setDeleteDialogOpen(false);
   };
 
   const resetForm = () => {
@@ -247,8 +296,9 @@ const ProfileManager = () => {
                 </div>
               </div>
               
+              {formError && <div className="text-sm text-destructive">{formError}</div>}
               <div className="flex gap-3 pt-4">
-                <Button onClick={handleCreateProfile} disabled={!formData.name.trim() || !formData.systemPrompt.trim()}>
+                <Button onClick={handleCreateProfile} disabled={!!formError}>
                   Create Profile
                 </Button>
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -281,7 +331,7 @@ const ProfileManager = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => handleDeleteProfile(profile.id)}
+                    onClick={() => handleDeleteProfileRequest(profile.id)}
                     disabled={profiles.length <= 1}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -299,6 +349,22 @@ const ProfileManager = () => {
           </Card>
         ))}
       </div>
+
+      {/* Enhanced Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Profile</DialogTitle>
+          </DialogHeader>
+          <div>
+            Are you sure you want to delete this profile? You cannot undo this action.
+          </div>
+          <DialogFooter className="mt-4 flex gap-2">
+            <Button variant="destructive" onClick={confirmDeleteProfile}>Delete</Button>
+            <Button variant="outline" onClick={cancelDeleteProfile}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={!!editingProfile} onOpenChange={() => setEditingProfile(null)}>
@@ -358,8 +424,12 @@ const ProfileManager = () => {
               </div>
             </div>
             
+            {formError && <div className="text-sm text-destructive">{formError}</div>}
             <div className="flex gap-3 pt-4">
-              <Button onClick={handleUpdateProfile} disabled={!formData.name.trim() || !formData.systemPrompt.trim()}>
+              <Button
+                onClick={handleUpdateProfile}
+                disabled={!!formError}
+              >
                 Update Profile
               </Button>
               <Button variant="outline" onClick={() => setEditingProfile(null)}>

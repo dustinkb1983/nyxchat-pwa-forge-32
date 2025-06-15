@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   MessageSquare,
@@ -124,7 +123,7 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
-                  </SidebarMenu>
+                  SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
             </div>

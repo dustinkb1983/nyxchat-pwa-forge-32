@@ -109,7 +109,7 @@ const ChatInterface = () => {
           </div>
           <div className="flex items-center gap-2">
             <h1 className="font-semibold">NYX</h1>
-            <div className="relative flex h-2.5 w-2.5">
+            <div className="relative flex h-2.5 w-2.5" title={isTyping ? "AI Typing" : "Ready"}>
               <div
                 className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
                   isTyping ? 'bg-red-400' : 'bg-green-400'
@@ -121,11 +121,20 @@ const ChatInterface = () => {
                 }`}
               ></div>
             </div>
+            {/* ADD: Active profile display */}
+            <span className="ml-3 px-2 py-1 rounded bg-muted/30 text-xs text-muted-foreground" title="Active Profile">
+              Profile: 
+              <span className="font-semibold text-primary ml-1">
+                {currentProfile}
+              </span>
+            </span>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
+          {/* ... ProfileSelector (same as before) ... */}
           <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
+          {/* ... Download button ... */}
           <Button
             variant="ghost"
             size="icon"
