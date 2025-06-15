@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, StopCircle, Download, Moon, Sun } from "lucide-react";
+import { Send, Mic, StopCircle, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -92,29 +92,6 @@ const ChatInterface = () => {
     toast.success(`Profile switched!`);
   };
 
-  const handleDownload = () => {
-    if (!currentConversation) return;
-
-    const content = currentConversation.messages
-      .map(
-        (msg) =>
-          `[${new Date(msg.timestamp).toLocaleString()}] ${msg.role}:\n${
-            msg.content
-          }`
-      )
-      .join('\n\n' + '-'.repeat(20) + '\n\n');
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `conversation-${currentConversation.id}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Chat Header */}
@@ -138,15 +115,6 @@ const ChatInterface = () => {
         </div>
         <div className="flex items-center gap-2">
           <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDownload}
-            disabled={!currentConversation || messages.length === 0}
-            title="Download conversation"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
           <Button
             variant="ghost"
             size="icon"

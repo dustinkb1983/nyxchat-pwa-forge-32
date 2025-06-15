@@ -8,7 +8,8 @@ import {
   Settings,
   Plus,
   Trash2,
-  User
+  User,
+  Download
 } from 'lucide-react';
 import {
   Sidebar,
@@ -24,7 +25,7 @@ import {
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { useChat } from '@/contexts/ChatContext';
+import { useChat, type Conversation } from '@/contexts/ChatContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
 
@@ -59,6 +60,30 @@ export function AppSidebar() {
     if (confirm('Delete this conversation?')) {
       deleteConversation(id);
     }
+  };
+
+  const handleDownloadConversation = (e: React.MouseEvent, conversation: Conversation) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const content = conversation.messages
+      .map(
+        (msg) =>
+          `[${new Date(msg.timestamp).toLocaleString()}] ${msg.role}:\n${
+            msg.content
+          }`
+      )
+      .join('\n\n' + '-'.repeat(20) + '\n\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `conversation-${conversation.id}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Conversation search/filter state
@@ -135,14 +160,26 @@ export function AppSidebar() {
                               {!isCollapsed && (
                                 <>
                                   <span className="truncate flex-1">{conversation.title}</span>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                    onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
+                                  <div className="flex items-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => handleDownloadConversation(e, conversation)}
+                                      title="Download conversation"
+                                    >
+                                      <Download className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={(e) => handleDeleteConversation(e, conversation.id)}
+                                      title="Delete conversation"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                 </>
                               )}
                             </button>
