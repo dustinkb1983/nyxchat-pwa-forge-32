@@ -46,7 +46,6 @@ const Settings = () => {
     modelId: ''
   });
 
-  // Track deleted default models
   const [deletedDefaultModels, setDeletedDefaultModels] = useState<string[]>([]);
 
   useEffect(() => {
@@ -154,7 +153,7 @@ const Settings = () => {
       const newSelected =
         allDefaults.length > 0
           ? allDefaults[0].id
-          : settings.customModels[0]?.modelId || '';
+          : settings.customModels[0]?.modelId || 'openai/gpt-4o';
       setSettings(prev => ({ ...prev, selectedModel: newSelected }));
       saveSettings({ selectedModel: newSelected });
     }
@@ -175,7 +174,7 @@ const Settings = () => {
       name: m.name,
       isCustom: true,
     })),
-  ];
+  ].filter(model => model.id && model.id.trim() !== ''); // Filter out any models with empty IDs
 
   return (
     <div className="h-full flex flex-col p-6 no-horizontal-scroll">

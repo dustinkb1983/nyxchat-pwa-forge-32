@@ -26,7 +26,9 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChang
     const savedProfiles = localStorage.getItem('ai-profiles');
     if (savedProfiles) {
       const parsed = JSON.parse(savedProfiles);
-      setProfiles(parsed);
+      // Filter out any profiles with empty or invalid IDs
+      const validProfiles = parsed.filter((profile: Profile) => profile.id && profile.id.trim() !== '');
+      setProfiles(validProfiles);
     } else {
       // Create default profile if none exist
       const defaultProfile: Profile = {

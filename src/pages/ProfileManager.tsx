@@ -37,6 +37,10 @@ const ProfileManager = () => {
   // New: add error state for form
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
   useEffect(() => {
     loadProfiles();
   }, []);
@@ -68,7 +72,9 @@ const ProfileManager = () => {
     const savedProfiles = localStorage.getItem('ai-profiles');
     if (savedProfiles) {
       const parsed = JSON.parse(savedProfiles);
-      setProfiles(parsed.map((p: any) => ({
+      // Filter out profiles with invalid IDs
+      const validProfiles = parsed.filter((p: any) => p.id && p.id.trim() !== '');
+      setProfiles(validProfiles.map((p: any) => ({
         ...p,
         createdAt: new Date(p.createdAt),
         updatedAt: new Date(p.updatedAt)
@@ -171,10 +177,6 @@ const ProfileManager = () => {
     });
   };
 
-  // Confirmation dialog state
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-
   // Profile delete with confirmation
   const handleDeleteProfileRequest = (profileId: string) => {
     setPendingDeleteId(profileId);
@@ -220,6 +222,24 @@ const ProfileManager = () => {
     return model ? model.name : modelId;
   };
 
+  // Filter available models to ensure no empty IDs
+  const validModels = availableModels.filter(model => model.id && model.id.trim() !== '');
+
+  const renderModelSelect = () => (
+    <Select value={formData.model} onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}>
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {validModels.map(model => (
+          <SelectItem key={model.id} value={model.id}>
+            {model.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
     <div className="h-full flex flex-col p-6">
       <BackToChatButton />
@@ -262,18 +282,7 @@ const ProfileManager = () => {
               
               <div>
                 <label className="text-sm font-medium">AI Model</label>
-                <Select value={formData.model} onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableModels.map(model => (
-                      <SelectItem key={model.id} value={model.id}>
-                        {model.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {renderModelSelect()}
               </div>
               
               <div>
@@ -390,18 +399,7 @@ const ProfileManager = () => {
             
             <div>
               <label className="text-sm font-medium">AI Model</label>
-              <Select value={formData.model} onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableModels.map(model => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {renderModelSelect()}
             </div>
             
             <div>
