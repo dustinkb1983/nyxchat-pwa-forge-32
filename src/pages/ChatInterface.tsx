@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, StopCircle, Moon, Sun } from "lucide-react";
+import { Send, Mic, StopCircle, Moon, Sun, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,15 +12,6 @@ import { useChat } from "@/contexts/ChatContext";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSidebar } from '@/components/ui/sidebar';
-import { Menu } from 'lucide-react';
-
-const QUICK_PROMPT_KEY = "nyxchat-quick-prompts-v1";
-const DEFAULT_QUICK_PROMPTS = [
-  "Explain Quantum Physics in simple terms",
-  "Write a haiku about the moon",
-  "Fix a bug in my code",
-  "How do I stay motivated?"
-];
 
 const ChatInterface = () => {
   const {
@@ -35,7 +26,6 @@ const ChatInterface = () => {
   const isCollapsed = state === 'collapsed';
 
   const [inputValue, setInputValue] = useState("");
-  const [quickPrompts, setQuickPrompts] = useState<string[]>(DEFAULT_QUICK_PROMPTS);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,11 +44,6 @@ const ChatInterface = () => {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [inputValue]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(QUICK_PROMPT_KEY);
-    if (stored) setQuickPrompts(JSON.parse(stored));
-  }, []);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
@@ -86,11 +71,6 @@ const ChatInterface = () => {
       }
     }
   };
-
-  const handleQuickPrompt = (prompt: string) => {
-    setInputValue(prompt);
-    sendMessage(prompt);
-  };
   
   const handleProfileChange = (profileId: string) => {
     setCurrentProfile(profileId);
@@ -99,20 +79,18 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Chat Header - Single consolidated header */}
+      {/* Chat Header */}
       <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
         <div className="flex items-center gap-3">
-          {isCollapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="mr-2"
-              aria-label="Toggle sidebar"
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           <div className="flex items-center gap-2">
             <h1 className="font-semibold text-base">NYX</h1>
             <div className="relative flex h-2.5 w-2.5" title={isTyping ? "AI Typing" : "Ready"}>
@@ -145,7 +123,7 @@ const ChatInterface = () => {
       {/* Chat Body */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {showWelcome ? (
-          <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
+          <WelcomeScreen onQuickPrompt={handleSend} />
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
             <AnimatePresence>

@@ -8,7 +8,8 @@ import {
   Plus,
   Trash2,
   User,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 import {
   Sidebar,
@@ -25,7 +26,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useChat, type Conversation } from '@/contexts/ChatContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useMemory } from '@/contexts/MemoryContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
+import { toast } from "sonner";
 
 const staticMenuItems = [
   { title: 'Memory', url: '/memory', icon: Brain },
@@ -36,6 +39,7 @@ const staticMenuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
+  const { memories, deleteMemory } = useMemory();
   const { theme } = useTheme();
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
 
@@ -75,6 +79,30 @@ export function AppSidebar() {
     URL.revokeObjectURL(url);
   };
 
+  const handleClearAll = async () => {
+    if (confirm('This will delete all conversations and memories. This action cannot be undone. Are you sure?')) {
+      try {
+        // Clear all conversations
+        for (const conversation of conversations) {
+          await deleteConversation(conversation.id);
+        }
+        
+        // Clear all memories
+        for (const memory of memories) {
+          await deleteMemory(memory.id);
+        }
+        
+        // Start a new conversation
+        newConversation();
+        
+        toast.success('All conversations and memories cleared successfully');
+      } catch (error) {
+        console.error('Error clearing data:', error);
+        toast.error('Failed to clear all data');
+      }
+    }
+  };
+
   // Conversation search/filter state
   const [search, setSearch] = useState('');
   const filteredConversations = search.trim().length === 0
@@ -109,6 +137,21 @@ export function AppSidebar() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="rounded-md bg-background"
                 />
+              </div>
+            )}
+
+            {/* Clear All Button */}
+            {!isCollapsed && (
+              <div className="px-2 mb-4">
+                <Button
+                  onClick={handleClearAll}
+                  variant="destructive"
+                  size="sm"
+                  className="w-full justify-start"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear All
+                </Button>
               </div>
             )}
 

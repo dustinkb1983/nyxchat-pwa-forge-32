@@ -36,7 +36,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [currentProfile, setCurrentProfile] = useState('default');
+  const [currentProfile, setCurrentProfile] = useState('global');
   const { getRelevantMemories } = useMemory();
   const { extractMemoryFromMessage } = useMemoryAutoSave();
 
@@ -55,6 +55,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const savedProfile = localStorage.getItem('current-profile');
       if (savedProfile) {
         setCurrentProfile(savedProfile);
+      } else {
+        setCurrentProfile('global');
       }
       const lastConversationId = localStorage.getItem('last-conversation-id');
       if (lastConversationId) {
@@ -69,6 +71,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getCurrentProfile = (): Profile | null => {
+    if (currentProfile === 'global') {
+      return null; // Use global settings
+    }
+    
     const savedProfiles = localStorage.getItem('ai-profiles');
     if (savedProfiles) {
       const profiles = JSON.parse(savedProfiles);
@@ -87,6 +93,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
+    // Use global settings from app settings
     const appSettings = localStorage.getItem('app-settings');
     if (appSettings) {
       const settings = JSON.parse(appSettings);
@@ -158,7 +165,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         model,
         temperature,
         messageCount: apiMessages.length,
-        systemPromptLength: systemPrompt.length
+        systemPromptLength: systemPrompt.length,
+        profile: currentProfile
       });
 
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -213,7 +221,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         const extractedCount = await extractMemoryFromMessage(
           userMessage.content,
           assistantContent,
-          currentProfile !== 'default' ? currentProfile : undefined
+          currentProfile !== 'global' && currentProfile !== 'default' ? currentProfile : undefined
         );
         console.log(`Extracted ${extractedCount} new memories`);
       }

@@ -14,6 +14,7 @@ import MemoryManager from "@/pages/MemoryManager";
 import ProfileManager from "@/pages/ProfileManager";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
+import { SplashScreen } from "@/components/ui/SplashScreen";
 import "./animations.css";
 
 const queryClient = new QueryClient();
@@ -23,16 +24,12 @@ const App = () => {
 
   useEffect(() => {
     // Initialize app
-    const timer = setTimeout(() => setIsLoading(false), 500);
+    const timer = setTimeout(() => setIsLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   return (

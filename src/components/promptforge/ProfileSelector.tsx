@@ -41,12 +41,22 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChang
     }
   };
 
+  // Get the display name for the selected profile
+  const getDisplayName = (profileId: string) => {
+    if (profileId === 'global') return 'Global';
+    const profile = profiles.find(p => p.id === profileId);
+    return profile ? profile.name : 'Select Profile';
+  };
+
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-40">
-        <SelectValue placeholder="Select Profile" />
+        <SelectValue placeholder="Select Profile">
+          {getDisplayName(value)}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
+        <SelectItem value="global">Global</SelectItem>
         {profiles.map((profile) => (
           <SelectItem key={profile.id} value={profile.id}>
             {profile.name}
