@@ -53,7 +53,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center no-horizontal-scroll">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,18 +87,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 * index }}
+            className="w-full"
           >
             <Button
               variant="outline"
-              className="h-auto p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all duration-300 w-full"
+              className="quick-action-card"
               onClick={() => onQuickPrompt(item.prompt)}
             >
-              <div className="text-primary">
+              <div className="text-primary flex-shrink-0">
                 {item.icon}
               </div>
-              <div>
-                <div className="font-semibold text-sm mb-1">{item.title}</div>
-                <div className="text-xs text-muted-foreground line-clamp-2">
+              <div className="flex flex-col items-center gap-1 w-full overflow-hidden">
+                <div className="quick-action-title">{item.title}</div>
+                <div className="quick-action-prompt">
                   {item.prompt}
                 </div>
               </div>

@@ -86,7 +86,7 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background no-horizontal-scroll">
       {/* Chat Header */}
       <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
         <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ const ChatInterface = () => {
       </header>
 
       {/* Chat Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 no-horizontal-scroll">
         {showWelcome ? (
           <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
         ) : (
@@ -152,7 +152,7 @@ const ChatInterface = () => {
       </div>
 
       {/* Chat Input */}
-      <div className="border-t bg-card/50 backdrop-blur-sm p-4">
+      <div className="border-t bg-card/50 backdrop-blur-sm p-4 no-horizontal-scroll">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">

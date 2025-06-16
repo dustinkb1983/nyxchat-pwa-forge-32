@@ -102,6 +102,7 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden; /* Prevent horizontal scroll */
   }
   .bg-card,
   .bg-background,
@@ -142,5 +143,107 @@
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+}
+
+/* Unified Modal Styling */
+@layer components {
+  .modal-unified {
+    @apply bg-background text-foreground;
+    @apply border border-border;
+    @apply shadow-xl;
+    @apply p-6;
+    border-radius: 16px !important;
+  }
+
+  .modal-unified .modal-header {
+    @apply pb-4 border-b border-border;
+  }
+
+  .modal-unified .modal-title {
+    @apply text-xl font-semibold;
+    font-size: 1.25rem;
+  }
+
+  .modal-unified .modal-description {
+    @apply text-sm text-muted-foreground;
+    font-size: 1rem;
+  }
+
+  .modal-unified .modal-body {
+    @apply py-4;
+  }
+
+  .modal-unified .modal-body p,
+  .modal-unified .modal-body span,
+  .modal-unified .modal-body label {
+    font-size: 1rem;
+  }
+
+  .modal-unified .modal-footer {
+    @apply pt-4 border-t border-border;
+  }
+
+  /* Destructive modal variant - for memory and other destructive actions */
+  .modal-destructive {
+    @apply bg-red-50 dark:bg-red-950/20 text-foreground;
+    @apply border border-red-200 dark:border-red-800;
+    @apply shadow-xl;
+    @apply p-6;
+    border-radius: 16px !important;
+  }
+
+  .modal-destructive .modal-header {
+    @apply pb-4 border-b border-red-200 dark:border-red-800;
+  }
+
+  .modal-destructive .modal-title {
+    @apply text-xl font-semibold;
+    font-size: 1.25rem;
+  }
+
+  .modal-destructive .modal-description {
+    @apply text-sm text-muted-foreground;
+    font-size: 1rem;
+  }
+
+  .modal-destructive .modal-body {
+    @apply py-4;
+  }
+
+  .modal-destructive .modal-footer {
+    @apply pt-4 border-t border-red-200 dark:border-red-800;
+  }
+
+  /* Quick action button fixes */
+  .quick-action-card {
+    @apply h-auto p-4 flex flex-col items-center gap-3;
+    @apply hover:shadow-lg transition-all duration-300 w-full;
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+    min-height: 120px;
+    max-height: 140px;
+  }
+
+  .quick-action-card .quick-action-title {
+    @apply font-semibold text-sm mb-1;
+    @apply truncate w-full text-center;
+  }
+
+  .quick-action-card .quick-action-prompt {
+    @apply text-xs text-muted-foreground;
+    @apply line-clamp-2 text-center;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 2.5rem;
+  }
+}
+
+/* Prevent horizontal overflow */
+@layer utilities {
+  .no-horizontal-scroll {
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 }

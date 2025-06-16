@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useMemory } from "@/contexts/MemoryContext";
 import {
@@ -242,175 +241,177 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col">
-        <DialogHeader className="pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="modal-destructive max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <DialogHeader className="modal-header">
+          <DialogTitle className="modal-title flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
             Memory Palace
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="modal-description">
             Your AI's persistent memory system — view, edit, and organize what it remembers about you.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-1 p-1 bg-muted/50 rounded-lg">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-hidden">
-          <AnimatePresence mode="wait">
-            {activeTab === 'organize' && (
-              <motion.div
-                key="organize"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="h-full overflow-y-auto space-y-4"
+        <div className="modal-body flex-1 overflow-hidden space-y-4">
+          <div className="flex gap-1 p-1 bg-muted/50 rounded-lg">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <Collapsible defaultOpen className="border rounded-lg">
-                  <CollapsibleTrigger className="flex items-center w-full px-4 py-3 text-sm font-medium hover:bg-muted/50 group">
-                      <Pin className="h-4 w-4 mr-2 text-primary" />
-                      <span className="flex-1 text-left">Pinned Memories</span>
-                      <span className="ml-auto mr-2 rounded-md bg-primary/20 px-2 py-0.5 text-xs">
-                          {pinned.length}
-                      </span>
-                      <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                      {pinned.length === 0 ? (
-                        <div className="p-4 text-muted-foreground text-sm text-center">
-                          No pinned memories yet. Pin important memories to keep them easily accessible.
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {pinned.map(entry => (
-                            <MemoryEntryCard key={entry.id} entry={entry} />
-                          ))}
-                        </div>
-                      )}
-                  </CollapsibleContent>
-                </Collapsible>
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-                <Collapsible defaultOpen className="border rounded-lg">
-                  <CollapsibleTrigger className="flex items-center w-full px-4 py-3 text-sm font-medium hover:bg-muted/50 group">
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                      <span className="flex-1 text-left">Recent Memories</span>
-                      <span className="ml-auto mr-2 rounded-md bg-muted px-2 py-0.5 text-xs">
-                          {recent.length}
-                      </span>
-                      <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                      {recent.length === 0 ? (
-                        <div className="p-4 text-muted-foreground text-sm text-center">
-                          No recent memories found.
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {recent.map(entry => (
-                            <MemoryEntryCard key={entry.id} entry={entry} />
-                          ))}
-                        </div>
-                      )}
-                  </CollapsibleContent>
-                </Collapsible>
-
-                <Collapsible className="border rounded-lg">
-                  <CollapsibleTrigger className="flex items-center w-full px-4 py-3 text-sm font-medium hover:bg-muted/50 group">
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                      <span className="flex-1 text-left">By Profile</span>
-                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <div className="space-y-4">
-                      {Object.entries(byProfileGroups).map(([profileId, entries]) =>
-                        <div key={profileId} className="space-y-2">
-                          <div className="font-semibold text-sm text-muted-foreground border-b pb-1">
-                            {profileId === "none" ? "General" : (profiles.find(p => p.id === profileId)?.name || profileId)}
+          <div className="flex-1 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {activeTab === 'organize' && (
+                <motion.div
+                  key="organize"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="h-full overflow-y-auto space-y-4"
+                >
+                  <Collapsible defaultOpen className="border rounded-lg">
+                    <CollapsibleTrigger className="flex items-center w-full px-4 py-3 text-sm font-medium hover:bg-muted/50 group">
+                        <Pin className="h-4 w-4 mr-2 text-primary" />
+                        <span className="flex-1 text-left">Pinned Memories</span>
+                        <span className="ml-auto mr-2 rounded-md bg-primary/20 px-2 py-0.5 text-xs">
+                            {pinned.length}
+                        </span>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                        {pinned.length === 0 ? (
+                          <div className="p-4 text-muted-foreground text-sm text-center">
+                            No pinned memories yet. Pin important memories to keep them easily accessible.
                           </div>
+                        ) : (
                           <div className="space-y-2">
-                            {entries.map(entry => (
+                            {pinned.map(entry => (
                               <MemoryEntryCard key={entry.id} entry={entry} />
                             ))}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </motion.div>
-            )}
+                        )}
+                    </CollapsibleContent>
+                  </Collapsible>
 
-            {activeTab === 'insights' && (
-              <motion.div
-                key="insights"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="h-full overflow-y-auto space-y-6 p-4"
-              >
-                <MemoryInsights memories={filteredMemories} />
-                <MemoryVisualization memories={filteredMemories} onSelectMemory={handleSelectMemory} />
-              </motion.div>
-            )}
-
-            {activeTab === 'timeline' && (
-              <motion.div
-                key="timeline"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="h-full overflow-y-auto p-4"
-              >
-                <div className="space-y-4">
-                  <h4 className="text-lg font-medium">Memory Timeline</h4>
-                  <div className="space-y-4">
-                    {timeline.map((entry, index) => (
-                      <motion.div 
-                        key={entry.id} 
-                        className="border-l-2 border-primary/30 pl-4 relative"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <span className="absolute left-[-9px] top-3 w-4 h-4 rounded-full bg-primary/30 border-2 border-background" />
-                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="font-medium">{formatDistanceToNow(entry.createdAt, { addSuffix: true })}</span>
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${
-                              entry.type === 'fact' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
-                              entry.type === 'preference' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
-                              entry.type === 'goal' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                              'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
-                            }`}>
-                              {memoryTypeMap[entry.type]}
-                            </span>
+                  <Collapsible defaultOpen className="border rounded-lg">
+                    <CollapsibleTrigger className="flex items-center w-full px-4 py-3 text-sm font-medium hover:bg-muted/50 group">
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                        <span className="flex-1 text-left">Recent Memories</span>
+                        <span className="ml-auto mr-2 rounded-md bg-muted px-2 py-0.5 text-xs">
+                            {recent.length}
+                        </span>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                        {recent.length === 0 ? (
+                          <div className="p-4 text-muted-foreground text-sm text-center">
+                            No recent memories found.
                           </div>
-                          <div className="text-sm">{entry.content}</div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        ) : (
+                          <div className="space-y-2">
+                            {recent.map(entry => (
+                              <MemoryEntryCard key={entry.id} entry={entry} />
+                            ))}
+                          </div>
+                        )}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible className="border rounded-lg">
+                    <CollapsibleTrigger className="flex items-center w-full px-4 py-3 text-sm font-medium hover:bg-muted/50 group">
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                        <span className="flex-1 text-left">By Profile</span>
+                        <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <div className="space-y-4">
+                        {Object.entries(byProfileGroups).map(([profileId, entries]) =>
+                          <div key={profileId} className="space-y-2">
+                            <div className="font-semibold text-sm text-muted-foreground border-b pb-1">
+                              {profileId === "none" ? "General" : (profiles.find(p => p.id === profileId)?.name || profileId)}
+                            </div>
+                            <div className="space-y-2">
+                              {entries.map(entry => (
+                                <MemoryEntryCard key={entry.id} entry={entry} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </motion.div>
+              )}
+
+              {activeTab === 'insights' && (
+                <motion.div
+                  key="insights"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="h-full overflow-y-auto space-y-6 p-4"
+                >
+                  <MemoryInsights memories={filteredMemories} />
+                  <MemoryVisualization memories={filteredMemories} onSelectMemory={handleSelectMemory} />
+                </motion.div>
+              )}
+
+              {activeTab === 'timeline' && (
+                <motion.div
+                  key="timeline"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="h-full overflow-y-auto p-4"
+                >
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-medium">Memory Timeline</h4>
+                    <div className="space-y-4">
+                      {timeline.map((entry, index) => (
+                        <motion.div 
+                          key={entry.id} 
+                          className="border-l-2 border-primary/30 pl-4 relative"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <span className="absolute left-[-9px] top-3 w-4 h-4 rounded-full bg-primary/30 border-2 border-background" />
+                          <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="font-medium">{formatDistanceToNow(entry.createdAt, { addSuffix: true })}</span>
+                              <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                entry.type === 'fact' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                                entry.type === 'preference' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
+                                entry.type === 'goal' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                                'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                              }`}>
+                                {memoryTypeMap[entry.type]}
+                              </span>
+                            </div>
+                            <div className="text-sm">{entry.content}</div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
-        <DialogFooter className="flex flex-col gap-3 mt-4 border-t pt-4">
+        <DialogFooter className="modal-footer flex flex-col gap-3">
           <div className="flex items-center gap-2 w-full">
             <Button
               variant="outline"
@@ -512,7 +513,7 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
         {clearConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <motion.div 
-              className="bg-background border rounded-lg shadow-xl p-6 flex flex-col gap-4 w-full max-w-sm mx-4"
+              className="modal-destructive w-full max-w-sm mx-4"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
             >
@@ -522,7 +523,7 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
                   This will permanently delete all visible memories. This action cannot be undone.
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-4">
                 <Button variant="outline" className="flex-1" onClick={() => setClearConfirm(false)}>
                   Cancel
                 </Button>

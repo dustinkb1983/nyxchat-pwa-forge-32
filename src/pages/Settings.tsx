@@ -25,7 +25,7 @@ interface AppSettings {
   systemPrompt: string;
   maxContextLength: number;
   apiKey: string;
-  temperature: number; // New field
+  temperature: number;
 }
 
 const Settings = () => {
@@ -61,7 +61,7 @@ const Settings = () => {
       setSettings(prev => ({
         ...prev,
         ...parsed,
-        temperature: parsed?.temperature ?? 0.7, // fallback for old settings
+        temperature: parsed?.temperature ?? 0.7,
       }));
     } else {
       setSettings(prev => ({ ...prev, temperature: 0.7 }));
@@ -144,7 +144,6 @@ const Settings = () => {
     saveSettings(settings);
   };
 
-  // Add delete for default models
   const handleDeleteDefaultModel = (modelId: string) => {
     const newDeleted = [...deletedDefaultModels, modelId];
     saveDeletedDefaultModels(newDeleted);
@@ -179,15 +178,15 @@ const Settings = () => {
   ];
 
   return (
-    <div className="h-full flex flex-col p-6">
+    <div className="h-full flex flex-col p-6 no-horizontal-scroll">
       <BackToChatButton />
-      <Card className="flex-1">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="modal-unified flex-1">
+        <CardHeader className="modal-header">
+          <CardTitle className="modal-title flex items-center gap-2">
             Settings
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="modal-body space-y-6">
           {/* Instructional/Tips Area */}
           <div className="rounded-md bg-muted/30 px-4 py-3 text-muted-foreground text-sm flex items-center gap-2 select-none">
             <LightbulbOff className="h-5 w-5" />
