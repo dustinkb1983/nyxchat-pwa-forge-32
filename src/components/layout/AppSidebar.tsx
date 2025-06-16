@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   MessageSquare,
-  Wrench,
   Brain,
   Settings,
   Plus,
@@ -28,7 +28,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
 
 const staticMenuItems = [
-  { title: 'PromptForge', url: '/prompt-forge', icon: Wrench },
   { title: 'Memory', url: '/memory', icon: Brain },
   { title: 'Profiles', url: '/profiles', icon: User },
   { title: 'Settings', url: '/settings', icon: Settings }
@@ -90,7 +89,7 @@ export function AppSidebar() {
         <SidebarContent>
           <div className="flex flex-col h-full">
             {/* New Chat Button */}
-            <div className="px-2 mt-2 mb-3">
+            <div className="px-2 pt-2 mb-3">
               <Button
                 onClick={newConversation}
                 className="w-full justify-start rounded-md"

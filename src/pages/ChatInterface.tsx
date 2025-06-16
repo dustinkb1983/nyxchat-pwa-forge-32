@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, StopCircle, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,8 @@ import { ProfileSelector } from "@/components/promptforge/ProfileSelector";
 import { useChat } from "@/contexts/ChatContext";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSidebar } from '@/components/ui/sidebar';
+import { Menu } from 'lucide-react';
 
 const QUICK_PROMPT_KEY = "nyxchat-quick-prompts-v1";
 const DEFAULT_QUICK_PROMPTS = [
@@ -28,6 +31,8 @@ const ChatInterface = () => {
     sendMessage,
   } = useChat();
   const { theme, toggleTheme } = useTheme();
+  const { state, toggleSidebar } = useSidebar();
+  const isCollapsed = state === 'collapsed';
 
   const [inputValue, setInputValue] = useState("");
   const [quickPrompts, setQuickPrompts] = useState<string[]>(DEFAULT_QUICK_PROMPTS);
@@ -94,9 +99,20 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Chat Header */}
+      {/* Chat Header - Single consolidated header */}
       <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
         <div className="flex items-center gap-3">
+          {isCollapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="mr-2"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          )}
           <div className="flex items-center gap-2">
             <h1 className="font-semibold text-base">NYX</h1>
             <div className="relative flex h-2.5 w-2.5" title={isTyping ? "AI Typing" : "Ready"}>
@@ -184,11 +200,6 @@ const ChatInterface = () => {
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          {/* Removed: below-input single-line tips for minimalist style */}
-          {/* <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
-            <span>Enter to send • Shift+Enter for new line</span>
-            <span>{inputValue.length}/2000</span>
-          </div> */}
           <div className="flex justify-end items-center mt-2 text-xs text-muted-foreground">
             <span>{inputValue.length}/2000</span>
           </div>
