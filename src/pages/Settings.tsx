@@ -195,6 +195,7 @@ const Settings = () => {
               Tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, <kbd className="px-2 py-1 bg-muted rounded text-xs">Shift+Enter</kbd> for new line.
             </span>
           </div>
+          
           {/* Theme Settings */}
           <div className="space-y-3">
             <h3 className="text-lg font-medium">Theme Settings</h3>

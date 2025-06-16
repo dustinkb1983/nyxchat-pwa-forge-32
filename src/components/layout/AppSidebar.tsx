@@ -145,9 +145,9 @@ export function AppSidebar() {
               <div className="px-2 mb-4">
                 <Button
                   onClick={handleClearAll}
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
-                  className="w-full justify-start"
+                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Clear All

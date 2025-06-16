@@ -70,20 +70,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
             className="w-20 h-20 mx-auto mb-4"
           />
         </div>
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
           Welcome to NyxChat
         </h1>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl">
-          Your intelligent AI companion for conversations, creativity, and problem-solving.
-          Choose a quick start below or begin typing your own message.
-        </p>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl w-full"
+        className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl w-full"
       >
         {quickPrompts.map((item, index) => (
           <motion.div
@@ -109,18 +105,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
             </Button>
           </motion.div>
         ))}
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="mt-8 text-sm text-muted-foreground"
-      >
-        <p>
-          💡 Pro tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, 
-          <kbd className="px-2 py-1 bg-muted rounded text-xs ml-1">Shift+Enter</kbd> for new line
-        </p>
       </motion.div>
     </div>
   );

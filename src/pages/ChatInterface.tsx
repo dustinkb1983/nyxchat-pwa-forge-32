@@ -59,6 +59,14 @@ const ChatInterface = () => {
     await sendMessage(message);
   };
 
+  const handleQuickPrompt = (prompt: string) => {
+    setInputValue(prompt);
+    // Focus the textarea after setting the value
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       if (e.shiftKey) {
@@ -123,7 +131,7 @@ const ChatInterface = () => {
       {/* Chat Body */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {showWelcome ? (
-          <WelcomeScreen onQuickPrompt={handleSend} />
+          <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
             <AnimatePresence>
@@ -154,7 +162,7 @@ const ChatInterface = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="min-h-[44px] max-h-32 resize-none pr-12 bg-background"
+                className="min-h-[44px] max-h-32 resize-none pr-12 bg-background custom-scrollbar"
                 disabled={isTyping}
               />
               <div className="absolute right-2 bottom-2 flex items-center gap-1">
