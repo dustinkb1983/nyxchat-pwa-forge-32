@@ -28,10 +28,6 @@ const App = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
-    return <SplashScreen />;
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -39,21 +35,25 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <ChatProvider>
-                <div className="min-h-screen bg-background transition-colors duration-300">
-                  <Routes>
-                    <Route path="/" element={<MainLayout />}>
-                      <Route index element={<ChatInterface />} />
-                      <Route path="memory" element={<MemoryManager />} />
-                      <Route path="profiles" element={<ProfileManager />} />
-                      <Route path="settings" element={<Settings />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </div>
-              </ChatProvider>
-            </BrowserRouter>
+            {isLoading ? (
+              <SplashScreen />
+            ) : (
+              <BrowserRouter>
+                <ChatProvider>
+                  <div className="min-h-screen bg-background transition-colors duration-300">
+                    <Routes>
+                      <Route path="/" element={<MainLayout />}>
+                        <Route index element={<ChatInterface />} />
+                        <Route path="memory" element={<MemoryManager />} />
+                        <Route path="profiles" element={<ProfileManager />} />
+                        <Route path="settings" element={<Settings />} />
+                      </Route>
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </div>
+                </ChatProvider>
+              </BrowserRouter>
+            )}
           </TooltipProvider>
         </MemoryProvider>
       </ThemeProvider>
