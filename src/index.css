@@ -3,247 +3,261 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
-
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.85rem;
-
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-foreground: 0 0% 3.9%;
+    --sidebar-primary: 0 0% 9%;
     --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 96.1%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 89.8%;
+    --sidebar-ring: 0 0% 3.9%;
   }
 
-  /* AMOLED-friendly black for dark theme */
   .dark {
-    --background: 0 0% 0%;      /* Pure black for AMOLED */
-    --card: 0 0% 6%;            /* Slightly lighter for card if desired */
-    --sidebar-background: 0 0% 0%; /* Sidebar black */
-    --popover: 0 0% 7%;         /* Slight lift for popovers/modals if needed */
-    --input: 0 0% 12%;          /* Slightly off-black for input fields */
-    --foreground: 210 40% 98%;
-
-    --card-foreground: 210 40% 98%;
-
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 214 5% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 0 0% 16%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 0 0% 12%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 0 0% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 0 0% 14.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 14.9%;
+    --sidebar-ring: 0 0% 83.1%;
   }
 }
 
-/* Universal round corners for all major elements */
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden; /* Prevent horizontal scroll */
-  }
-  .bg-card,
-  .bg-background,
-  .rounded-xl,
-  .rounded-lg,
-  .rounded-md,
-  input,
-  textarea {
-    border-radius: 16px !important;
-  }
-
-  /* Ensure modals/dropdowns/tooltips have slight rounding */
-  .popover,
-  .modal,
-  .dropdown-menu {
-    border-radius: 16px !important;
-  }
-
-  /* Custom scrollbar styling for textarea */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 2px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
-  /* Firefox scrollbar styling */
-  .custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
   }
 }
 
-/* Unified Modal Styling */
-@layer components {
-  .modal-unified {
-    @apply bg-background text-foreground;
-    @apply border border-border;
-    @apply shadow-xl;
-    @apply p-6;
-    border-radius: 16px !important;
-  }
+/* Custom scrollbar styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
 
-  .modal-unified .modal-header {
-    @apply pb-4 border-b border-border;
-  }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-  .modal-unified .modal-title {
-    @apply text-xl font-semibold;
-    font-size: 1.25rem;
-  }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .modal-unified .modal-description {
-    @apply text-sm text-muted-foreground;
-    font-size: 1rem;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
 
-  .modal-unified .modal-body {
-    @apply py-4;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}
 
-  .modal-unified .modal-body p,
-  .modal-unified .modal-body span,
-  .modal-unified .modal-body label {
-    font-size: 1rem;
-  }
+/* Prevent horizontal scroll */
+.no-horizontal-scroll {
+  overflow-x: hidden;
+}
 
-  .modal-unified .modal-footer {
-    @apply pt-4 border-t border-border;
-  }
+/* Unified modal styling */
+.modal-unified {
+  @apply bg-background border border-border shadow-lg;
+}
 
-  /* Destructive modal variant - for memory and other destructive actions */
-  .modal-destructive {
-    @apply bg-red-50 dark:bg-red-950/20 text-foreground;
-    @apply border border-red-200 dark:border-red-800;
-    @apply shadow-xl;
-    @apply p-6;
-    border-radius: 16px !important;
-  }
+.modal-header {
+  @apply border-b border-border;
+}
 
-  .modal-destructive .modal-header {
-    @apply pb-4 border-b border-red-200 dark:border-red-800;
-  }
+.modal-title {
+  @apply text-xl font-semibold text-foreground;
+}
 
-  .modal-destructive .modal-title {
-    @apply text-xl font-semibold;
-    font-size: 1.25rem;
-  }
+.modal-body {
+  @apply text-foreground;
+}
 
-  .modal-destructive .modal-description {
-    @apply text-sm text-muted-foreground;
-    font-size: 1rem;
-  }
+.modal-body h3 {
+  @apply text-lg font-medium;
+}
 
-  .modal-destructive .modal-body {
-    @apply py-4;
-  }
+.modal-body h4 {
+  @apply text-base font-medium;
+}
 
-  .modal-destructive .modal-footer {
-    @apply pt-4 border-t border-red-200 dark:border-red-800;
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Settings page mobile optimization */
+  .settings-mobile {
+    @apply px-3 py-4;
   }
-
-  /* Quick action button fixes */
-  .quick-action-card {
-    @apply h-auto p-4 flex flex-col items-center gap-3;
-    @apply hover:shadow-lg transition-all duration-300 w-full;
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
-    min-height: 120px;
-    max-height: 140px;
+  
+  .settings-mobile .modal-unified {
+    @apply mx-0 rounded-lg;
   }
-
-  .quick-action-card .quick-action-title {
-    @apply font-semibold text-sm mb-1;
-    @apply truncate w-full text-center;
+  
+  .settings-mobile .modal-body {
+    @apply space-y-4 px-4 py-4;
   }
-
-  .quick-action-card .quick-action-prompt {
-    @apply text-xs text-muted-foreground;
-    @apply line-clamp-2 text-center;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    max-height: 2.5rem;
+  
+  .settings-mobile .modal-body h3 {
+    @apply text-base font-medium;
+  }
+  
+  .settings-mobile .modal-body .space-y-3 {
+    @apply space-y-2;
+  }
+  
+  /* Memory modal mobile optimization */
+  .memory-modal-mobile .space-y-6 {
+    @apply space-y-4;
+  }
+  
+  .memory-modal-mobile h2 {
+    @apply text-lg font-semibold;
+  }
+  
+  .memory-modal-mobile h3 {
+    @apply text-base font-medium;
+  }
+  
+  .memory-modal-mobile .text-sm {
+    @apply text-sm;
+  }
+  
+  /* Profile manager mobile optimization */
+  .profiles-mobile {
+    @apply px-3 py-4;
+  }
+  
+  .profiles-mobile .modal-unified {
+    @apply mx-0 rounded-lg;
+  }
+  
+  .profiles-mobile .modal-body {
+    @apply space-y-4 px-4 py-4;
+  }
+  
+  .profiles-mobile .modal-body h3 {
+    @apply text-base font-medium;
+  }
+  
+  /* Tighter mobile spacing */
+  .mobile-tight-spacing {
+    @apply space-y-3;
+  }
+  
+  .mobile-tight-spacing > * + * {
+    @apply mt-3;
+  }
+  
+  /* Mobile button sizing */
+  .mobile-button {
+    @apply py-2 px-3 text-sm;
+  }
+  
+  /* Mobile input sizing */
+  .mobile-input {
+    @apply text-sm py-2;
+  }
+  
+  /* Mobile select sizing */
+  .mobile-select {
+    @apply text-sm;
+  }
+  
+  /* Fix overlapping elements in mobile */
+  .mobile-fix-overlap {
+    @apply relative z-10;
+  }
+  
+  /* Mobile card adjustments */
+  .mobile-card {
+    @apply rounded-lg shadow-sm;
+  }
+  
+  .mobile-card .card-header {
+    @apply px-4 py-3;
+  }
+  
+  .mobile-card .card-content {
+    @apply px-4 pb-4;
   }
 }
 
-/* Prevent horizontal overflow */
-@layer utilities {
-  .no-horizontal-scroll {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
+/* Textarea scrollbar styling */
+textarea.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+}
+
+textarea.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+textarea.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+textarea.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 2px;
+}
+
+textarea.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.3);
 }

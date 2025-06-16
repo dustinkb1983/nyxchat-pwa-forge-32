@@ -11,6 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
 import { availableModels } from '@/constants/models';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomModel {
   id: string;
@@ -31,6 +32,7 @@ interface AppSettings {
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [settings, setSettings] = useState<AppSettings>({
     theme: 'dark',
     selectedModel: 'openai/gpt-4o',
@@ -177,30 +179,30 @@ const Settings = () => {
   ].filter(model => model.id && model.id.trim() !== ''); // Filter out any models with empty IDs
 
   return (
-    <div className="h-full flex flex-col p-6 no-horizontal-scroll">
+    <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'settings-mobile' : 'p-6'}`}>
       <BackToChatButton />
-      <Card className="modal-unified flex-1">
-        <CardHeader className="modal-header">
+      <Card className={`modal-unified flex-1 ${isMobile ? 'mobile-card' : ''}`}>
+        <CardHeader className={`modal-header ${isMobile ? 'card-header' : ''}`}>
           <CardTitle className="modal-title flex items-center gap-2">
             Settings
           </CardTitle>
         </CardHeader>
-        <CardContent className="modal-body space-y-6">
-          {/* Instructional/Tips Area */}
+        <CardContent className={`modal-body ${isMobile ? 'mobile-tight-spacing card-content' : 'space-y-6'}`}>
+          {/* Instructional/Tips Area - Now visible on mobile in Settings */}
           <div className="rounded-md bg-muted/30 px-4 py-3 text-muted-foreground text-sm flex items-center gap-2 select-none">
-            <LightbulbOff className="h-5 w-5" />
-            <span>
+            <LightbulbOff className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+            <span className={isMobile ? 'text-xs' : ''}>
               Tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, <kbd className="px-2 py-1 bg-muted rounded text-xs">Shift+Enter</kbd> for new line.
             </span>
           </div>
           
           {/* Theme Settings */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">Theme Settings</h3>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Theme Settings</h3>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                <span>AMOLED Theme</span>
+                <span className={isMobile ? 'text-sm' : ''}>AMOLED Theme</span>
               </div>
               <Switch 
                 checked={theme === 'dark'} 
@@ -211,12 +213,12 @@ const Settings = () => {
 
           {/* AI Model Selection */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">AI Model Selection</h3>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>AI Model Selection</h3>
             <Select 
               value={settings.selectedModel} 
               onValueChange={(value) => setSettings(prev => ({ ...prev, selectedModel: value }))}
             >
-              <SelectTrigger>
+              <SelectTrigger className={isMobile ? 'mobile-select' : ''}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -236,22 +238,25 @@ const Settings = () => {
 
           {/* Custom Model Management */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">Custom Model Management</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Custom Model Management</h3>
+            <div className={`${isMobile ? 'space-y-2' : 'grid grid-cols-1 md:grid-cols-2 gap-3'}`}>
               <Input
                 placeholder="Model Name (e.g. Meta)"
                 value={customModelForm.name}
                 onChange={(e) => setCustomModelForm(prev => ({ ...prev, name: e.target.value }))}
+                className={isMobile ? 'mobile-input' : ''}
               />
               <Input
                 placeholder="Model ID (e.g. meta-llama/llama-3.3-70b-instruct:free)"
                 value={customModelForm.modelId}
                 onChange={(e) => setCustomModelForm(prev => ({ ...prev, modelId: e.target.value }))}
+                className={isMobile ? 'mobile-input' : ''}
               />
             </div>
             <Button 
               onClick={addCustomModel}
               disabled={!customModelForm.name.trim() || !customModelForm.modelId.trim()}
+              className={isMobile ? 'mobile-button' : ''}
             >
               Add Model
             </Button>
@@ -259,16 +264,17 @@ const Settings = () => {
             {/* Show both default and custom models with delete buttons */}
             {(filteredDefaultModels.length > 0 || settings.customModels.length > 0) && (
               <div className="space-y-2">
-                <h4 className="font-medium">Available Models:</h4>
+                <h4 className={`${isMobile ? 'text-sm' : ''} font-medium`}>Available Models:</h4>
                 {/* Default (preloaded) models with delete */}
                 {filteredDefaultModels.map(model => (
-                  <div key={model.id} className="flex items-center justify-between p-2 border rounded">
-                    <span>{model.name}</span>
+                  <div key={model.id} className={`flex items-center justify-between p-2 border rounded ${isMobile ? 'mobile-fix-overlap' : ''}`}>
+                    <span className={isMobile ? 'text-sm' : ''}>{model.name}</span>
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => handleDeleteDefaultModel(model.id)}
                       title="Delete this default model"
+                      className={isMobile ? 'mobile-button' : ''}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -276,13 +282,14 @@ const Settings = () => {
                 ))}
                 {/* Custom models with delete */}
                 {settings.customModels.map(model => (
-                  <div key={model.id} className="flex items-center justify-between p-2 border rounded">
-                    <span>{model.name} ({model.modelId})</span>
+                  <div key={model.id} className={`flex items-center justify-between p-2 border rounded ${isMobile ? 'mobile-fix-overlap' : ''}`}>
+                    <span className={isMobile ? 'text-sm truncate mr-2' : ''}>{model.name} ({model.modelId})</span>
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => deleteCustomModel(model.id)}
                       title="Delete this custom model"
+                      className={isMobile ? 'mobile-button' : ''}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -294,19 +301,19 @@ const Settings = () => {
 
           {/* System Prompt Configuration */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">System Prompt Configuration</h3>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>System Prompt Configuration</h3>
             <Textarea
               placeholder="Enter system prompt to customize AI behavior..."
               value={settings.systemPrompt}
               onChange={(e) => setSettings(prev => ({ ...prev, systemPrompt: e.target.value }))}
-              className="min-h-[100px] resize-none"
+              className={`${isMobile ? 'min-h-[80px] mobile-input' : 'min-h-[100px]'} resize-none custom-scrollbar`}
             />
           </div>
 
           {/* Temperature Control */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">Model Creativity (Temperature)</h3>
-            <label className="text-sm font-medium">Temperature: {settings.temperature.toFixed(2)}</label>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Model Creativity (Temperature)</h3>
+            <label className={`${isMobile ? 'text-sm' : ''} font-medium`}>Temperature: {settings.temperature.toFixed(2)}</label>
             <Slider
               value={[settings.temperature]}
               onValueChange={(value) =>
@@ -320,7 +327,7 @@ const Settings = () => {
               step={0.01}
               className="mt-2"
             />
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+            <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
               <span>More Predictable</span>
               <span>More Creative</span>
             </div>
@@ -328,33 +335,38 @@ const Settings = () => {
 
           {/* Context Settings */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">Context Settings</h3>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Context Settings</h3>
             <div>
-              <label className="text-sm font-medium">Max Context Length</label>
+              <label className={`${isMobile ? 'text-sm' : ''} font-medium`}>Max Context Length</label>
               <Input
                 type="number"
                 min="1"
                 max="50"
                 value={settings.maxContextLength}
                 onChange={(e) => setSettings(prev => ({ ...prev, maxContextLength: parseInt(e.target.value) || 20 }))}
+                className={isMobile ? 'mobile-input' : ''}
               />
             </div>
           </div>
 
           {/* API Configuration */}
           <div className="space-y-3">
-            <h3 className="text-lg font-medium">API Configuration</h3>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>API Configuration</h3>
             <Input
               type="password"
               placeholder="Enter your API key..."
               value={settings.apiKey}
               onChange={(e) => setSettings(prev => ({ ...prev, apiKey: e.target.value }))}
+              className={isMobile ? 'mobile-input' : ''}
             />
           </div>
 
           {/* Save Button */}
           <div className="flex gap-3 pt-4">
-            <Button onClick={handleSaveSettings}>
+            <Button 
+              onClick={handleSaveSettings}
+              className={isMobile ? 'mobile-button' : ''}
+            >
               Save Settings
             </Button>
           </div>

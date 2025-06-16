@@ -29,6 +29,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useMemory } from '@/contexts/MemoryContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
 import { toast } from "sonner";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const staticMenuItems = [
   { title: 'Memory', url: '/memory', icon: Brain },
@@ -37,10 +38,11 @@ const staticMenuItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
   const { memories, deleteMemory } = useMemory();
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
 
   // Profile list for modal (loaded from localStorage for now; see ProfileSelector logic)
@@ -79,6 +81,14 @@ export function AppSidebar() {
     URL.revokeObjectURL(url);
   };
 
+  const handleNewChat = () => {
+    newConversation();
+    // Close mobile sidebar after action
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   const handleClearAll = async () => {
     if (confirm('This will delete all conversations and memories. This action cannot be undone. Are you sure?')) {
       try {
@@ -103,6 +113,14 @@ export function AppSidebar() {
     }
   };
 
+  const handleMemoryModalOpen = () => {
+    setMemoryModalOpen(true);
+    // Close mobile sidebar when opening memory modal
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   // Conversation search/filter state
   const [search, setSearch] = useState('');
   const filteredConversations = search.trim().length === 0
@@ -119,7 +137,7 @@ export function AppSidebar() {
             {/* New Chat Button */}
             <div className="px-2 pt-2 mb-3">
               <Button
-                onClick={newConversation}
+                onClick={handleNewChat}
                 className="w-full justify-start rounded-md"
                 variant="outline"
               >
@@ -170,7 +188,13 @@ export function AppSidebar() {
                         <SidebarMenuItem key={conversation.id}>
                           <SidebarMenuButton asChild>
                             <button
-                              onClick={() => loadConversation(conversation.id)}
+                              onClick={() => {
+                                loadConversation(conversation.id);
+                                // Close mobile sidebar after selecting conversation
+                                if (isMobile) {
+                                  setOpenMobile(false);
+                                }
+                              }}
                               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ${
                                 currentConversation?.id === conversation.id
                                   ? 'bg-primary text-primary-foreground'
@@ -222,6 +246,12 @@ export function AppSidebar() {
                       {item.title !== "Memory" ? (
                         <NavLink
                           to={item.url}
+                          onClick={() => {
+                            // Close mobile sidebar after navigation
+                            if (isMobile) {
+                              setOpenMobile(false);
+                            }
+                          }}
                           className={({ isActive }) =>
                             `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
                               isActive
@@ -237,7 +267,7 @@ export function AppSidebar() {
                         <button
                           type="button"
                           className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground w-full ${memoryModalOpen ? 'bg-primary text-primary-foreground' : ''}`}
-                          onClick={() => setMemoryModalOpen(true)}
+                          onClick={handleMemoryModalOpen}
                         >
                           <item.icon className="h-4 w-4" />
                           {!isCollapsed && <span>{item.title}</span>}
