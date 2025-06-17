@@ -102,8 +102,8 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full bg-background no-horizontal-scroll">
-      {/* Chat Header - centered with logo */}
-      <header className="flex items-center justify-between px-4 py-3 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "56px", height: "56px" }}>
+      {/* Chat Header - cleaned up and centered */}
+      <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "50px", height: "50px" }}>
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -116,37 +116,35 @@ const ChatInterface = () => {
           </Button>
         </div>
         
-        {/* Centered title with logo and status indicator */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
+        {/* Centered title with logo and clean status indicator */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
           <img 
             src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
             alt="NyxChat" 
             className="app-logo"
           />
-          <div className="flex items-center gap-2">
-            <h1 className="font-semibold text-base">NyxChat</h1>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div 
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    isOnline ? 'bg-green-500' : 'bg-red-500'
-                  }`}
-                  aria-label={isOnline ? "Online" : "Offline"}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{isOnline ? "Online" : "Offline"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <h1 className="font-semibold text-base">NyxChat</h1>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                className={`w-2 h-2 rounded-full ${
+                  isOnline ? 'bg-green-500' : 'bg-red-500'
+                }`}
+                aria-label={isOnline ? "Online" : "Offline"}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isOnline ? "Online" : "Offline"}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="ripple-button elegant-transition"
+            className="h-8 w-8 ripple-button elegant-transition"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -155,7 +153,7 @@ const ChatInterface = () => {
       </header>
 
       {/* Chat Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 no-horizontal-scroll">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-horizontal-scroll">
         {showWelcome ? (
           <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
         ) : (
@@ -178,7 +176,7 @@ const ChatInterface = () => {
       </div>
 
       {/* Chat Input */}
-      <div className="border-t bg-card/50 backdrop-blur-sm p-4 no-horizontal-scroll">
+      <div className="border-t bg-card/50 backdrop-blur-sm p-3 no-horizontal-scroll">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
@@ -188,7 +186,7 @@ const ChatInterface = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="min-h-[44px] max-h-32 resize-none pr-12 bg-background custom-scrollbar elegant-transition"
+                className="min-h-[40px] max-h-32 resize-none pr-12 bg-background custom-scrollbar elegant-transition"
                 disabled={isTyping}
               />
               <div className="absolute right-2 bottom-2 flex items-center gap-1">
@@ -197,9 +195,9 @@ const ChatInterface = () => {
                   size="sm"
                   onClick={() => setInputValue("")}
                   disabled={!inputValue.trim()}
-                  className="h-8 w-8 p-0 ripple-button elegant-transition"
+                  className="h-7 w-7 p-0 ripple-button elegant-transition"
                 >
-                  <StopCircle className="h-4 w-4" />
+                  <StopCircle className="h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -207,12 +205,12 @@ const ChatInterface = () => {
               onClick={handleSend}
               disabled={!inputValue.trim() || isTyping}
               size="icon"
-              className="h-11 w-11 rounded-full ripple-button elegant-transition elegant-hover"
+              className="h-10 w-10 rounded-full ripple-button elegant-transition elegant-hover"
             >
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex justify-end items-center mt-2 text-xs text-muted-foreground">
+          <div className="flex justify-end items-center mt-1 text-xs text-muted-foreground">
             <span>{inputValue.length}/2000</span>
           </div>
         </div>

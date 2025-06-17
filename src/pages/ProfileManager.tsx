@@ -268,7 +268,7 @@ const ProfileManager = () => {
   return (
     <div className={`h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
       <BackToChatButton />
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div>
           <h1 className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>Profile Manager</h1>
           <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>Create and manage AI profiles for different use cases</p>
@@ -290,7 +290,7 @@ const ProfileManager = () => {
             <DialogHeader>
               <DialogTitle className={isMobile ? 'text-lg' : 'text-xl'}>Create New Profile</DialogTitle>
             </DialogHeader>
-            <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
+            <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
               <div>
                 <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Profile Name</label>
                 <Input
@@ -307,7 +307,7 @@ const ProfileManager = () => {
                   value={formData.systemPrompt}
                   onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
                   placeholder="Describe how the AI should behave..."
-                  className={`${isMobile ? 'min-h-[80px] text-sm' : 'min-h-[100px]'}`}
+                  className={`${isMobile ? 'min-h-[60px] text-sm' : 'min-h-[80px]'}`}
                 />
               </div>
               
@@ -337,7 +337,7 @@ const ProfileManager = () => {
               </div>
               
               {formError && <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-destructive`}>{formError}</div>}
-              <div className={`flex gap-2 ${isMobile ? 'pt-2' : 'pt-4'}`}>
+              <div className={`flex gap-2 ${isMobile ? 'pt-1' : 'pt-2'}`}>
                 <Button 
                   onClick={handleCreateProfile} 
                   disabled={!!formError}
@@ -360,10 +360,10 @@ const ProfileManager = () => {
         </Dialog>
       </div>
 
-      <div className={`grid gap-3 ${isMobile ? '' : 'gap-4'}`}>
+      <div className={`grid gap-2 ${isMobile ? '' : 'gap-3'}`}>
         {profiles.map(profile => (
           <Card key={profile.id} className={`${!isModelValid(profile.model) ? 'border-orange-500 bg-orange-50/10' : ''} ${isMobile ? 'text-sm' : ''}`}>
-            <CardHeader className={isMobile ? 'pb-2' : ''}>
+            <CardHeader className={isMobile ? 'pb-2 p-3' : 'pb-3'}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
@@ -404,9 +404,9 @@ const ProfileManager = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className={isMobile ? 'pt-0' : ''}>
+            <CardContent className={isMobile ? 'pt-0 p-3' : ''}>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} line-clamp-3`}>{profile.systemPrompt}</p>
-              <div className={`flex gap-4 ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground ${isMobile ? 'mt-2' : 'mt-3'}`}>
+              <div className={`flex gap-4 ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground ${isMobile ? 'mt-1' : 'mt-2'}`}>
                 <span>Created: {profile.createdAt.toLocaleDateString()}</span>
                 <span>Updated: {profile.updatedAt.toLocaleDateString()}</span>
               </div>
@@ -433,7 +433,7 @@ const ProfileManager = () => {
           <DialogHeader>
             <DialogTitle className={isMobile ? 'text-lg' : 'text-xl'}>Edit Profile</DialogTitle>
           </DialogHeader>
-          <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
+          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
             <div>
               <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Profile Name</label>
               <Input
@@ -450,7 +450,7 @@ const ProfileManager = () => {
                 value={formData.systemPrompt}
                 onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
                 placeholder="Describe how the AI should behave..."
-                className={`${isMobile ? 'min-h-[80px] text-sm' : 'min-h-[100px]'}`}
+                className={`${isMobile ? 'min-h-[60px] text-sm' : 'min-h-[80px]'}`}
               />
             </div>
             
@@ -480,7 +480,7 @@ const ProfileManager = () => {
             </div>
             
             {formError && <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-destructive`}>{formError}</div>}
-            <div className={`flex gap-2 ${isMobile ? 'pt-2' : 'pt-4'}`}>
+            <div className={`flex gap-2 ${isMobile ? 'pt-1' : 'pt-2'}`}>
               <Button
                 onClick={handleUpdateProfile}
                 disabled={!!formError}
