@@ -109,10 +109,7 @@ const ChatInterface = () => {
           />
           <div className="flex items-center gap-2">
             <h1 className="font-semibold text-base">NyxChat</h1>
-            <div className={`relative flex h-2 w-2 status-dot ${isTyping ? 'bg-red-500' : 'bg-green-500'}`} title={isTyping ? "AI Typing" : "Ready"}>
-              <div className="absolute inline-flex h-full w-full rounded-full"></div>
-              <div className="relative inline-flex rounded-full h-2 w-2"></div>
-            </div>
+            <div className={`status-dot ${isTyping ? 'bg-red-500' : 'bg-green-500'}`} title={isTyping ? "AI Typing" : "Ready"}></div>
           </div>
         </div>
         

@@ -28,7 +28,6 @@ import { useChat, type Conversation } from '@/contexts/ChatContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMemory } from '@/contexts/MemoryContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
-import { ModelSelector } from '@/components/ui/ModelSelector';
 import { ProfileSelector } from '@/components/promptforge/ProfileSelector';
 import { toast } from "sonner";
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -46,30 +45,6 @@ export function AppSidebar() {
   const { theme } = useTheme();
   const isMobile = useIsMobile();
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
-
-  // Global model state
-  const [selectedModel, setSelectedModel] = useState('');
-
-  // Load global model from settings
-  useEffect(() => {
-    const appSettings = localStorage.getItem('app-settings');
-    if (appSettings) {
-      const settings = JSON.parse(appSettings);
-      setSelectedModel(settings.selectedModel || 'openai/gpt-4o');
-    } else {
-      setSelectedModel('openai/gpt-4o');
-    }
-  }, []);
-
-  // Handle global model change
-  const handleModelChange = (modelId: string) => {
-    setSelectedModel(modelId);
-    const appSettings = localStorage.getItem('app-settings');
-    const settings = appSettings ? JSON.parse(appSettings) : {};
-    settings.selectedModel = modelId;
-    localStorage.setItem('app-settings', JSON.stringify(settings));
-    toast.success('Global model updated!');
-  };
 
   // Profile list for modal (loaded from localStorage for now; see ProfileSelector logic)
   const [profiles, setProfiles] = useState<{ id: string, name: string }[]>([]);
@@ -165,27 +140,11 @@ export function AppSidebar() {
       <Sidebar collapsible="icon" className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`}>
         <SidebarContent>
           <div className="flex flex-col h-full">
-            {/* AI Model Selector */}
-            {!isCollapsed && (
-              <div className="px-2 pt-2 mb-3">
-                <div className="mb-2">
-                  <SidebarGroupLabel className="text-xs text-muted-foreground px-2 mb-1">
-                    AI Model
-                  </SidebarGroupLabel>
-                  <ModelSelector
-                    value={selectedModel}
-                    onChange={handleModelChange}
-                    className="h-9"
-                  />
-                </div>
-              </div>
-            )}
-
             {/* New Chat Button */}
-            <div className="px-2 mb-3">
+            <div className="px-2 pt-2 mb-3">
               <Button
                 onClick={handleNewChat}
-                className="w-full justify-start rounded-md"
+                className="w-full justify-start rounded-md ripple-button elegant-transition"
                 variant="outline"
               >
                 <Plus className="h-4 w-4" />
@@ -200,7 +159,7 @@ export function AppSidebar() {
                   onClick={handleClearAll}
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800"
+                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800 ripple-button elegant-transition"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Clear All
@@ -242,7 +201,7 @@ export function AppSidebar() {
                                   setOpenMobile(false);
                                 }
                               }}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ${
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ripple-button elegant-transition ${
                                 currentConversation?.id === conversation.id
                                   ? 'bg-primary text-primary-foreground'
                                   : 'hover:bg-accent hover:text-accent-foreground'
@@ -256,7 +215,7 @@ export function AppSidebar() {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-6 w-6"
+                                      className="h-6 w-6 ripple-button elegant-transition"
                                       onClick={(e) => handleDownloadConversation(e, conversation)}
                                       title="Download conversation"
                                     >
@@ -265,7 +224,7 @@ export function AppSidebar() {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-6 w-6"
+                                      className="h-6 w-6 ripple-button elegant-transition"
                                       onClick={(e) => handleDeleteConversation(e, conversation.id)}
                                       title="Delete conversation"
                                     >
@@ -310,7 +269,7 @@ export function AppSidebar() {
                             }
                           }}
                           className={({ isActive }) =>
-                            `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                            `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ripple-button elegant-transition ${
                               isActive
                                 ? 'bg-primary text-primary-foreground'
                                 : 'hover:bg-accent hover:text-accent-foreground'
@@ -323,7 +282,7 @@ export function AppSidebar() {
                       ) : (
                         <button
                           type="button"
-                          className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground w-full ${memoryModalOpen ? 'bg-primary text-primary-foreground' : ''}`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground w-full ripple-button elegant-transition ${memoryModalOpen ? 'bg-primary text-primary-foreground' : ''}`}
                           onClick={handleMemoryModalOpen}
                         >
                           <item.icon className="h-4 w-4" />

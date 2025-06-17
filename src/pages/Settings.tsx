@@ -1,15 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from "@/components/ui/slider";
-import { Trash2, Moon, Sun, LightbulbOff } from 'lucide-react';
+import { Moon, Sun, LightbulbOff } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
+import { ModelSelector } from '@/components/ui/ModelSelector';
 import { availableModels } from '@/constants/models';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -131,52 +132,42 @@ const Settings = () => {
     });
   };
 
-  const deleteCustomModel = (modelId: string) => {
-    const updatedCustomModels = settings.customModels.filter(m => m.id !== modelId);
-    saveSettings({ customModels: updatedCustomModels });
+  const handleModelDelete = (modelId: string, isCustom: boolean) => {
+    if (isCustom) {
+      // Delete custom model
+      const updatedCustomModels = settings.customModels.filter(m => m.modelId !== modelId);
+      saveSettings({ customModels: updatedCustomModels });
+      
+      toast({
+        title: "Custom Model Deleted",
+        description: "Custom model has been removed successfully."
+      });
+    } else {
+      // Delete default model
+      const newDeleted = [...deletedDefaultModels, modelId];
+      saveDeletedDefaultModels(newDeleted);
 
-    toast({
-      title: "Custom Model Deleted",
-      description: "Custom model has been removed successfully."
-    });
+      // If the deleted model is selected, auto-switch to first available
+      if (settings.selectedModel === modelId) {
+        const allDefaults = availableModels.filter(d => !newDeleted.includes(d.id));
+        const newSelected =
+          allDefaults.length > 0
+            ? allDefaults[0].id
+            : settings.customModels[0]?.modelId || 'openai/gpt-4o';
+        setSettings(prev => ({ ...prev, selectedModel: newSelected }));
+        saveSettings({ selectedModel: newSelected });
+      }
+
+      toast({
+        title: "Default Model Deleted",
+        description: "Default model has been removed from the selection list."
+      });
+    }
   };
 
   const handleSaveSettings = () => {
     saveSettings(settings);
   };
-
-  const handleDeleteDefaultModel = (modelId: string) => {
-    const newDeleted = [...deletedDefaultModels, modelId];
-    saveDeletedDefaultModels(newDeleted);
-
-    // If the deleted model is selected, auto-switch to first available
-    if (settings.selectedModel === modelId) {
-      const allDefaults = availableModels.filter(d => !newDeleted.includes(d.id));
-      const newSelected =
-        allDefaults.length > 0
-          ? allDefaults[0].id
-          : settings.customModels[0]?.modelId || 'openai/gpt-4o';
-      setSettings(prev => ({ ...prev, selectedModel: newSelected }));
-      saveSettings({ selectedModel: newSelected });
-    }
-
-    toast({
-      title: "Default Model Deleted",
-      description: "Default model has been removed from the selection list."
-    });
-  };
-
-  // Only show non-deleted default models
-  const filteredDefaultModels = availableModels.filter(d => !deletedDefaultModels.includes(d.id));
-
-  const allModels = [
-    ...filteredDefaultModels,
-    ...settings.customModels.map(m => ({
-      id: m.modelId,
-      name: m.name,
-      isCustom: true,
-    })),
-  ].filter(model => model.id && model.id.trim() !== ''); // Filter out any models with empty IDs
 
   return (
     <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'settings-mobile' : 'p-6'}`}>
@@ -188,7 +179,7 @@ const Settings = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className={`modal-body ${isMobile ? 'mobile-tight-spacing card-content' : 'space-y-6'}`}>
-          {/* Instructional/Tips Area - Now visible on mobile in Settings */}
+          {/* Instructional/Tips Area */}
           <div className="rounded-md bg-muted/30 px-4 py-3 text-muted-foreground text-sm flex items-center gap-2 select-none">
             <LightbulbOff className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
             <span className={isMobile ? 'text-xs' : ''}>
@@ -207,6 +198,7 @@ const Settings = () => {
               <Switch 
                 checked={theme === 'dark'} 
                 onCheckedChange={toggleTheme}
+                className="ripple-button"
               />
             </div>
           </div>
@@ -214,31 +206,18 @@ const Settings = () => {
           {/* AI Model Selection */}
           <div className="space-y-3">
             <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>AI Model Selection</h3>
-            <Select 
-              value={settings.selectedModel} 
-              onValueChange={(value) => setSettings(prev => ({ ...prev, selectedModel: value }))}
-            >
-              <SelectTrigger className={isMobile ? 'mobile-select' : ''}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {allModels.map(model => (
-                  <SelectItem key={model.id} value={model.id}>
-                    <div className="flex items-center gap-2">
-                      {model.name}
-                      {'isCustom' in model && (model as any).isCustom && (
-                        <span className="text-xs bg-primary/20 px-1 rounded">Custom</span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ModelSelector
+              value={settings.selectedModel}
+              onChange={(value) => setSettings(prev => ({ ...prev, selectedModel: value }))}
+              className={isMobile ? 'mobile-select' : ''}
+              showDeleteIcons={true}
+              onModelDelete={handleModelDelete}
+            />
           </div>
 
           {/* Custom Model Management */}
           <div className="space-y-3">
-            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Custom Model Management</h3>
+            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Add Custom Model</h3>
             <div className={`${isMobile ? 'space-y-2' : 'grid grid-cols-1 md:grid-cols-2 gap-3'}`}>
               <Input
                 placeholder="Model Name (e.g. Meta)"
@@ -256,47 +235,10 @@ const Settings = () => {
             <Button 
               onClick={addCustomModel}
               disabled={!customModelForm.name.trim() || !customModelForm.modelId.trim()}
-              className={isMobile ? 'mobile-button' : ''}
+              className={`${isMobile ? 'mobile-button' : ''} ripple-button elegant-transition`}
             >
               Add Model
             </Button>
-            
-            {/* Show both default and custom models with delete buttons */}
-            {(filteredDefaultModels.length > 0 || settings.customModels.length > 0) && (
-              <div className="space-y-2">
-                <h4 className={`${isMobile ? 'text-sm' : ''} font-medium`}>Available Models:</h4>
-                {/* Default (preloaded) models with delete */}
-                {filteredDefaultModels.map(model => (
-                  <div key={model.id} className={`flex items-center justify-between p-2 border rounded ${isMobile ? 'mobile-fix-overlap' : ''}`}>
-                    <span className={isMobile ? 'text-sm' : ''}>{model.name}</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDeleteDefaultModel(model.id)}
-                      title="Delete this default model"
-                      className={isMobile ? 'mobile-button' : ''}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                {/* Custom models with delete */}
-                {settings.customModels.map(model => (
-                  <div key={model.id} className={`flex items-center justify-between p-2 border rounded ${isMobile ? 'mobile-fix-overlap' : ''}`}>
-                    <span className={isMobile ? 'text-sm truncate mr-2' : ''}>{model.name} ({model.modelId})</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => deleteCustomModel(model.id)}
-                      title="Delete this custom model"
-                      className={isMobile ? 'mobile-button' : ''}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* System Prompt Configuration */}
@@ -365,7 +307,7 @@ const Settings = () => {
           <div className="flex gap-3 pt-4">
             <Button 
               onClick={handleSaveSettings}
-              className={isMobile ? 'mobile-button' : ''}
+              className={`${isMobile ? 'mobile-button' : ''} ripple-button elegant-transition`}
             >
               Save Settings
             </Button>

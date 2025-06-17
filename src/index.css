@@ -259,10 +259,11 @@ textarea.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--muted-foreground) / 0.3);
 }
 
-/* Subtle ripple effect for buttons */
+/* Enhanced ripple effect for buttons */
 .ripple-button {
   position: relative;
   overflow: hidden;
+  transform: perspective(1px) translateZ(0);
 }
 
 .ripple-button::before {
@@ -273,24 +274,40 @@ textarea.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: hsl(var(--foreground) / 0.1);
+  background: hsl(var(--foreground) / 0.15);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition: width 0.4s ease-out, height 0.4s ease-out;
   z-index: 0;
+  pointer-events: none;
 }
 
 .ripple-button:active::before {
-  width: 300px;
-  height: 300px;
+  width: 200px;
+  height: 200px;
+  transition: width 0.1s ease-out, height 0.1s ease-out;
 }
 
 .dark .ripple-button::before {
-  background: hsl(var(--background) / 0.2);
+  background: hsl(var(--background) / 0.3);
 }
 
-/* Subtle glow for status dot */
+/* Button press animation */
+.ripple-button:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease-out;
+}
+
+.ripple-button:not(:active) {
+  transform: scale(1);
+  transition: transform 0.2s ease-out;
+}
+
+/* Refined status dot with subtle glow */
 .status-dot {
   position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   animation: subtle-pulse 2s ease-in-out infinite;
 }
 
@@ -303,18 +320,18 @@ textarea.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   bottom: -2px;
   border-radius: 50%;
   background: inherit;
-  opacity: 0.3;
+  opacity: 0.2;
   animation: subtle-glow 2s ease-in-out infinite;
 }
 
 @keyframes subtle-pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.03); }
 }
 
 @keyframes subtle-glow {
-  0%, 100% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.2); }
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.15); }
 }
 
 /* Elegant transitions */
@@ -336,4 +353,26 @@ textarea.custom-scrollbar::-webkit-scrollbar-thumb:hover {
 
 .dark .app-logo {
   filter: brightness(0) saturate(100%) invert(95%);
+}
+
+/* Enhanced button interactions */
+button, [role="button"] {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover:not(:disabled), [role="button"]:hover {
+  transform: translateY(-0.5px);
+}
+
+button:active:not(:disabled), [role="button"]:active {
+  transform: translateY(0);
+}
+
+/* Switch animations */
+.ripple-button[role="switch"] {
+  transition: all 0.2s ease-out;
+}
+
+.ripple-button[role="switch"]:active {
+  transform: scale(0.95);
 }
