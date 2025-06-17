@@ -21,7 +21,7 @@ export const MemoryVisualization: React.FC<MemoryVisualizationProps> = ({
     return acc;
   }, {} as Record<string, MemoryEntry[]>);
 
-  // Generate tag cloud data
+  // Generate tag cloud data from optional tags
   const tagCounts = memories.reduce((acc, memory) => {
     memory.tags?.forEach(tag => {
       if (!tag.startsWith('profile:')) {
@@ -31,7 +31,7 @@ export const MemoryVisualization: React.FC<MemoryVisualizationProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  const maxCount = Math.max(...Object.values(tagCounts));
+  const maxCount = Math.max(...Object.values(tagCounts), 1);
 
   return (
     <div className="space-y-6">

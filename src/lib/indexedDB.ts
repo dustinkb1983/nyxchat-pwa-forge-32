@@ -1,4 +1,3 @@
-
 // IndexedDB utility for persistent storage
 const DB_NAME = 'VivicaDB';
 const DB_VERSION = 1;
@@ -25,15 +24,8 @@ export interface Message {
   error?: boolean;
 }
 
-export interface MemoryEntry {
-  id: string;
-  category: 'personal' | 'preferences' | 'context' | 'knowledge' | 'other';
-  content: string;
-  importance: number; // 1-10
-  lastAccessed: Date;
-  createdAt: Date;
-  tags?: string[];
-}
+// Import the unified MemoryEntry type
+export { MemoryEntry } from '@/types/memory';
 
 export interface PromptTemplate {
   id: string;
@@ -118,14 +110,14 @@ class IndexedDBManager {
   }
 
   // Memory methods
-  async saveMemoryEntry(entry: MemoryEntry): Promise<void> {
+  async saveMemoryEntry(entry: import('@/types/memory').MemoryEntry): Promise<void> {
     if (!this.db) await this.init();
     const transaction = this.db!.transaction([STORES.MEMORY], 'readwrite');
     const store = transaction.objectStore(STORES.MEMORY);
     await store.put(entry);
   }
 
-  async getMemoryEntries(limit?: number): Promise<MemoryEntry[]> {
+  async getMemoryEntries(limit?: number): Promise<import('@/types/memory').MemoryEntry[]> {
     if (!this.db) await this.init();
     const transaction = this.db!.transaction([STORES.MEMORY], 'readonly');
     const store = transaction.objectStore(STORES.MEMORY);

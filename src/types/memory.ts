@@ -5,5 +5,6 @@ export interface MemoryEntry {
   category: 'personal' | 'preferences' | 'context' | 'knowledge' | 'other';
   importance: number;
   createdAt: Date;
-  lastAccessed?: Date;
+  lastAccessed: Date;
+  tags?: string[];
 }
