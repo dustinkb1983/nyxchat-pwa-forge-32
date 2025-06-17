@@ -1,24 +1,27 @@
 
 {
-  "name": "nyxchat-pwa-forge",
+  "name": "NyxChat - AI Assistant",
   "short_name": "NyxChat",
-  "description": "Lovable Generated Project",
-  "start_url": ".",
-  "scope": ".",
+  "description": "Your personal AI chat assistant with profiles and memory",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#101827",
   "background_color": "#101827",
   "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ]
 }

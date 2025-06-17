@@ -4,20 +4,28 @@
   <head>
     <meta charset="UTF-8" />
     <!-- PWA Essentials -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#101827" />
+    <meta name="msapplication-TileColor" content="#101827" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NyxChat" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Manifest and Icons -->
     <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
     <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="NyxChat" />
-    <meta name="msapplication-TileColor" content="#101827" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <meta name="msapplication-TileImage" content="/icon-192.png" />
-    <title>nyxchat-pwa-forge</title>
-    <meta name="description" content="Lovable Generated Project" />
+    
+    <!-- SEO and Social -->
+    <title>NyxChat - AI Assistant</title>
+    <meta name="description" content="Your personal AI chat assistant with profiles and memory" />
     <meta name="author" content="Lovable" />
-    <meta property="og:title" content="nyxchat-pwa-forge" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:title" content="NyxChat - AI Assistant" />
+    <meta property="og:description" content="Your personal AI chat assistant with profiles and memory" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -28,14 +36,41 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Service worker registration for PWA
+      // Enhanced PWA Service Worker Registration
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then(reg => {console.log('SW registered:', reg);})
-            .catch(err => {console.error('SW registration failed:', err);});
+            .then(registration => {
+              console.log('SW registered:', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // New content available, notify user
+                      console.log('New content available! Please refresh.');
+                    }
+                  });
+                }
+              });
+            })
+            .catch(err => {
+              console.error('SW registration failed:', err);
+            });
         });
       }
+
+      // Prevent zoom on double tap for better PWA experience
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
     </script>
   </body>
 </html>

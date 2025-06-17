@@ -15,6 +15,7 @@ import ProfileManager from "@/pages/ProfileManager";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
 import { SplashScreen } from "@/components/ui/SplashScreen";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import "./animations.css";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => {
                       </Route>
                       <Route path="*" element={<NotFound />} />
                     </Routes>
+                    <InstallPrompt />
                   </div>
                 </ChatProvider>
               </BrowserRouter>
