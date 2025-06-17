@@ -1,16 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from "@/components/ui/slider";
-import { LightbulbOff } from 'lucide-react';
+import { LightbulbOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { BackToChatButton } from "@/components/ui/BackToChatButton";
 import { ModelSelector } from '@/components/ui/ModelSelector';
 import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { availableModels } from '@/constants/models';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 
 interface CustomModel {
   id: string;
@@ -30,6 +31,7 @@ interface AppSettings {
 const Settings = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<AppSettings>({
     selectedModel: 'openai/gpt-4o',
     customModels: [],
@@ -189,17 +191,32 @@ const Settings = () => {
   };
 
   return (
-    <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'p-3' : 'p-6'}`}>
-      <BackToChatButton />
+    <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'p-2' : 'p-6'}`}>
+      {/* Header with close button */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>Settings</h1>
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/')}
+          className={`${isMobile ? 'h-7 w-7' : 'h-8 w-8'} ripple-button`}
+        >
+          <X className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+        </Button>
+      </div>
+
       <Card className={`flex-1`}>
-        <CardHeader className={isMobile ? 'pb-2 p-3' : 'pb-3'}>
-          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+        <CardHeader className={isMobile ? 'pb-1 p-2' : 'pb-2 p-3'}>
+          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
             Settings
           </CardTitle>
         </CardHeader>
-        <CardContent className={`${isMobile ? 'p-3 space-y-3' : 'space-y-4'}`}>
+        <CardContent className={`${isMobile ? 'p-2 space-y-2' : 'p-3 space-y-3'}`}>
           {/* Instructional/Tips Area */}
-          <div className={`rounded-md bg-muted/30 px-3 py-2 text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} flex items-center gap-2 select-none`}>
+          <div className={`rounded-md bg-muted/30 px-2 py-1 text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} flex items-center gap-2 select-none`}>
             <LightbulbOff className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             <span>
               Tip: Use <kbd className={`px-1 py-0.5 bg-muted rounded ${isMobile ? 'text-xs' : 'text-xs'}`}>Enter</kbd> to send, <kbd className={`px-1 py-0.5 bg-muted rounded ${isMobile ? 'text-xs' : 'text-xs'}`}>Shift+Enter</kbd> for new line.
@@ -207,38 +224,38 @@ const Settings = () => {
           </div>
 
           {/* AI Model Selection */}
-          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-            <h3 className={`${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>AI Model Selection</h3>
+          <div className={`${isMobile ? 'space-y-1' : 'space-y-2'}`}>
+            <h3 className={`${isMobile ? 'text-sm font-medium' : 'text-base font-medium'}`}>AI Model Selection</h3>
             <ModelSelector
               value={settings.selectedModel}
               onChange={(value) => setSettings(prev => ({ ...prev, selectedModel: value }))}
-              className={isMobile ? 'h-8' : ''}
+              className={isMobile ? 'h-7 text-xs' : 'h-8 text-sm'}
               showDeleteIcons={true}
               onModelDelete={handleModelDeleteRequest}
             />
           </div>
 
           {/* Custom Model Management */}
-          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-            <h3 className={`${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>Add Custom Model</h3>
-            <div className={`${isMobile ? 'space-y-2' : 'grid grid-cols-1 md:grid-cols-2 gap-3'}`}>
+          <div className={`${isMobile ? 'space-y-1' : 'space-y-2'}`}>
+            <h3 className={`${isMobile ? 'text-sm font-medium' : 'text-base font-medium'}`}>Add Custom Model</h3>
+            <div className={`${isMobile ? 'space-y-1' : 'grid grid-cols-1 md:grid-cols-2 gap-2'}`}>
               <Input
                 placeholder="Model Name (e.g. Meta)"
                 value={customModelForm.name}
                 onChange={(e) => setCustomModelForm(prev => ({ ...prev, name: e.target.value }))}
-                className={isMobile ? 'h-8 text-sm' : ''}
+                className={isMobile ? 'h-7 text-xs' : 'h-8 text-sm'}
               />
               <Input
                 placeholder="Model ID (e.g. meta-llama/llama-3.3-70b-instruct:free)"
                 value={customModelForm.modelId}
                 onChange={(e) => setCustomModelForm(prev => ({ ...prev, modelId: e.target.value }))}
-                className={isMobile ? 'h-8 text-sm' : ''}
+                className={isMobile ? 'h-7 text-xs' : 'h-8 text-sm'}
               />
             </div>
             <Button 
               onClick={addCustomModel}
               disabled={!customModelForm.name.trim() || !customModelForm.modelId.trim()}
-              className={`${isMobile ? 'h-8 text-sm' : ''} ripple-button elegant-transition`}
+              className={`${isMobile ? 'h-7 text-xs' : 'h-8 text-sm'} ripple-button elegant-transition`}
               size={isMobile ? "sm" : "default"}
             >
               Add Model
@@ -246,20 +263,20 @@ const Settings = () => {
           </div>
 
           {/* System Prompt Configuration */}
-          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-            <h3 className={`${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>System Prompt Configuration</h3>
+          <div className={`${isMobile ? 'space-y-1' : 'space-y-2'}`}>
+            <h3 className={`${isMobile ? 'text-sm font-medium' : 'text-base font-medium'}`}>System Prompt Configuration</h3>
             <Textarea
               placeholder="Enter system prompt to customize AI behavior..."
               value={settings.systemPrompt}
               onChange={(e) => setSettings(prev => ({ ...prev, systemPrompt: e.target.value }))}
-              className={`${isMobile ? 'min-h-[60px] text-sm' : 'min-h-[80px]'} resize-none`}
+              className={`${isMobile ? 'min-h-12 text-xs' : 'min-h-16 text-sm'} resize-none`}
             />
           </div>
 
           {/* Temperature Control */}
-          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-            <h3 className={`${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>Model Creativity (Temperature)</h3>
-            <label className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium`}>Temperature: {settings.temperature.toFixed(2)}</label>
+          <div className={`${isMobile ? 'space-y-1' : 'space-y-2'}`}>
+            <h3 className={`${isMobile ? 'text-sm font-medium' : 'text-base font-medium'}`}>Model Creativity (Temperature)</h3>
+            <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Temperature: {settings.temperature.toFixed(2)}</label>
             <Slider
               value={[settings.temperature]}
               onValueChange={(value) =>
@@ -271,7 +288,7 @@ const Settings = () => {
               max={1}
               min={0}
               step={0.01}
-              className="mt-2"
+              className="mt-1"
             />
             <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
               <span>More Predictable</span>
@@ -280,38 +297,38 @@ const Settings = () => {
           </div>
 
           {/* Context Settings */}
-          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-            <h3 className={`${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>Context Settings</h3>
+          <div className={`${isMobile ? 'space-y-1' : 'space-y-2'}`}>
+            <h3 className={`${isMobile ? 'text-sm font-medium' : 'text-base font-medium'}`}>Context Settings</h3>
             <div>
-              <label className={`${isMobile ? 'text-sm' : 'text-sm'} font-medium`}>Max Context Length</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Max Context Length</label>
               <Input
                 type="number"
                 min="1"
                 max="50"
                 value={settings.maxContextLength}
                 onChange={(e) => setSettings(prev => ({ ...prev, maxContextLength: parseInt(e.target.value) || 20 }))}
-                className={isMobile ? 'h-8 text-sm' : ''}
+                className={isMobile ? 'h-7 text-xs' : 'h-8 text-sm'}
               />
             </div>
           </div>
 
           {/* API Configuration */}
-          <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
-            <h3 className={`${isMobile ? 'text-base font-medium' : 'text-lg font-medium'}`}>API Configuration</h3>
+          <div className={`${isMobile ? 'space-y-1' : 'space-y-2'}`}>
+            <h3 className={`${isMobile ? 'text-sm font-medium' : 'text-base font-medium'}`}>API Configuration</h3>
             <Input
               type="password"
               placeholder="Enter your API key..."
               value={settings.apiKey}
               onChange={(e) => setSettings(prev => ({ ...prev, apiKey: e.target.value }))}
-              className={isMobile ? 'h-8 text-sm' : ''}
+              className={isMobile ? 'h-7 text-xs' : 'h-8 text-sm'}
             />
           </div>
 
           {/* Save Button */}
-          <div className={`flex gap-3 ${isMobile ? 'pt-1' : 'pt-3'}`}>
+          <div className={`flex gap-2 ${isMobile ? 'pt-1' : 'pt-2'}`}>
             <Button 
               onClick={handleSaveSettings}
-              className={`${isMobile ? 'h-8 text-sm' : ''} ripple-button elegant-transition`}
+              className={`${isMobile ? 'h-7 text-xs' : 'h-8 text-sm'} ripple-button elegant-transition`}
               size={isMobile ? "sm" : "default"}
             >
               Save Settings
