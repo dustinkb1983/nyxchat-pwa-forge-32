@@ -1,6 +1,10 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { dbManager, MemoryEntry } from '@/lib/indexedDB';
+import { dbManager } from '@/lib/indexedDB';
+import { MemoryEntry } from '@/types/memory';
+
+// Re-export MemoryEntry for components to use
+export type { MemoryEntry };
 
 interface MemoryContextType {
   memories: MemoryEntry[];
