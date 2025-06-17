@@ -3,14 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
-import { availableModels } from '@/constants/models';
+import { ModelSelector } from '@/components/ui/ModelSelector';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Profile {
   id: string;
@@ -22,15 +23,8 @@ interface Profile {
   updatedAt: Date;
 }
 
-interface CustomModel {
-  id: string;
-  name: string;
-  modelId: string;
-}
-
 const ProfileManager = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [availableModelsList, setAvailableModelsList] = useState<CustomModel[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
@@ -39,57 +33,55 @@ const ProfileManager = () => {
     model: 'openai/gpt-4o',
     temperature: 0.7
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendingDeleteProfile, setPendingDeleteProfile] = useState<Profile | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [formError, setFormError] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfiles();
-    loadAvailableModels();
     
     // Listen for storage changes to update models dynamically
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'app-settings' || e.key === 'deleted-default-models') {
-        loadAvailableModels();
+        // Reload profiles to check model validity
+        loadProfiles();
       }
     };
     
+    const handleModelUpdate = () => {
+      loadProfiles();
+    };
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('modelSettingsUpdated', handleModelUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('modelSettingsUpdated', handleModelUpdate);
+    };
   }, []);
 
-  const loadAvailableModels = () => {
+  const isModelValid = (modelId: string): boolean => {
+    // Check if model exists in available models or custom models
     const appSettings = localStorage.getItem('app-settings');
     const deletedDefaultModels = JSON.parse(localStorage.getItem('deleted-default-models') || '[]');
     
-    // Get non-deleted default models
-    const validDefaultModels = availableModels.filter(m => !deletedDefaultModels.includes(m.id));
-    let models: CustomModel[] = validDefaultModels.map(m => ({ id: m.id, name: m.name, modelId: m.id }));
+    // Check default models
+    const validDefaultModels = require('@/constants/models').availableModels.filter((m: any) => !deletedDefaultModels.includes(m.id));
+    if (validDefaultModels.some((m: any) => m.id === modelId)) return true;
     
+    // Check custom models
     if (appSettings) {
       const settings = JSON.parse(appSettings);
       if (settings.customModels && Array.isArray(settings.customModels)) {
-        const customModels = settings.customModels.map((cm: any) => ({
-          id: cm.modelId,
-          name: cm.name,
-          modelId: cm.modelId
-        }));
-        models = [...models, ...customModels];
+        return settings.customModels.some((m: any) => m.modelId === modelId);
       }
     }
     
-    setAvailableModelsList(models);
-    
-    // Update form model if current selection is no longer available
-    if (formData.model && !models.find(m => m.modelId === formData.model)) {
-      setFormData(prev => ({ ...prev, model: models[0]?.modelId || 'openai/gpt-4o' }));
-    }
-  };
-
-  const isModelValid = (modelId: string): boolean => {
-    return availableModelsList.some(m => m.modelId === modelId);
+    return false;
   };
 
   useEffect(() => {
@@ -171,7 +163,7 @@ const ProfileManager = () => {
     const updatedProfiles = [...profiles, newProfile];
     saveProfiles(updatedProfiles);
     
-    setFormData({ name: '', systemPrompt: '', model: availableModelsList[0]?.modelId || 'openai/gpt-4o', temperature: 0.7 });
+    resetForm();
     setIsCreateDialogOpen(false);
     
     toast({
@@ -215,7 +207,7 @@ const ProfileManager = () => {
     saveProfiles(updatedProfiles);
     
     setEditingProfile(null);
-    setFormData({ name: '', systemPrompt: '', model: availableModelsList[0]?.modelId || 'openai/gpt-4o', temperature: 0.7 });
+    resetForm();
     
     toast({
       title: "Profile Updated",
@@ -223,113 +215,112 @@ const ProfileManager = () => {
     });
   };
 
-  // Profile delete with confirmation
-  const handleDeleteProfileRequest = (profileId: string) => {
-    setPendingDeleteId(profileId);
+  const handleDeleteRequest = (profile: Profile) => {
+    setPendingDeleteProfile(profile);
     setDeleteDialogOpen(true);
   };
 
   const confirmDeleteProfile = () => {
-    if (!pendingDeleteId) return;
+    if (!pendingDeleteProfile) return;
+    
+    if (profiles.length <= 1) {
+      toast({
+        title: "Cannot Delete",
+        description: "At least one profile must remain.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // If deleting current profile, switch to another available
-    if (profiles.length <= 1) return;
-    let nextProfileId = 'default';
-    if (pendingDeleteId === (localStorage.getItem('current-profile') || 'default')) {
-      const fallback = profiles.find((p) => p.id !== pendingDeleteId);
-      nextProfileId = fallback ? fallback.id : 'default';
-      localStorage.setItem('current-profile', nextProfileId);
-      // If the app uses a context or function, also update it:
-      if (typeof window !== "undefined" && window.dispatchEvent) {
-        window.dispatchEvent(new Event("profile-changed")); // let other components know
+    const currentProfile = localStorage.getItem('current-profile') || 'default';
+    if (pendingDeleteProfile.id === currentProfile) {
+      const fallback = profiles.find((p) => p.id !== pendingDeleteProfile.id);
+      if (fallback) {
+        localStorage.setItem('current-profile', fallback.id);
+        window.dispatchEvent(new Event("profile-changed"));
       }
     }
-    const updatedProfiles = profiles.filter(p => p.id !== pendingDeleteId);
+    
+    const updatedProfiles = profiles.filter(p => p.id !== pendingDeleteProfile.id);
     saveProfiles(updatedProfiles);
-    setPendingDeleteId(null);
+    
     setDeleteDialogOpen(false);
+    setPendingDeleteProfile(null);
+    
     toast({
       title: "Profile Deleted",
       description: "Profile has been deleted successfully."
     });
   };
 
-  const cancelDeleteProfile = () => {
-    setPendingDeleteId(null);
-    setDeleteDialogOpen(false);
-  };
-
   const resetForm = () => {
-    setFormData({ name: '', systemPrompt: '', model: availableModelsList[0]?.modelId || 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: 'openai/gpt-4o', temperature: 0.7 });
     setEditingProfile(null);
   };
 
   const getModelName = (modelId: string) => {
-    const model = availableModelsList.find(m => m.modelId === modelId);
-    return model ? model.name : modelId;
+    // Get model name from available models or return the ID
+    return modelId;
   };
 
-  const renderModelSelect = () => (
-    <Select value={formData.model} onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}>
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {availableModelsList.map(model => (
-          <SelectItem key={model.modelId} value={model.modelId}>
-            {model.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-
   return (
-    <div className="h-full flex flex-col p-6">
+    <div className={`h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
       <BackToChatButton />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold">Profile Manager</h1>
-          <p className="text-muted-foreground">Create and manage AI profiles for different use cases</p>
+          <h1 className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>Profile Manager</h1>
+          <p className={`text-muted-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>Create and manage AI profiles for different use cases</p>
         </div>
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => resetForm()}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Profile
+            <Button 
+              onClick={() => resetForm()}
+              size={isMobile ? "sm" : "default"}
+              className={`${isMobile ? 'text-xs px-2 py-1 h-8' : ''} ripple-button`}
+            >
+              <Plus className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'}`} />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>New Profile</span>
+              <span className={isMobile ? 'sm:hidden' : 'hidden'}>New</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className={`${isMobile ? 'max-w-[95vw] w-full mx-2' : 'max-w-2xl'}`}>
             <DialogHeader>
-              <DialogTitle>Create New Profile</DialogTitle>
+              <DialogTitle className={isMobile ? 'text-lg' : 'text-xl'}>Create New Profile</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
               <div>
-                <label className="text-sm font-medium">Profile Name</label>
+                <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Profile Name</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g., Creative Writer, Code Assistant"
+                  className={isMobile ? 'text-sm h-8' : ''}
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium">System Prompt</label>
+                <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>System Prompt</label>
                 <Textarea
                   value={formData.systemPrompt}
                   onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
                   placeholder="Describe how the AI should behave..."
-                  className="min-h-[100px]"
+                  className={`${isMobile ? 'min-h-[80px] text-sm' : 'min-h-[100px]'}`}
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium">AI Model</label>
-                {renderModelSelect()}
+                <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>AI Model</label>
+                <ModelSelector
+                  value={formData.model}
+                  onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                  className={isMobile ? 'h-8' : ''}
+                />
               </div>
               
               <div>
-                <label className="text-sm font-medium">Temperature: {formData.temperature}</label>
+                <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Temperature: {formData.temperature}</label>
                 <Slider
                   value={[formData.temperature]}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, temperature: value[0] }))}
@@ -338,18 +329,28 @@ const ProfileManager = () => {
                   step={0.1}
                   className="mt-2"
                 />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
                   <span>More Predictable</span>
                   <span>More Creative</span>
                 </div>
               </div>
               
-              {formError && <div className="text-sm text-destructive">{formError}</div>}
-              <div className="flex gap-3 pt-4">
-                <Button onClick={handleCreateProfile} disabled={!!formError}>
+              {formError && <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-destructive`}>{formError}</div>}
+              <div className={`flex gap-2 ${isMobile ? 'pt-2' : 'pt-4'}`}>
+                <Button 
+                  onClick={handleCreateProfile} 
+                  disabled={!!formError}
+                  size={isMobile ? "sm" : "default"}
+                  className="ripple-button"
+                >
                   Create Profile
                 </Button>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsCreateDialogOpen(false)}
+                  size={isMobile ? "sm" : "default"}
+                  className="ripple-button"
+                >
                   Cancel
                 </Button>
               </div>
@@ -358,47 +359,53 @@ const ProfileManager = () => {
         </Dialog>
       </div>
 
-      <div className="grid gap-4">
+      <div className={`grid gap-3 ${isMobile ? '' : 'gap-4'}`}>
         {profiles.map(profile => (
-          <Card key={profile.id} className={!isModelValid(profile.model) ? 'border-orange-500 bg-orange-50/10' : ''}>
-            <CardHeader>
+          <Card key={profile.id} className={`${!isModelValid(profile.model) ? 'border-orange-500 bg-orange-50/10' : ''} ${isMobile ? 'text-sm' : ''}`}>
+            <CardHeader className={isMobile ? 'pb-2' : ''}>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    {profile.name}
-                    {profile.id === 'default' && <Badge variant="secondary">Default</Badge>}
+                <div className="min-w-0 flex-1">
+                  <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
+                    <span className="truncate">{profile.name}</span>
+                    {profile.id === 'default' && <Badge variant="secondary" className={isMobile ? 'text-xs' : ''}>Default</Badge>}
                     {!isModelValid(profile.model) && (
-                      <Badge variant="destructive" className="flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
+                      <Badge variant="destructive" className={`flex items-center gap-1 ${isMobile ? 'text-xs' : ''}`}>
+                        <AlertTriangle className={`${isMobile ? 'h-2 w-2' : 'h-3 w-3'}`} />
                         Invalid Model
                       </Badge>
                     )}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                     {getModelName(profile.model)} • Temperature: {profile.temperature}
                     {!isModelValid(profile.model) && (
                       <span className="text-orange-600 ml-2">(Model no longer available)</span>
                     )}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleEditProfile(profile)}>
-                    <Edit className="h-4 w-4" />
+                <div className="flex gap-1">
+                  <Button 
+                    variant="outline" 
+                    size={isMobile ? "sm" : "sm"} 
+                    onClick={() => handleEditProfile(profile)}
+                    className={`${isMobile ? 'h-6 w-6 p-0' : 'h-8 w-8 p-0'} ripple-button`}
+                  >
+                    <Edit className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   </Button>
                   <Button 
                     variant="outline" 
-                    size="sm" 
-                    onClick={() => handleDeleteProfileRequest(profile.id)}
+                    size={isMobile ? "sm" : "sm"} 
+                    onClick={() => handleDeleteRequest(profile)}
                     disabled={profiles.length <= 1}
+                    className={`${isMobile ? 'h-6 w-6 p-0' : 'h-8 w-8 p-0'} ripple-button`}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm">{profile.systemPrompt}</p>
-              <div className="flex gap-4 text-xs text-muted-foreground mt-3">
+            <CardContent className={isMobile ? 'pt-0' : ''}>
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} line-clamp-3`}>{profile.systemPrompt}</p>
+              <div className={`flex gap-4 ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground ${isMobile ? 'mt-2' : 'mt-3'}`}>
                 <span>Created: {profile.createdAt.toLocaleDateString()}</span>
                 <span>Updated: {profile.updatedAt.toLocaleDateString()}</span>
               </div>
@@ -407,55 +414,56 @@ const ProfileManager = () => {
         ))}
       </div>
 
-      {/* Enhanced Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Profile</DialogTitle>
-          </DialogHeader>
-          <div>
-            Are you sure you want to delete this profile? You cannot undo this action.
-          </div>
-          <DialogFooter className="mt-4 flex gap-2">
-            <Button variant="destructive" onClick={confirmDeleteProfile}>Delete</Button>
-            <Button variant="outline" onClick={cancelDeleteProfile}>Cancel</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Profile"
+        description={`Are you sure you want to delete "${pendingDeleteProfile?.name}"? This action cannot be undone.`}
+        onConfirm={confirmDeleteProfile}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
 
       {/* Edit Dialog */}
       <Dialog open={!!editingProfile} onOpenChange={() => setEditingProfile(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className={`${isMobile ? 'max-w-[95vw] w-full mx-2' : 'max-w-2xl'}`}>
           <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogTitle className={isMobile ? 'text-lg' : 'text-xl'}>Edit Profile</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
             <div>
-              <label className="text-sm font-medium">Profile Name</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Profile Name</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., Creative Writer, Code Assistant"
+                className={isMobile ? 'text-sm h-8' : ''}
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium">System Prompt</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>System Prompt</label>
               <Textarea
                 value={formData.systemPrompt}
                 onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
                 placeholder="Describe how the AI should behave..."
-                className="min-h-[100px]"
+                className={`${isMobile ? 'min-h-[80px] text-sm' : 'min-h-[100px]'}`}
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium">AI Model</label>
-              {renderModelSelect()}
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>AI Model</label>
+              <ModelSelector
+                value={formData.model}
+                onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                className={isMobile ? 'h-8' : ''}
+              />
             </div>
             
             <div>
-              <label className="text-sm font-medium">Temperature: {formData.temperature}</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Temperature: {formData.temperature}</label>
               <Slider
                 value={[formData.temperature]}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, temperature: value[0] }))}
@@ -464,21 +472,28 @@ const ProfileManager = () => {
                 step={0.1}
                 className="mt-2"
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <div className={`flex justify-between ${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
                 <span>More Predictable</span>
                 <span>More Creative</span>
               </div>
             </div>
             
-            {formError && <div className="text-sm text-destructive">{formError}</div>}
-            <div className="flex gap-3 pt-4">
+            {formError && <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-destructive`}>{formError}</div>}
+            <div className={`flex gap-2 ${isMobile ? 'pt-2' : 'pt-4'}`}>
               <Button
                 onClick={handleUpdateProfile}
                 disabled={!!formError}
+                size={isMobile ? "sm" : "default"}
+                className="ripple-button"
               >
                 Update Profile
               </Button>
-              <Button variant="outline" onClick={() => setEditingProfile(null)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setEditingProfile(null)}
+                size={isMobile ? "sm" : "default"}
+                className="ripple-button"
+              >
                 Cancel
               </Button>
             </div>

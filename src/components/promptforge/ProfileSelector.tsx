@@ -28,8 +28,18 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChang
       }
     };
     
+    // Listen for custom events for same-window updates
+    const handleProfileUpdate = () => {
+      loadProfiles();
+    };
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('modelSettingsUpdated', handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('modelSettingsUpdated', handleProfileUpdate);
+    };
   }, []);
 
   const loadProfiles = () => {
@@ -64,14 +74,14 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChang
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-full h-8 text-xs bg-background border-input">
         <SelectValue placeholder="Select Profile">
-          <span className="truncate-mobile">{getDisplayName(value)}</span>
+          <span className="truncate">{getDisplayName(value)}</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="text-xs">
         <SelectItem value="global">Global</SelectItem>
         {profiles.map((profile) => (
           <SelectItem key={profile.id} value={profile.id}>
-            <span className="truncate-mobile">{profile.name}</span>
+            <span className="truncate">{profile.name}</span>
           </SelectItem>
         ))}
       </SelectContent>
