@@ -1,8 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { dbManager, Conversation, Message } from '@/lib/indexedDB';
 import { useMemory } from './MemoryContext';
 import { useMemoryAutoSave } from '@/hooks/useMemoryAutoSave';
+import { availableModels } from '@/constants/models';
 
 export type { Conversation, Message };
 
@@ -27,6 +27,12 @@ interface Profile {
   systemPrompt: string;
   model: string;
   temperature: number;
+}
+
+interface CustomModel {
+  id: string;
+  name: string;
+  modelId: string;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -70,6 +76,61 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     initialize();
   }, []);
 
+  const getAllAvailableModels = () => {
+    const appSettings = localStorage.getItem('app-settings');
+    const deletedDefaultModels = JSON.parse(localStorage.getItem('deleted-default-models') || '[]');
+    
+    // Get non-deleted default models
+    const validDefaultModels = availableModels.filter(m => !deletedDefaultModels.includes(m.id));
+    
+    // Get custom models
+    let customModels: CustomModel[] = [];
+    if (appSettings) {
+      const settings = JSON.parse(appSettings);
+      if (settings.customModels && Array.isArray(settings.customModels)) {
+        customModels = settings.customModels;
+      }
+    }
+    
+    // Combine all available model IDs
+    const allModelIds = [
+      ...validDefaultModels.map(m => m.id),
+      ...customModels.map(m => m.modelId)
+    ];
+    
+    return allModelIds;
+  };
+
+  const validateAndGetModel = (requestedModel: string): string => {
+    const availableModelIds = getAllAvailableModels();
+    
+    // If the requested model is still available, use it
+    if (availableModelIds.includes(requestedModel)) {
+      return requestedModel;
+    }
+    
+    console.warn(`Model ${requestedModel} is no longer available. Falling back to default.`);
+    
+    // Try to get global default first
+    const appSettings = localStorage.getItem('app-settings');
+    let fallbackModel = 'openai/gpt-4o'; // Ultimate fallback
+    
+    if (appSettings) {
+      const settings = JSON.parse(appSettings);
+      if (settings.selectedModel && availableModelIds.includes(settings.selectedModel)) {
+        fallbackModel = settings.selectedModel;
+      }
+    }
+    
+    // If global default is also invalid, use first available model
+    if (!availableModelIds.includes(fallbackModel) && availableModelIds.length > 0) {
+      fallbackModel = availableModelIds[0];
+    }
+    
+    console.log(`Using fallback model: ${fallbackModel}`);
+    return fallbackModel;
+  };
+
   const getCurrentProfile = (): Profile | null => {
     if (currentProfile === 'global') {
       return null; // Use global settings
@@ -88,7 +149,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (profile) {
       return {
         systemPrompt: profile.systemPrompt,
-        model: profile.model,
+        model: validateAndGetModel(profile.model), // Validate model here
         temperature: profile.temperature
       };
     }
@@ -97,16 +158,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const appSettings = localStorage.getItem('app-settings');
     if (appSettings) {
       const settings = JSON.parse(appSettings);
+      const requestedModel = settings.selectedModel || 'openai/gpt-4o';
       return {
         systemPrompt: settings.systemPrompt || 'You are a helpful AI assistant.',
-        model: settings.selectedModel || 'openai/gpt-4o',
+        model: validateAndGetModel(requestedModel), // Validate model here too
         temperature: settings.temperature || 0.7
       };
     }
 
     return {
       systemPrompt: 'You are a helpful AI assistant.',
-      model: 'openai/gpt-4o',
+      model: validateAndGetModel('openai/gpt-4o'), // Validate fallback model
       temperature: 0.7
     };
   };

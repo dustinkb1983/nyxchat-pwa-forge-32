@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
+import { availableModels } from '@/constants/models';
 
 interface Profile {
   id: string;
@@ -25,11 +25,12 @@ interface Profile {
 interface CustomModel {
   id: string;
   name: string;
+  modelId: string;
 }
 
 const ProfileManager = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [availableModels, setAvailableModels] = useState<CustomModel[]>([]);
+  const [availableModelsList, setAvailableModelsList] = useState<CustomModel[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ const ProfileManager = () => {
     
     // Listen for storage changes to update models dynamically
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'app-settings') {
+      if (e.key === 'app-settings' || e.key === 'deleted-default-models') {
         loadAvailableModels();
       }
     };
@@ -61,29 +62,36 @@ const ProfileManager = () => {
 
   const loadAvailableModels = () => {
     const appSettings = localStorage.getItem('app-settings');
-    let models: CustomModel[] = [
-      { id: 'openai/gpt-4o', name: 'GPT-4o' },
-      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
-      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
-      { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku' },
-    ];
+    const deletedDefaultModels = JSON.parse(localStorage.getItem('deleted-default-models') || '[]');
+    
+    // Get non-deleted default models
+    const validDefaultModels = availableModels.filter(m => !deletedDefaultModels.includes(m.id));
+    let models: CustomModel[] = validDefaultModels.map(m => ({ id: m.id, name: m.name, modelId: m.id }));
     
     if (appSettings) {
       const settings = JSON.parse(appSettings);
       if (settings.customModels && Array.isArray(settings.customModels)) {
-        models = [...models, ...settings.customModels];
+        const customModels = settings.customModels.map((cm: any) => ({
+          id: cm.modelId,
+          name: cm.name,
+          modelId: cm.modelId
+        }));
+        models = [...models, ...customModels];
       }
     }
     
-    setAvailableModels(models);
+    setAvailableModelsList(models);
     
     // Update form model if current selection is no longer available
-    if (formData.model && !models.find(m => m.id === formData.model)) {
-      setFormData(prev => ({ ...prev, model: models[0]?.id || 'openai/gpt-4o' }));
+    if (formData.model && !models.find(m => m.modelId === formData.model)) {
+      setFormData(prev => ({ ...prev, model: models[0]?.modelId || 'openai/gpt-4o' }));
     }
   };
 
-  // Enhance live validation (name and systemPrompt)
+  const isModelValid = (modelId: string): boolean => {
+    return availableModelsList.some(m => m.modelId === modelId);
+  };
+
   useEffect(() => {
     if (!formData.name.trim()) {
       setFormError('Profile name is required.');
@@ -163,7 +171,7 @@ const ProfileManager = () => {
     const updatedProfiles = [...profiles, newProfile];
     saveProfiles(updatedProfiles);
     
-    setFormData({ name: '', systemPrompt: '', model: availableModels[0]?.id || 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: availableModelsList[0]?.modelId || 'openai/gpt-4o', temperature: 0.7 });
     setIsCreateDialogOpen(false);
     
     toast({
@@ -207,7 +215,7 @@ const ProfileManager = () => {
     saveProfiles(updatedProfiles);
     
     setEditingProfile(null);
-    setFormData({ name: '', systemPrompt: '', model: availableModels[0]?.id || 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: availableModelsList[0]?.modelId || 'openai/gpt-4o', temperature: 0.7 });
     
     toast({
       title: "Profile Updated",
@@ -251,12 +259,12 @@ const ProfileManager = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', systemPrompt: '', model: availableModels[0]?.id || 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: availableModelsList[0]?.modelId || 'openai/gpt-4o', temperature: 0.7 });
     setEditingProfile(null);
   };
 
   const getModelName = (modelId: string) => {
-    const model = availableModels.find(m => m.id === modelId);
+    const model = availableModelsList.find(m => m.modelId === modelId);
     return model ? model.name : modelId;
   };
 
@@ -266,8 +274,8 @@ const ProfileManager = () => {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {availableModels.map(model => (
-          <SelectItem key={model.id} value={model.id}>
+        {availableModelsList.map(model => (
+          <SelectItem key={model.modelId} value={model.modelId}>
             {model.name}
           </SelectItem>
         ))}
@@ -352,16 +360,25 @@ const ProfileManager = () => {
 
       <div className="grid gap-4">
         {profiles.map(profile => (
-          <Card key={profile.id}>
+          <Card key={profile.id} className={!isModelValid(profile.model) ? 'border-orange-500 bg-orange-50/10' : ''}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     {profile.name}
                     {profile.id === 'default' && <Badge variant="secondary">Default</Badge>}
+                    {!isModelValid(profile.model) && (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Invalid Model
+                      </Badge>
+                    )}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {getModelName(profile.model)} • Temperature: {profile.temperature}
+                    {!isModelValid(profile.model) && (
+                      <span className="text-orange-600 ml-2">(Model no longer available)</span>
+                    )}
                   </p>
                 </div>
                 <div className="flex gap-2">
