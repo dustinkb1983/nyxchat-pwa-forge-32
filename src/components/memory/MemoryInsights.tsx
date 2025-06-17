@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MemoryEntry } from '@/lib/indexedDB';
+import { MemoryEntry } from '@/types/memory';
 import { Brain, TrendingUp, Clock, Tag } from 'lucide-react';
 
 interface MemoryInsightsProps {
@@ -10,9 +10,9 @@ interface MemoryInsightsProps {
 
 export const MemoryInsights: React.FC<MemoryInsightsProps> = ({ memories }) => {
   const totalMemories = memories.length;
-  const factCount = memories.filter(m => m.type === 'fact').length;
-  const preferenceCount = memories.filter(m => m.type === 'preference').length;
-  const goalCount = memories.filter(m => m.type === 'goal').length;
+  const personalCount = memories.filter(m => m.category === 'personal').length;
+  const preferencesCount = memories.filter(m => m.category === 'preferences').length;
+  const knowledgeCount = memories.filter(m => m.category === 'knowledge').length;
   
   const avgImportance = totalMemories > 0 
     ? memories.reduce((sum, m) => sum + m.importance, 0) / totalMemories 
@@ -47,7 +47,7 @@ export const MemoryInsights: React.FC<MemoryInsightsProps> = ({ memories }) => {
     {
       icon: Tag,
       label: 'Categories',
-      value: `${factCount}F ${preferenceCount}P ${goalCount}G`,
+      value: `${personalCount}P ${preferencesCount}Pr ${knowledgeCount}K`,
       color: 'text-purple-400',
       bg: 'bg-purple-400/10'
     }

@@ -27,7 +27,7 @@ export interface Message {
 
 export interface MemoryEntry {
   id: string;
-  type: 'fact' | 'preference' | 'goal' | 'context';
+  category: 'personal' | 'preferences' | 'context' | 'knowledge' | 'other';
   content: string;
   importance: number; // 1-10
   lastAccessed: Date;
@@ -69,7 +69,7 @@ class IndexedDBManager {
         // Memory store
         if (!db.objectStoreNames.contains(STORES.MEMORY)) {
           const memoryStore = db.createObjectStore(STORES.MEMORY, { keyPath: 'id' });
-          memoryStore.createIndex('type', 'type');
+          memoryStore.createIndex('category', 'category');
           memoryStore.createIndex('importance', 'importance');
           memoryStore.createIndex('lastAccessed', 'lastAccessed');
         }

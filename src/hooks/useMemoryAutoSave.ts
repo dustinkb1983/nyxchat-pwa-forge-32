@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { useMemory } from '@/contexts/MemoryContext';
-import { MemoryEntry } from '@/lib/indexedDB';
+import { MemoryEntry } from '@/types/memory';
 
 export const useMemoryAutoSave = () => {
   const { addMemory } = useMemory();
@@ -24,14 +24,9 @@ export const useMemoryAutoSave = () => {
       let match;
       while ((match = pattern.exec(userMessage)) !== null) {
         memories.push({
-          type: 'preference',
+          category: 'preferences',
           content: `User ${match[0].toLowerCase()}`,
-          importance: 6,
-          tags: [
-            'auto-extracted',
-            'preference',
-            ...(profileId ? [`profile:${profileId}`] : [])
-          ]
+          importance: 6
         });
       }
     });
@@ -47,14 +42,9 @@ export const useMemoryAutoSave = () => {
       let match;
       while ((match = pattern.exec(userMessage)) !== null) {
         memories.push({
-          type: 'fact',
+          category: 'personal',
           content: match[0],
-          importance: 8,
-          tags: [
-            'auto-extracted',
-            'personal-info',
-            ...(profileId ? [`profile:${profileId}`] : [])
-          ]
+          importance: 8
         });
       }
     });
@@ -69,14 +59,9 @@ export const useMemoryAutoSave = () => {
       let match;
       while ((match = pattern.exec(userMessage)) !== null) {
         memories.push({
-          type: 'goal',
+          category: 'other',
           content: `User wants to ${match[1]}`,
-          importance: 7,
-          tags: [
-            'auto-extracted',
-            'goal',
-            ...(profileId ? [`profile:${profileId}`] : [])
-          ]
+          importance: 7
         });
       }
     });

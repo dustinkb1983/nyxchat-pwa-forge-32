@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MemoryEntry } from '@/lib/indexedDB';
+import { MemoryEntry } from '@/types/memory';
 import { formatDistanceToNow } from 'date-fns';
 
 interface MemoryVisualizationProps {
