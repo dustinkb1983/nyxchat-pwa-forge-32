@@ -86,39 +86,42 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full bg-background no-horizontal-scroll">
-      {/* Chat Header - simplified without model selector */}
+      {/* Chat Header - centered with logo */}
       <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="h-8 w-8"
+            className="h-8 w-8 ripple-button elegant-transition"
             aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
           </Button>
+        </div>
+        
+        {/* Centered title with logo and status */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
+          <img 
+            src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
+            alt="NyxChat" 
+            className="app-logo"
+          />
           <div className="flex items-center gap-2">
-            <h1 className="font-semibold text-base">NYX</h1>
-            <div className="relative flex h-2.5 w-2.5" title={isTyping ? "AI Typing" : "Ready"}>
-              <div
-                className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
-                  isTyping ? 'bg-red-400' : 'bg-green-400'
-                }`}
-              ></div>
-              <div
-                className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                  isTyping ? 'bg-red-500' : 'bg-green-500'
-                }`}
-              ></div>
+            <h1 className="font-semibold text-base">NyxChat</h1>
+            <div className={`relative flex h-2 w-2 status-dot ${isTyping ? 'bg-red-500' : 'bg-green-500'}`} title={isTyping ? "AI Typing" : "Ready"}>
+              <div className="absolute inline-flex h-full w-full rounded-full"></div>
+              <div className="relative inline-flex rounded-full h-2 w-2"></div>
             </div>
           </div>
         </div>
+        
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
+            className="ripple-button elegant-transition"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -160,7 +163,7 @@ const ChatInterface = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="min-h-[44px] max-h-32 resize-none pr-12 bg-background custom-scrollbar"
+                className="min-h-[44px] max-h-32 resize-none pr-12 bg-background custom-scrollbar elegant-transition"
                 disabled={isTyping}
               />
               <div className="absolute right-2 bottom-2 flex items-center gap-1">
@@ -169,7 +172,7 @@ const ChatInterface = () => {
                   size="sm"
                   onClick={() => setInputValue("")}
                   disabled={!inputValue.trim()}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 ripple-button elegant-transition"
                 >
                   <StopCircle className="h-4 w-4" />
                 </Button>
@@ -179,7 +182,7 @@ const ChatInterface = () => {
               onClick={handleSend}
               disabled={!inputValue.trim() || isTyping}
               size="icon"
-              className="h-11 w-11 rounded-full"
+              className="h-11 w-11 rounded-full ripple-button elegant-transition elegant-hover"
             >
               <Send className="h-4 w-4" />
             </Button>
