@@ -2,12 +2,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  Sparkles,
-  MessageCircle,
-  Code,
-  BookOpen,
+  Mail,
   Lightbulb,
-  Zap,
+  Brain,
+  Code,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -18,40 +16,24 @@ interface WelcomeScreenProps {
 
 const quickPrompts = [
   {
-    icon: <Sparkles className="h-5 w-5" />,
-    title: "Creative Writing",
-    label: "Creative Writing",
-    prompt: "Write a short story about artificial intelligence discovering emotions"
-  },
-  {
-    icon: <Code className="h-5 w-5" />,
-    title: "Code Help",
-    label: "Code Help",
-    prompt: "Explain how to implement a REST API in Node.js with TypeScript"
-  },
-  {
-    icon: <BookOpen className="h-5 w-5" />,
-    title: "Learning",
-    label: "Learning",
-    prompt: "Teach me about quantum computing in simple terms"
-  },
-  {
-    icon: <Lightbulb className="h-5 w-5" />,
-    title: "Ideas",
-    label: "Ideas",
-    prompt: "Give me 5 innovative startup ideas for 2024"
-  },
-  {
-    icon: <MessageCircle className="h-5 w-5" />,
-    title: "Conversation",
-    label: "Philosophy",
-    prompt: "Let's have a philosophical discussion about consciousness"
-  },
-  {
-    icon: <Zap className="h-5 w-5" />,
-    title: "Quick Task",
-    label: "Email Help",
+    icon: <Mail className="h-6 w-6" />,
+    label: "Write Email",
     prompt: "Help me write a professional email to schedule a meeting"
+  },
+  {
+    icon: <Lightbulb className="h-6 w-6" />,
+    label: "Explain",
+    prompt: "Explain a complex topic in simple, easy-to-understand terms"
+  },
+  {
+    icon: <Brain className="h-6 w-6" />,
+    label: "Brainstorm",
+    prompt: "Help me brainstorm creative ideas for my project"
+  },
+  {
+    icon: <Code className="h-6 w-6" />,
+    label: "Code Review",
+    prompt: "Review my code and suggest improvements for better performance and readability"
   }
 ];
 
@@ -64,28 +46,29 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="mb-8"
+        className="mb-12"
       >
-        <div className="mb-6">
-          <img 
-            src={theme === 'dark' 
-              ? "/lovable-uploads/c4ccfc25-8070-4b46-b114-db5d4bdfd2f7.png" 
-              : "/lovable-uploads/42e8fcdc-df50-495f-a1c0-e9cd71e2f394.png"
-            } 
-            alt="NyxChat Logo" 
-            className="w-20 h-20 mx-auto mb-4"
-          />
+        <div className="mb-8">
+          <div className="w-32 h-32 mx-auto mb-6 rounded-full border-2 border-white/20 flex items-center justify-center bg-background/10">
+            <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center">
+              <div className="flex gap-1">
+                <div className="w-3 h-3 rounded-full bg-white/80"></div>
+                <div className="w-3 h-3 rounded-full bg-white/60"></div>
+              </div>
+              <div className="absolute">
+                <div className="w-1 h-1 bg-white/90 rounded-full animate-pulse" style={{ transform: 'translate(8px, -4px)' }}></div>
+                <div className="w-0.5 h-0.5 bg-white/70 rounded-full animate-pulse" style={{ transform: 'translate(12px, -8px)', animationDelay: '0.5s' }}></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-          Welcome to NyxChat
-        </h1>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl w-full"
+        className="grid grid-cols-2 gap-4 max-w-sm w-full"
       >
         {quickPrompts.map((item, index) => (
           <motion.div
@@ -97,18 +80,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
           >
             <Button
               variant="outline"
-              className="quick-action-card"
+              className="h-20 w-full flex flex-col items-center justify-center gap-2 bg-card/50 border-border/50 hover:bg-card/80 transition-all duration-200"
               onClick={() => onQuickPrompt(item.prompt)}
               title={item.prompt}
             >
-              <div className="text-primary flex-shrink-0">
+              <div className="text-foreground">
                 {item.icon}
               </div>
-              <div className="flex flex-col items-center gap-1 w-full overflow-hidden">
-                <div className="quick-action-title">{item.title}</div>
-                <div className="quick-action-prompt">
-                  {item.label}
-                </div>
+              <div className="text-sm font-medium text-foreground">
+                {item.label}
               </div>
             </Button>
           </motion.div>
