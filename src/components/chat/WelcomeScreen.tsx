@@ -20,31 +20,37 @@ const quickPrompts = [
   {
     icon: <Sparkles className="h-5 w-5" />,
     title: "Creative Writing",
+    label: "Creative Writing",
     prompt: "Write a short story about artificial intelligence discovering emotions"
   },
   {
     icon: <Code className="h-5 w-5" />,
     title: "Code Help",
+    label: "Code Help",
     prompt: "Explain how to implement a REST API in Node.js with TypeScript"
   },
   {
     icon: <BookOpen className="h-5 w-5" />,
     title: "Learning",
+    label: "Learning",
     prompt: "Teach me about quantum computing in simple terms"
   },
   {
     icon: <Lightbulb className="h-5 w-5" />,
     title: "Ideas",
+    label: "Ideas",
     prompt: "Give me 5 innovative startup ideas for 2024"
   },
   {
     icon: <MessageCircle className="h-5 w-5" />,
     title: "Conversation",
+    label: "Philosophy",
     prompt: "Let's have a philosophical discussion about consciousness"
   },
   {
     icon: <Zap className="h-5 w-5" />,
     title: "Quick Task",
+    label: "Email Help",
     prompt: "Help me write a professional email to schedule a meeting"
   }
 ];
@@ -93,6 +99,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
               variant="outline"
               className="quick-action-card"
               onClick={() => onQuickPrompt(item.prompt)}
+              title={item.prompt}
             >
               <div className="text-primary flex-shrink-0">
                 {item.icon}
@@ -100,7 +107,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
               <div className="flex flex-col items-center gap-1 w-full overflow-hidden">
                 <div className="quick-action-title">{item.title}</div>
                 <div className="quick-action-prompt">
-                  {item.prompt}
+                  {item.label}
                 </div>
               </div>
             </Button>

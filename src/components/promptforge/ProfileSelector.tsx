@@ -20,6 +20,16 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChang
 
   useEffect(() => {
     loadProfiles();
+    
+    // Listen for storage changes to update profiles dynamically
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'ai-profiles') {
+        loadProfiles();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadProfiles = () => {

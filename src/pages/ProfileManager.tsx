@@ -1,5 +1,5 @@
+
 import React, { useState, useEffect } from 'react';
-import { availableModels } from '@/constants/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
 
@@ -22,8 +22,14 @@ interface Profile {
   updatedAt: Date;
 }
 
+interface CustomModel {
+  id: string;
+  name: string;
+}
+
 const ProfileManager = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [availableModels, setAvailableModels] = useState<CustomModel[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [formData, setFormData] = useState({
@@ -34,16 +40,48 @@ const ProfileManager = () => {
   });
   const { toast } = useToast();
   
-  // New: add error state for form
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Confirmation dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfiles();
+    loadAvailableModels();
+    
+    // Listen for storage changes to update models dynamically
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'app-settings') {
+        loadAvailableModels();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  const loadAvailableModels = () => {
+    const appSettings = localStorage.getItem('app-settings');
+    let models: CustomModel[] = [
+      { id: 'openai/gpt-4o', name: 'GPT-4o' },
+      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
+      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
+      { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku' },
+    ];
+    
+    if (appSettings) {
+      const settings = JSON.parse(appSettings);
+      if (settings.customModels && Array.isArray(settings.customModels)) {
+        models = [...models, ...settings.customModels];
+      }
+    }
+    
+    setAvailableModels(models);
+    
+    // Update form model if current selection is no longer available
+    if (formData.model && !models.find(m => m.id === formData.model)) {
+      setFormData(prev => ({ ...prev, model: models[0]?.id || 'openai/gpt-4o' }));
+    }
+  };
 
   // Enhance live validation (name and systemPrompt)
   useEffect(() => {
@@ -125,7 +163,7 @@ const ProfileManager = () => {
     const updatedProfiles = [...profiles, newProfile];
     saveProfiles(updatedProfiles);
     
-    setFormData({ name: '', systemPrompt: '', model: 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: availableModels[0]?.id || 'openai/gpt-4o', temperature: 0.7 });
     setIsCreateDialogOpen(false);
     
     toast({
@@ -169,7 +207,7 @@ const ProfileManager = () => {
     saveProfiles(updatedProfiles);
     
     setEditingProfile(null);
-    setFormData({ name: '', systemPrompt: '', model: 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: availableModels[0]?.id || 'openai/gpt-4o', temperature: 0.7 });
     
     toast({
       title: "Profile Updated",
@@ -213,7 +251,7 @@ const ProfileManager = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', systemPrompt: '', model: 'openai/gpt-4o', temperature: 0.7 });
+    setFormData({ name: '', systemPrompt: '', model: availableModels[0]?.id || 'openai/gpt-4o', temperature: 0.7 });
     setEditingProfile(null);
   };
 
@@ -222,16 +260,13 @@ const ProfileManager = () => {
     return model ? model.name : modelId;
   };
 
-  // Filter available models to ensure no empty IDs
-  const validModels = availableModels.filter(model => model.id && model.id.trim() !== '');
-
   const renderModelSelect = () => (
     <Select value={formData.model} onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}>
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {validModels.map(model => (
+        {availableModels.map(model => (
           <SelectItem key={model.id} value={model.id}>
             {model.name}
           </SelectItem>
