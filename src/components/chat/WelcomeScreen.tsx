@@ -49,17 +49,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
         className="mb-12"
       >
         <div className="mb-8">
-          <div className="w-32 h-32 mx-auto mb-6 rounded-full border-2 border-white/20 flex items-center justify-center bg-background/10">
-            <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center">
-              <div className="flex gap-1">
-                <div className="w-3 h-3 rounded-full bg-white/80"></div>
-                <div className="w-3 h-3 rounded-full bg-white/60"></div>
-              </div>
-              <div className="absolute">
-                <div className="w-1 h-1 bg-white/90 rounded-full animate-pulse" style={{ transform: 'translate(8px, -4px)' }}></div>
-                <div className="w-0.5 h-0.5 bg-white/70 rounded-full animate-pulse" style={{ transform: 'translate(12px, -8px)', animationDelay: '0.5s' }}></div>
-              </div>
-            </div>
+          <div className="w-32 h-32 mx-auto mb-6 flex items-center justify-center">
+            <img 
+              src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
+              alt="NyxChat Logo" 
+              className="w-24 h-24"
+            />
           </div>
         </div>
       </motion.div>
