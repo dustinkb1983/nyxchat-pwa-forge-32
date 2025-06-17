@@ -12,6 +12,7 @@ import { BackToChatButton } from "@/components/ui/BackToChatButton";
 import { ModelSelector } from '@/components/ui/ModelSelector';
 import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { availableModels } from '@/constants/models';
 
 interface Profile {
   id: string;
@@ -70,7 +71,7 @@ const ProfileManager = () => {
     const deletedDefaultModels = JSON.parse(localStorage.getItem('deleted-default-models') || '[]');
     
     // Check default models
-    const validDefaultModels = require('@/constants/models').availableModels.filter((m: any) => !deletedDefaultModels.includes(m.id));
+    const validDefaultModels = availableModels.filter((m: any) => !deletedDefaultModels.includes(m.id));
     if (validDefaultModels.some((m: any) => m.id === modelId)) return true;
     
     // Check custom models
