@@ -11,6 +11,7 @@ import { useChat } from "@/contexts/ChatContext";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSidebar } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ChatInterface = () => {
   const {
@@ -25,11 +26,26 @@ const ChatInterface = () => {
   const isCollapsed = state === 'collapsed';
 
   const [inputValue, setInputValue] = useState("");
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const messages = currentConversation?.messages || [];
   const showWelcome = messages.length === 0;
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -100,17 +116,22 @@ const ChatInterface = () => {
           </Button>
         </div>
         
-        {/* Centered title with logo and status */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
-          <img 
-            src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
-            alt="NyxChat" 
-            className="app-logo"
-          />
-          <div className="flex items-center gap-2">
-            <h1 className="font-semibold text-base">NyxChat</h1>
-            <div className={`status-dot ${isTyping ? 'bg-red-500' : 'bg-green-500'}`} title={isTyping ? "AI Typing" : "Ready"}></div>
-          </div>
+        {/* Centered title with status indicator */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+          <h1 className="font-semibold text-base">NyxChat</h1>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                className={`w-2.5 h-2.5 rounded-full ${
+                  isOnline ? 'bg-green-500' : 'bg-red-500'
+                }`}
+                aria-label={isOnline ? "Online" : "Offline"}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isOnline ? "Online" : "Offline"}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         
         <div className="flex items-center gap-2">
