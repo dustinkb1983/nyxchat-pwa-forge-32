@@ -15,17 +15,39 @@ import ProfileManager from "@/pages/ProfileManager";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
 import { SplashScreen } from "@/components/ui/SplashScreen";
-import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import "./animations.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize app
-    const timer = setTimeout(() => setIsLoading(false), 1500);
+    // Initialize app with better loading strategy
+    const timer = setTimeout(() => setIsLoading(false), 1200);
+    
+    // Preload critical resources
+    const preloadImages = [
+      '/icon-192.png',
+      '/icon-512.png',
+      '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png',
+      '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'
+    ];
+    
+    preloadImages.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+    
     return () => clearTimeout(timer);
   }, []);
 
@@ -51,7 +73,7 @@ const App = () => {
                       </Route>
                       <Route path="*" element={<NotFound />} />
                     </Routes>
-                    <InstallPrompt />
+                    <PWAInstallPrompt />
                   </div>
                 </ChatProvider>
               </BrowserRouter>

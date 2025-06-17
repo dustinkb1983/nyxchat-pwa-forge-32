@@ -100,14 +100,17 @@ const ChatInterface = () => {
           </Button>
         </div>
         
-        {/* Centered title with logo */}
+        {/* Centered title with logo and status */}
         <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
           <img 
             src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
             alt="NyxChat" 
             className="app-logo"
           />
-          <h1 className="font-semibold text-base">NyxChat</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-semibold text-base">NyxChat</h1>
+            <div className={`status-dot ${isTyping ? 'bg-red-500' : 'bg-green-500'}`} title={isTyping ? "AI Typing" : "Ready"}></div>
+          </div>
         </div>
         
         <div className="flex items-center gap-2">
