@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -8,407 +9,409 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Save, Plus, Download, Upload, X } from 'lucide-react';
-import { useMemory } from '@/contexts/MemoryContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { AlertTriangle, Brain, Edit, Plus, Trash2, User, Eye, Save, X } from 'lucide-react';
+import { useMemory, type MemoryEntry } from '@/contexts/MemoryContext';
+import { MemoryVisualization } from '@/components/memory/MemoryVisualization';
+import { MemoryInsights } from '@/components/memory/MemoryInsights';
 import { toast } from 'sonner';
-import { MemoryVisualization } from './MemoryVisualization';
-import { MemoryInsights } from './MemoryInsights';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-interface Profile {
-  id: string;
-  name: string;
-}
 
 interface MemoryManagerModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  profiles: Profile[];
+  profiles: { id: string; name: string }[];
 }
 
-export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
-  open,
+export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({ 
+  open, 
   onOpenChange,
-  profiles
+  profiles 
 }) => {
-  const { memories, addMemory, updateMemory, deleteMemory, clearAllMemories } = useMemory();
+  const { memories, addMemory, updateMemory, deleteMemory } = useMemory();
   const isMobile = useIsMobile();
   
-  const [selectedProfile, setSelectedProfile] = useState<string>('global');
   const [newMemory, setNewMemory] = useState({
-    title: '',
     content: '',
-    tags: '',
-    profileId: 'global'
+    category: 'personal' as const,
+    importance: 5
   });
-  const [editingMemory, setEditingMemory] = useState<string | null>(null);
+
+  const [editingMemory, setEditingMemory] = useState<MemoryEntry | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [selectedProfile, setSelectedProfile] = useState<string>('all');
+
+  const categories = ['personal', 'preferences', 'context', 'knowledge', 'other'] as const;
 
   const handleAddMemory = async () => {
-    if (!newMemory.title.trim() || !newMemory.content.trim()) {
-      toast.error('Title and content are required');
+    if (!newMemory.content.trim()) {
+      toast.error('Memory content cannot be empty');
       return;
     }
 
-    const success = await addMemory({
-      title: newMemory.title.trim(),
-      content: newMemory.content.trim(),
-      tags: newMemory.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      profileId: newMemory.profileId
-    });
-
-    if (success) {
-      setNewMemory({ title: '', content: '', tags: '', profileId: 'global' });
-      toast.success('Memory added successfully!');
+    try {
+      await addMemory({
+        content: newMemory.content,
+        category: newMemory.category,
+        importance: newMemory.importance
+      });
+      
+      setNewMemory({
+        content: '',
+        category: 'personal',
+        importance: 5
+      });
+      
+      toast.success('Memory added successfully');
+    } catch (error) {
+      console.error('Error adding memory:', error);
+      toast.error('Failed to add memory');
     }
   };
 
-  const handleUpdateMemory = async (id: string, updates: Partial<typeof newMemory>) => {
-    const success = await updateMemory(id, {
-      ...updates,
-      tags: updates.tags ? updates.tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined
-    });
+  const handleUpdateMemory = async () => {
+    if (!editingMemory) return;
 
-    if (success) {
+    try {
+      await updateMemory(editingMemory.id, {
+        content: editingMemory.content,
+        category: editingMemory.category,
+        importance: editingMemory.importance
+      });
+      
       setEditingMemory(null);
-      toast.success('Memory updated successfully!');
+      toast.success('Memory updated successfully');
+    } catch (error) {
+      console.error('Error updating memory:', error);
+      toast.error('Failed to update memory');
     }
   };
 
   const handleDeleteMemory = async (id: string) => {
     if (confirm('Are you sure you want to delete this memory?')) {
-      const success = await deleteMemory(id);
-      if (success) {
-        toast.success('Memory deleted successfully!');
+      try {
+        await deleteMemory(id);
+        toast.success('Memory deleted successfully');
+      } catch (error) {
+        console.error('Error deleting memory:', error);
+        toast.error('Failed to delete memory');
       }
     }
   };
 
   const handleClearAll = async () => {
-    if (confirm('Are you sure you want to delete ALL memories? This cannot be undone.')) {
-      const success = await clearAllMemories();
-      if (success) {
-        toast.success('All memories cleared successfully!');
+    if (confirm('This will delete all memories. Are you sure?')) {
+      try {
+        for (const memory of memories) {
+          await deleteMemory(memory.id);
+        }
+        toast.success('All memories cleared successfully');
+      } catch (error) {
+        console.error('Error clearing memories:', error);
+        toast.error('Failed to clear memories');
       }
     }
   };
 
-  const handleExportMemories = () => {
-    const dataStr = JSON.stringify(memories, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'nyx-memories.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast.success('Memories exported successfully!');
-  };
-
-  const handleImportMemories = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const importedMemories = JSON.parse(e.target?.result as string);
-        
-        for (const memory of importedMemories) {
-          if (memory.title && memory.content) {
-            await addMemory({
-              title: memory.title,
-              content: memory.content,
-              tags: memory.tags || [],
-              profileId: memory.profileId || 'global'
-            });
-          }
-        }
-        
-        toast.success(`Imported ${importedMemories.length} memories successfully!`);
-      } catch (error) {
-        toast.error('Failed to import memories. Please check the file format.');
-      }
-    };
-    reader.readAsText(file);
-    
-    // Reset the input
-    event.target.value = '';
-  };
-
-  const filteredMemories = memories.filter(memory => 
-    selectedProfile === 'all' || memory.profileId === selectedProfile
-  );
+  const filteredMemories = memories.filter(memory => {
+    const matchesSearch = memory.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || memory.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`modal-unified max-w-4xl max-h-[90vh] overflow-hidden ${isMobile ? 'memory-modal-mobile mx-2 w-[calc(100vw-1rem)]' : ''}`}>
-        <DialogHeader className="modal-header">
-          <DialogTitle className="modal-title">Memory Palace</DialogTitle>
+      <DialogContent className={`modal-unified ${isMobile ? 'memory-modal-mobile' : ''} max-w-4xl max-h-[90vh] overflow-hidden`}>
+        <DialogHeader className="modal-header px-6 py-4">
+          <DialogTitle className="modal-title flex items-center gap-2">
+            <Brain className="h-5 w-5" />
+            Memory Manager
+          </DialogTitle>
         </DialogHeader>
-        
-        <div className={`modal-body flex-1 overflow-y-auto custom-scrollbar ${isMobile ? 'space-y-4' : 'space-y-6'}`}>
-          {/* Memory Statistics */}
-          <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-3 gap-4'}`}>
-            <div className={`bg-muted/50 rounded-lg p-3 ${isMobile ? 'text-center' : ''}`}>
-              <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-primary`}>{memories.length}</div>
-              <div className={`text-xs ${isMobile ? '' : 'text-sm'} text-muted-foreground`}>Total Memories</div>
-            </div>
-            <div className={`bg-muted/50 rounded-lg p-3 ${isMobile ? 'text-center' : ''}`}>
-              <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-primary`}>
-                {new Set(memories.flatMap(m => m.tags)).size}
-              </div>
-              <div className={`text-xs ${isMobile ? '' : 'text-sm'} text-muted-foreground`}>Unique Tags</div>
-            </div>
-            {!isMobile && (
-              <div className="bg-muted/50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-primary">
-                  {new Set(memories.map(m => m.profileId)).size}
+
+        <div className="modal-body flex-1 overflow-hidden">
+          <Tabs defaultValue="memories" className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-3 mx-6">
+              <TabsTrigger value="memories">Memories</TabsTrigger>
+              <TabsTrigger value="visualization">Insights</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="memories" className="flex-1 overflow-hidden">
+              <div className="p-6 h-full flex flex-col gap-4">
+                {/* Search and Filter Controls */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Search memories..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-full sm:w-48">
+                      <SelectValue placeholder="Filter by category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="text-sm text-muted-foreground">Profiles</div>
-              </div>
-            )}
-          </div>
 
-          {/* Memory Insights */}
-          <MemoryInsights memories={memories} />
-          
-          {/* Memory Visualization */}
-          {!isMobile && <MemoryVisualization memories={memories} />}
-
-          {/* Controls */}
-          <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-wrap gap-2'} items-center justify-between`}>
-            <div className={`flex ${isMobile ? 'w-full' : ''} gap-2`}>
-              <Select value={selectedProfile} onValueChange={setSelectedProfile}>
-                <SelectTrigger className={`${isMobile ? 'flex-1 text-sm' : 'w-40'}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Profiles</SelectItem>
-                  <SelectItem value="global">Global</SelectItem>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {isMobile && (
-                <Button
-                  variant="outline"
-                  onClick={handleClearAll}
-                  disabled={memories.length === 0}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800"
-                  size="sm"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            
-            <div className={`flex ${isMobile ? 'w-full justify-between' : ''} gap-2`}>
-              <Button variant="outline" onClick={handleExportMemories} size={isMobile ? "sm" : "default"}>
-                <Download className="h-4 w-4 mr-1" />
-                {!isMobile && 'Export'}
-              </Button>
-              
-              <label className="cursor-pointer">
-                <Button variant="outline" size={isMobile ? "sm" : "default"} asChild>
-                  <span>
-                    <Upload className="h-4 w-4 mr-1" />
-                    {!isMobile && 'Import'}
-                  </span>
-                </Button>
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportMemories}
-                  className="hidden"
-                />
-              </label>
-              
-              {!isMobile && (
-                <Button
-                  variant="outline"
-                  onClick={handleClearAll}
-                  disabled={memories.length === 0}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Clear All
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Add New Memory */}
-          <div className={`border rounded-lg p-4 bg-muted/20 ${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>Add New Memory</h3>
-            
-            <div className={`${isMobile ? 'space-y-3' : 'grid grid-cols-2 gap-4'}`}>
-              <Input
-                placeholder="Memory title..."
-                value={newMemory.title}
-                onChange={(e) => setNewMemory(prev => ({ ...prev, title: e.target.value }))}
-                className={isMobile ? 'text-sm' : ''}
-              />
-              
-              <Select 
-                value={newMemory.profileId} 
-                onValueChange={(value) => setNewMemory(prev => ({ ...prev, profileId: value }))}
-              >
-                <SelectTrigger className={isMobile ? 'text-sm' : ''}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="global">Global</SelectItem>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Textarea
-              placeholder="Memory content..."
-              value={newMemory.content}
-              onChange={(e) => setNewMemory(prev => ({ ...prev, content: e.target.value }))}
-              className={`${isMobile ? 'min-h-[80px] text-sm' : 'min-h-[100px]'} resize-none custom-scrollbar`}
-            />
-            
-            <div className={`${isMobile ? 'space-y-3' : 'flex gap-4 items-end'}`}>
-              <div className="flex-1">
-                <Input
-                  placeholder="Tags (comma-separated)..."
-                  value={newMemory.tags}
-                  onChange={(e) => setNewMemory(prev => ({ ...prev, tags: e.target.value }))}
-                  className={isMobile ? 'text-sm' : ''}
-                />
-              </div>
-              <Button onClick={handleAddMemory} size={isMobile ? "sm" : "default"}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Memory
-              </Button>
-            </div>
-          </div>
-
-          {/* Existing Memories */}
-          <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>
-              Memories ({filteredMemories.length})
-            </h3>
-            
-            {filteredMemories.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <div className={`${isMobile ? 'text-base' : 'text-lg'} font-medium mb-2`}>No memories found</div>
-                <div className={`${isMobile ? 'text-sm' : ''}`}>
-                  {selectedProfile === 'all' 
-                    ? 'Create your first memory above'
-                    : `No memories for ${selectedProfile === 'global' ? 'Global' : profiles.find(p => p.id === selectedProfile)?.name || selectedProfile}`
-                  }
-                </div>
-              </div>
-            ) : (
-              <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-                {filteredMemories.map((memory) => (
-                  <div key={memory.id} className={`border rounded-lg p-4 bg-card mobile-fix-overlap ${isMobile ? 'space-y-2' : ''}`}>
-                    {editingMemory === memory.id ? (
-                      <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-                        <Input
-                          value={memory.title}
-                          onChange={(e) => updateMemory(memory.id, { title: e.target.value })}
-                          className={isMobile ? 'text-sm font-medium' : 'font-medium'}
-                        />
-                        <Textarea
-                          value={memory.content}
-                          onChange={(e) => updateMemory(memory.id, { content: e.target.value })}
-                          className={`${isMobile ? 'min-h-[80px] text-sm' : 'min-h-[100px]'} resize-none custom-scrollbar`}
-                        />
-                        <Input
-                          value={memory.tags.join(', ')}
-                          onChange={(e) => updateMemory(memory.id, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
-                          placeholder="Tags (comma-separated)"
-                          className={isMobile ? 'text-sm' : ''}
-                        />
-                        <div className="flex gap-2">
-                          <Button 
-                            onClick={() => setEditingMemory(null)} 
-                            size={isMobile ? "sm" : "default"}
-                          >
-                            <Save className="h-4 w-4 mr-2" />
-                            Save
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            onClick={() => setEditingMemory(null)}
-                            size={isMobile ? "sm" : "default"}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex-1 min-w-0">
-                            <h4 className={`${isMobile ? 'text-sm' : 'text-base'} font-medium truncate`}>
-                              {memory.title}
-                            </h4>
-                            <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-                              {memory.profileId === 'global' ? 'Global' : 
-                               profiles.find(p => p.id === memory.profileId)?.name || memory.profileId}
-                              {' • '}
-                              {new Date(memory.createdAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setEditingMemory(memory.id)}
-                              className={isMobile ? 'h-8 w-8 p-0' : ''}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteMemory(memory.id)}
-                              className={`text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 ${isMobile ? 'h-8 w-8 p-0' : ''}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <p className={`${isMobile ? 'text-sm' : ''} text-muted-foreground mt-2`}>
-                          {memory.content}
-                        </p>
-                        
-                        {memory.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {memory.tags.map((tag, index) => (
-                              <span
-                                key={index}
-                                className={`inline-block bg-primary/10 text-primary px-2 py-1 rounded-full ${isMobile ? 'text-xs' : 'text-sm'}`}
-                              >
-                                {tag}
-                              </span>
+                {/* Add New Memory */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Add New Memory</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Select 
+                          value={newMemory.category} 
+                          onValueChange={(value) => setNewMemory(prev => ({ ...prev, category: value as any }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map(category => (
+                              <SelectItem key={category} value={category}>
+                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                              </SelectItem>
                             ))}
-                          </div>
-                        )}
-                      </>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="importance">Importance (1-10)</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={newMemory.importance}
+                          onChange={(e) => setNewMemory(prev => ({ 
+                            ...prev, 
+                            importance: Math.max(1, Math.min(10, parseInt(e.target.value) || 1))
+                          }))}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="content">Memory Content</Label>
+                      <Textarea
+                        id="content"
+                        placeholder="Enter memory content..."
+                        value={newMemory.content}
+                        onChange={(e) => setNewMemory(prev => ({ ...prev, content: e.target.value }))}
+                        className="min-h-20 custom-scrollbar"
+                      />
+                    </div>
+                    <Button onClick={handleAddMemory} className="w-full sm:w-auto">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Memory
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Memory List */}
+                <div className="flex-1 overflow-hidden">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">Stored Memories ({filteredMemories.length})</h3>
+                    {memories.length > 0 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleClearAll}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Clear All
+                      </Button>
                     )}
                   </div>
-                ))}
+
+                  <ScrollArea className="h-96">
+                    <div className="space-y-3">
+                      {filteredMemories.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          {searchTerm || categoryFilter !== 'all' 
+                            ? 'No memories match your filters.' 
+                            : 'No memories stored yet. Add your first memory above!'
+                          }
+                        </div>
+                      ) : (
+                        filteredMemories.map((memory) => (
+                          <Card key={memory.id} className="mobile-card">
+                            <CardContent className="p-4">
+                              {editingMemory?.id === memory.id ? (
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <Select 
+                                      value={editingMemory.category} 
+                                      onValueChange={(value) => setEditingMemory(prev => 
+                                        prev ? { ...prev, category: value as any } : null
+                                      )}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {categories.map(category => (
+                                          <SelectItem key={category} value={category}>
+                                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      max="10"
+                                      value={editingMemory.importance}
+                                      onChange={(e) => setEditingMemory(prev => 
+                                        prev ? { 
+                                          ...prev, 
+                                          importance: Math.max(1, Math.min(10, parseInt(e.target.value) || 1))
+                                        } : null
+                                      )}
+                                    />
+                                  </div>
+                                  <Textarea
+                                    value={editingMemory.content}
+                                    onChange={(e) => setEditingMemory(prev => 
+                                      prev ? { ...prev, content: e.target.value } : null
+                                    )}
+                                    className="min-h-20 custom-scrollbar"
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button size="sm" onClick={handleUpdateMemory}>
+                                      <Save className="h-4 w-4 mr-2" />
+                                      Save
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      onClick={() => setEditingMemory(null)}
+                                    >
+                                      <X className="h-4 w-4 mr-2" />
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex items-start justify-between gap-4 mb-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <Badge variant="secondary" className="text-xs">
+                                        {memory.category}
+                                      </Badge>
+                                      <Badge 
+                                        variant={memory.importance >= 7 ? "default" : "outline"}
+                                        className="text-xs"
+                                      >
+                                        Priority: {memory.importance}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setEditingMemory(memory)}
+                                        className="h-8 w-8 p-0"
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleDeleteMemory(memory.id)}
+                                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-foreground leading-relaxed mb-2">
+                                    {memory.content}
+                                  </p>
+                                  <div className="text-xs text-muted-foreground">
+                                    Created: {new Date(memory.createdAt).toLocaleDateString()}
+                                    {memory.lastAccessed && (
+                                      <> • Last accessed: {new Date(memory.lastAccessed).toLocaleDateString()}</>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
-            )}
-          </div>
+            </TabsContent>
+
+            <TabsContent value="visualization" className="flex-1 overflow-hidden">
+              <div className="p-6 h-full">
+                <MemoryVisualization 
+                  memories={memories} 
+                  onSelectMemory={(memory) => {
+                    // Switch to memories tab and highlight the selected memory
+                  }}
+                />
+                <Separator className="my-6" />
+                <MemoryInsights memories={memories} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings" className="flex-1 overflow-hidden">
+              <div className="p-6">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Memory Settings</h3>
+                    <div className="space-y-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" />
+                            Data Management
+                          </CardTitle>
+                          <CardDescription>
+                            Manage your stored memories and data.
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <Button 
+                            variant="outline" 
+                            onClick={handleClearAll}
+                            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Clear All Memories
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>

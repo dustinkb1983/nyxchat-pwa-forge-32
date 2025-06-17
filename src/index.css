@@ -175,10 +175,6 @@
     @apply text-base font-medium;
   }
   
-  .memory-modal-mobile .text-sm {
-    @apply text-sm;
-  }
-  
   /* Profile manager mobile optimization */
   .profiles-mobile {
     @apply px-3 py-4;
@@ -212,12 +208,13 @@
   
   /* Mobile input sizing */
   .mobile-input {
-    @apply text-sm py-2;
+    font-size: 0.875rem;
+    padding: 0.5rem;
   }
   
   /* Mobile select sizing */
   .mobile-select {
-    @apply text-sm;
+    font-size: 0.875rem;
   }
   
   /* Fix overlapping elements in mobile */
