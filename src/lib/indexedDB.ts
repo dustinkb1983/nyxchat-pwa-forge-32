@@ -1,3 +1,4 @@
+
 // IndexedDB utility for persistent storage
 const DB_NAME = 'VivicaDB';
 const DB_VERSION = 1;
@@ -24,8 +25,8 @@ export interface Message {
   error?: boolean;
 }
 
-// Import the unified MemoryEntry type
-export { MemoryEntry } from '@/types/memory';
+// Import and re-export the unified MemoryEntry type
+export type { MemoryEntry } from '@/types/memory';
 
 export interface PromptTemplate {
   id: string;

@@ -1,4 +1,5 @@
 
+
 export interface MemoryEntry {
   id: string;
   content: string;
@@ -8,3 +9,4 @@ export interface MemoryEntry {
   lastAccessed: Date;
   tags?: string[];
 }
+
