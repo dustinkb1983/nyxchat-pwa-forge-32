@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Slider } from "@/components/ui/slider";
-import { Moon, Sun, LightbulbOff } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { LightbulbOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { BackToChatButton } from "@/components/ui/BackToChatButton";
 import { ModelSelector } from '@/components/ui/ModelSelector';
@@ -21,7 +19,6 @@ interface CustomModel {
 }
 
 interface AppSettings {
-  theme: 'light' | 'dark';
   selectedModel: string;
   customModels: CustomModel[];
   systemPrompt: string;
@@ -31,11 +28,9 @@ interface AppSettings {
 }
 
 const Settings = () => {
-  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [settings, setSettings] = useState<AppSettings>({
-    theme: 'dark',
     selectedModel: 'openai/gpt-4o',
     customModels: [],
     systemPrompt: '',
@@ -185,22 +180,6 @@ const Settings = () => {
             <span className={isMobile ? 'text-xs' : ''}>
               Tip: Use <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd> to send, <kbd className="px-2 py-1 bg-muted rounded text-xs">Shift+Enter</kbd> for new line.
             </span>
-          </div>
-          
-          {/* Theme Settings */}
-          <div className="space-y-3">
-            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>Theme Settings</h3>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                <span className={isMobile ? 'text-sm' : ''}>AMOLED Theme</span>
-              </div>
-              <Switch 
-                checked={theme === 'dark'} 
-                onCheckedChange={toggleTheme}
-                className="ripple-button"
-              />
-            </div>
           </div>
 
           {/* AI Model Selection */}

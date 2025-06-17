@@ -144,7 +144,7 @@ export function AppSidebar() {
             <div className="px-2 pt-2 mb-3">
               <Button
                 onClick={handleNewChat}
-                className="w-full justify-start rounded-md ripple-button elegant-transition"
+                className="w-full justify-start rounded-md ripple-button elegant-transition text-sm"
                 variant="outline"
               >
                 <Plus className="h-4 w-4" />
@@ -154,12 +154,12 @@ export function AppSidebar() {
 
             {/* Clear All Button */}
             {!isCollapsed && (
-              <div className="px-2 mb-4">
+              <div className="px-2 mb-3">
                 <Button
                   onClick={handleClearAll}
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800 ripple-button elegant-transition"
+                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800 ripple-button elegant-transition text-xs"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Clear All
@@ -174,7 +174,7 @@ export function AppSidebar() {
                   placeholder="Search conversations..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="rounded-md bg-background"
+                  className="rounded-md bg-background text-sm"
                 />
               </div>
             )}
@@ -182,7 +182,7 @@ export function AppSidebar() {
             {/* Conversations - Scrollable */}
             <div className="flex-1 overflow-y-auto px-2 pb-4">
               <SidebarGroup>
-                <SidebarGroupLabel>Conversations</SidebarGroupLabel>
+                <SidebarGroupLabel className="sidebar-mobile-title">Conversations</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {filteredConversations.length === 0 ? (
@@ -201,7 +201,7 @@ export function AppSidebar() {
                                   setOpenMobile(false);
                                 }
                               }}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ripple-button elegant-transition ${
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors w-full text-left group/item ripple-button elegant-transition text-sm ${
                                 currentConversation?.id === conversation.id
                                   ? 'bg-primary text-primary-foreground'
                                   : 'hover:bg-accent hover:text-accent-foreground'
@@ -210,7 +210,7 @@ export function AppSidebar() {
                               <MessageSquare className="h-4 w-4 flex-shrink-0" />
                               {!isCollapsed && (
                                 <>
-                                  <span className="truncate flex-1">{conversation.title}</span>
+                                  <span className="truncate-mobile flex-1">{conversation.title}</span>
                                   <div className="flex items-center opacity-0 group-hover/item:opacity-100 transition-opacity">
                                     <Button
                                       variant="ghost"
@@ -251,7 +251,9 @@ export function AppSidebar() {
                   <SidebarGroupLabel className="text-xs text-muted-foreground px-2 mb-1">
                     Active Profile
                   </SidebarGroupLabel>
-                  <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
+                  <div className="px-2">
+                    <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
+                  </div>
                 </div>
               )}
               
@@ -269,7 +271,7 @@ export function AppSidebar() {
                             }
                           }}
                           className={({ isActive }) =>
-                            `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ripple-button elegant-transition ${
+                            `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ripple-button elegant-transition text-sm ${
                               isActive
                                 ? 'bg-primary text-primary-foreground'
                                 : 'hover:bg-accent hover:text-accent-foreground'
@@ -282,7 +284,7 @@ export function AppSidebar() {
                       ) : (
                         <button
                           type="button"
-                          className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground w-full ripple-button elegant-transition ${memoryModalOpen ? 'bg-primary text-primary-foreground' : ''}`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground w-full ripple-button elegant-transition text-sm ${memoryModalOpen ? 'bg-primary text-primary-foreground' : ''}`}
                           onClick={handleMemoryModalOpen}
                         >
                           <item.icon className="h-4 w-4" />

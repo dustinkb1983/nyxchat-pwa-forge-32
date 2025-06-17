@@ -67,8 +67,18 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       }
     };
     
+    // Listen for custom events for same-window updates
+    const handleCustomStorageUpdate = () => {
+      loadAvailableModels();
+    };
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('modelSettingsUpdated', handleCustomStorageUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('modelSettingsUpdated', handleCustomStorageUpdate);
+    };
   }, []);
 
   const getDisplayName = (modelId?: string) => {
@@ -83,6 +93,8 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     
     if (onModelDelete) {
       onModelDelete(modelId, isCustom);
+      // Trigger custom event for same-window updates
+      window.dispatchEvent(new CustomEvent('modelSettingsUpdated'));
     }
   };
 
@@ -101,12 +113,12 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         {availableModelOptions.map((model) => (
           <SelectItem key={model.id} value={model.id}>
             <div className="flex items-center justify-between w-full group">
-              <span>{model.name}</span>
-              {showDeleteIcons && model.isCustom && (
+              <span className="truncate-mobile">{model.name}</span>
+              {showDeleteIcons && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity ripple-button"
+                  className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity ripple-button ml-2 flex-shrink-0"
                   onClick={(e) => handleDeleteModel(e, model.id, model.isCustom || false)}
                   title="Delete model"
                 >

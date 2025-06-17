@@ -103,7 +103,7 @@ const ChatInterface = () => {
   return (
     <div className="flex flex-col h-full bg-background no-horizontal-scroll">
       {/* Chat Header - centered with logo */}
-      <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
+      <header className="flex items-center justify-between px-4 py-3 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "56px", height: "56px" }}>
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -116,22 +116,29 @@ const ChatInterface = () => {
           </Button>
         </div>
         
-        {/* Centered title with status indicator */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-          <h1 className="font-semibold text-base">NyxChat</h1>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div 
-                className={`w-2.5 h-2.5 rounded-full ${
-                  isOnline ? 'bg-green-500' : 'bg-red-500'
-                }`}
-                aria-label={isOnline ? "Online" : "Offline"}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isOnline ? "Online" : "Offline"}</p>
-            </TooltipContent>
-          </Tooltip>
+        {/* Centered title with logo and status indicator */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
+          <img 
+            src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
+            alt="NyxChat" 
+            className="app-logo"
+          />
+          <div className="flex items-center gap-2">
+            <h1 className="font-semibold text-base">NyxChat</h1>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div 
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    isOnline ? 'bg-green-500' : 'bg-red-500'
+                  }`}
+                  aria-label={isOnline ? "Online" : "Offline"}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isOnline ? "Online" : "Offline"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         
         <div className="flex items-center gap-2">

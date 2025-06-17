@@ -62,16 +62,16 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ value, onChang
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-40">
+      <SelectTrigger className="w-full h-8 text-xs bg-background border-input">
         <SelectValue placeholder="Select Profile">
-          {getDisplayName(value)}
+          <span className="truncate-mobile">{getDisplayName(value)}</span>
         </SelectValue>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="text-xs">
         <SelectItem value="global">Global</SelectItem>
         {profiles.map((profile) => (
           <SelectItem key={profile.id} value={profile.id}>
-            {profile.name}
+            <span className="truncate-mobile">{profile.name}</span>
           </SelectItem>
         ))}
       </SelectContent>

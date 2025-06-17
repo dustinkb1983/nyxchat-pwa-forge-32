@@ -171,7 +171,7 @@
 }
 
 .modal-title {
-  @apply text-xl font-semibold text-foreground;
+  @apply text-lg font-semibold text-foreground;
 }
 
 .modal-body {
@@ -179,25 +179,72 @@
 }
 
 .modal-body h3 {
-  @apply text-lg font-medium;
-}
-
-.modal-body h4 {
   @apply text-base font-medium;
 }
 
-/* Mobile-specific optimizations - TRIMMED FOR BREVITY */
+.modal-body h4 {
+  @apply text-sm font-medium;
+}
+
+/* Mobile-specific optimizations */
 @media (max-width: 768px) {
   .settings-mobile {
     @apply px-3 py-4;
   }
   
   .mobile-tight-spacing {
-    @apply space-y-2;
+    @apply space-y-3;
   }
   
   .mobile-button {
-    @apply py-2 px-3 text-xs;
+    @apply py-2 px-3 text-sm;
+  }
+
+  .mobile-card {
+    @apply m-2 rounded-lg;
+  }
+
+  .mobile-input {
+    @apply text-sm;
+  }
+
+  .mobile-select {
+    @apply text-sm;
+  }
+
+  .card-header {
+    @apply px-4 py-3;
+  }
+
+  .card-content {
+    @apply px-4 pb-4;
+  }
+
+  /* Sidebar mobile optimizations */
+  .sidebar-mobile-title {
+    @apply text-sm font-medium;
+  }
+
+  .sidebar-mobile-item {
+    @apply text-sm;
+  }
+
+  /* Profile manager mobile */
+  .profile-mobile-title {
+    @apply text-base font-medium;
+  }
+
+  .profile-mobile-button {
+    @apply text-xs px-2 py-1.5;
+  }
+
+  /* Memory tabs mobile */
+  .memory-tabs-mobile {
+    @apply rounded-lg;
+  }
+
+  .memory-tab-mobile {
+    @apply text-sm px-3 py-2;
   }
 }
 
@@ -294,8 +341,8 @@ textarea.custom-scrollbar {
 
 /* Logo styling */
 .app-logo {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   filter: brightness(0) saturate(100%);
 }
 
@@ -359,4 +406,24 @@ button:active:not(:disabled), [role="button"]:active {
 
 .offline-indicator.show {
   transform: translateY(0);
+}
+
+/* Text truncation utility */
+.truncate-mobile {
+  @apply truncate max-w-[150px];
+}
+
+@media (max-width: 640px) {
+  .truncate-mobile {
+    @apply max-w-[120px];
+  }
+}
+
+/* Consistent tab styling */
+.memory-tabs [role="tablist"] {
+  @apply rounded-lg;
+}
+
+.memory-tabs [role="tab"] {
+  @apply rounded-md;
 }
