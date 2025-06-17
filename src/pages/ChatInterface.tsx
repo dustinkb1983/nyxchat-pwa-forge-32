@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
-import { ProfileSelector } from "@/components/promptforge/ProfileSelector";
 import { useChat } from "@/contexts/ChatContext";
 import { AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -87,7 +86,7 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full bg-background no-horizontal-scroll">
-      {/* Chat Header */}
+      {/* Chat Header - simplified without model selector */}
       <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "48px", height: "48px" }}>
         <div className="flex items-center gap-3">
           <Button
@@ -116,7 +115,6 @@ const ChatInterface = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
           <Button
             variant="ghost"
             size="icon"

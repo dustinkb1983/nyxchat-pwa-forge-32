@@ -28,6 +28,8 @@ import { useChat, type Conversation } from '@/contexts/ChatContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMemory } from '@/contexts/MemoryContext';
 import { MemoryManagerModal } from "@/components/memory/MemoryManagerModal";
+import { ModelSelector } from '@/components/ui/ModelSelector';
+import { ProfileSelector } from '@/components/promptforge/ProfileSelector';
 import { toast } from "sonner";
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -39,11 +41,35 @@ const staticMenuItems = [
 
 export function AppSidebar() {
   const { state, setOpenMobile } = useSidebar();
-  const { conversations, currentConversation, newConversation, loadConversation, deleteConversation } = useChat();
+  const { conversations, currentConversation, newConversation, loadConversation, deleteConversation, currentProfile, setCurrentProfile } = useChat();
   const { memories, deleteMemory } = useMemory();
   const { theme } = useTheme();
   const isMobile = useIsMobile();
   const [memoryModalOpen, setMemoryModalOpen] = useState(false);
+
+  // Global model state
+  const [selectedModel, setSelectedModel] = useState('');
+
+  // Load global model from settings
+  useEffect(() => {
+    const appSettings = localStorage.getItem('app-settings');
+    if (appSettings) {
+      const settings = JSON.parse(appSettings);
+      setSelectedModel(settings.selectedModel || 'openai/gpt-4o');
+    } else {
+      setSelectedModel('openai/gpt-4o');
+    }
+  }, []);
+
+  // Handle global model change
+  const handleModelChange = (modelId: string) => {
+    setSelectedModel(modelId);
+    const appSettings = localStorage.getItem('app-settings');
+    const settings = appSettings ? JSON.parse(appSettings) : {};
+    settings.selectedModel = modelId;
+    localStorage.setItem('app-settings', JSON.stringify(settings));
+    toast.success('Global model updated!');
+  };
 
   // Profile list for modal (loaded from localStorage for now; see ProfileSelector logic)
   const [profiles, setProfiles] = useState<{ id: string, name: string }[]>([]);
@@ -121,6 +147,11 @@ export function AppSidebar() {
     }
   };
 
+  const handleProfileChange = (profileId: string) => {
+    setCurrentProfile(profileId);
+    toast.success(`Profile switched!`);
+  };
+
   // Conversation search/filter state
   const [search, setSearch] = useState('');
   const filteredConversations = search.trim().length === 0
@@ -134,8 +165,24 @@ export function AppSidebar() {
       <Sidebar collapsible="icon" className={`bg-sidebar rounded-xl m-2 shadow group/sidebar ${isCollapsed ? 'w-14' : 'w-60'} transition-all duration-300`}>
         <SidebarContent>
           <div className="flex flex-col h-full">
+            {/* AI Model Selector */}
+            {!isCollapsed && (
+              <div className="px-2 pt-2 mb-3">
+                <div className="mb-2">
+                  <SidebarGroupLabel className="text-xs text-muted-foreground px-2 mb-1">
+                    AI Model
+                  </SidebarGroupLabel>
+                  <ModelSelector
+                    value={selectedModel}
+                    onChange={handleModelChange}
+                    className="h-9"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* New Chat Button */}
-            <div className="px-2 pt-2 mb-3">
+            <div className="px-2 mb-3">
               <Button
                 onClick={handleNewChat}
                 className="w-full justify-start rounded-md"
@@ -145,18 +192,6 @@ export function AppSidebar() {
                 {!isCollapsed && <span className="ml-2">New Chat</span>}
               </Button>
             </div>
-
-            {/* Conversation Search Input */}
-            {!isCollapsed && (
-              <div className="px-2 mb-2">
-                <SidebarInput
-                  placeholder="Search conversations..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="rounded-md bg-background"
-                />
-              </div>
-            )}
 
             {/* Clear All Button */}
             {!isCollapsed && (
@@ -170,6 +205,18 @@ export function AppSidebar() {
                   <X className="h-4 w-4 mr-2" />
                   Clear All
                 </Button>
+              </div>
+            )}
+
+            {/* Conversation Search Input */}
+            {!isCollapsed && (
+              <div className="px-2 mb-2">
+                <SidebarInput
+                  placeholder="Search conversations..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="rounded-md bg-background"
+                />
               </div>
             )}
 
@@ -239,6 +286,16 @@ export function AppSidebar() {
 
             {/* Static menu anchored at bottom */}
             <div className="border-t pt-2 px-2 pb-2 bg-background/70">
+              {/* Active Profile Display */}
+              {!isCollapsed && (
+                <div className="mb-2">
+                  <SidebarGroupLabel className="text-xs text-muted-foreground px-2 mb-1">
+                    Active Profile
+                  </SidebarGroupLabel>
+                  <ProfileSelector value={currentProfile} onChange={handleProfileChange} />
+                </div>
+              )}
+              
               <SidebarMenu>
                 {staticMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
