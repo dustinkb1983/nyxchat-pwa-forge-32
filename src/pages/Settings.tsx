@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -194,9 +193,7 @@ const Settings = () => {
     <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'p-2' : 'p-6'}`}>
       {/* Header with close button */}
       <div className="flex items-center justify-between mb-3">
-        <div>
-          <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>Settings</h1>
-        </div>
+        <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>Settings</h1>
         
         <Button
           variant="ghost"
@@ -209,11 +206,6 @@ const Settings = () => {
       </div>
 
       <Card className={`flex-1`}>
-        <CardHeader className={isMobile ? 'pb-1 p-2' : 'pb-2 p-3'}>
-          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
-            Settings
-          </CardTitle>
-        </CardHeader>
         <CardContent className={`${isMobile ? 'p-2 space-y-2' : 'p-3 space-y-3'}`}>
           {/* Instructional/Tips Area */}
           <div className={`rounded-md bg-muted/30 px-2 py-1 text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} flex items-center gap-2 select-none`}>

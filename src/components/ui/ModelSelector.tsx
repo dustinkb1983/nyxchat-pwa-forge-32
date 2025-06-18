@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
@@ -34,6 +34,11 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   const [pendingDeleteModel, setPendingDeleteModel] = useState<{id: string, name: string, isCustom: boolean} | null>(null);
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
+
+  // Long press functionality
+  const [longPressModel, setLongPressModel] = useState<string | null>(null);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressActiveRef = useRef(false);
 
   const loadAvailableModels = () => {
     const appSettings = localStorage.getItem('app-settings');
@@ -88,6 +93,30 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     if (!modelId) return 'Select Model';
     const model = availableModelOptions.find(m => m.id === modelId);
     return model ? model.name : modelId;
+  };
+
+  const handleLongPressStart = (modelId: string, modelName: string, isCustom: boolean) => {
+    longPressActiveRef.current = true;
+    setLongPressModel(modelId);
+    
+    longPressTimerRef.current = setTimeout(() => {
+      if (longPressActiveRef.current) {
+        // Trigger long press action
+        setPendingDeleteModel({ id: modelId, name: modelName, isCustom });
+        setDeleteDialogOpen(true);
+        setLongPressModel(null);
+      }
+    }, 800); // 800ms long press duration
+  };
+
+  const handleLongPressEnd = () => {
+    longPressActiveRef.current = false;
+    setLongPressModel(null);
+    
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
   };
 
   const handleDeleteRequest = (e: React.MouseEvent, modelId: string, modelName: string, isCustom: boolean) => {
@@ -156,9 +185,20 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         </SelectTrigger>
         <SelectContent className="z-50 bg-popover border border-border text-sm">
           {availableModelOptions.map((model) => (
-            <SelectItem key={model.id} value={model.id} className="text-sm">
+            <SelectItem 
+              key={model.id} 
+              value={model.id} 
+              className="text-sm"
+              onTouchStart={() => handleLongPressStart(model.id, model.name, model.isCustom || false)}
+              onTouchEnd={handleLongPressEnd}
+              onMouseDown={() => handleLongPressStart(model.id, model.name, model.isCustom || false)}
+              onMouseUp={handleLongPressEnd}
+              onMouseLeave={handleLongPressEnd}
+            >
               <div className="flex items-center justify-between w-full group">
-                <span className="truncate pr-2">{model.name}</span>
+                <span className={`truncate pr-2 ${longPressModel === model.id ? 'opacity-60' : ''}`}>
+                  {model.name}
+                </span>
                 {showDeleteIcons && (
                   <Button
                     variant="ghost"

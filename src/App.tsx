@@ -32,8 +32,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize app with better loading strategy
-    const timer = setTimeout(() => setIsLoading(false), 1200);
+    // Initialize app with longer loading strategy for better splash screen experience
+    const timer = setTimeout(() => setIsLoading(false), 3000); // Increased from 1200ms to 3000ms
     
     // Preload critical resources
     const preloadImages = [
