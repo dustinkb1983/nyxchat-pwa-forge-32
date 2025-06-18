@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,14 +24,14 @@ export const MemoryManager = () => {
   
   const [newMemory, setNewMemory] = useState({
     content: '',
-    category: 'other' as const,
+    category: 'other' as MemoryEntry['category'],
     importance: 5,
     tags: ''
   });
 
   const [editMemory, setEditMemory] = useState({
     content: '',
-    category: 'other' as const,
+    category: 'other' as MemoryEntry['category'],
     importance: 5,
     tags: ''
   });
@@ -54,7 +53,7 @@ export const MemoryManager = () => {
             if (!memory.category) {
               const convertedMemory = {
                 content: memory.content,
-                category: 'other' as const,
+                category: 'other' as MemoryEntry['category'],
                 importance: memory.importance || 5,
                 tags: memory.tags || []
               };
@@ -270,7 +269,7 @@ export const MemoryManager = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <select
                         value={newMemory.category}
-                        onChange={(e) => setNewMemory(prev => ({ ...prev, category: e.target.value as any }))}
+                        onChange={(e) => setNewMemory(prev => ({ ...prev, category: e.target.value as MemoryEntry['category'] }))}
                         className={`border border-input bg-background px-2 py-1 rounded ${isMobile ? 'h-7 text-xs' : 'h-8'}`}
                       >
                         {categoryOptions.map(option => (
@@ -415,7 +414,7 @@ export const MemoryManager = () => {
                       <div className="grid grid-cols-2 gap-2">
                         <select
                           value={editMemory.category}
-                          onChange={(e) => setEditMemory(prev => ({ ...prev, category: e.target.value as any }))}
+                          onChange={(e) => setEditMemory(prev => ({ ...prev, category: e.target.value as MemoryEntry['category'] }))}
                           className="border border-input bg-background px-2 py-1 rounded h-8"
                         >
                           {categoryOptions.map(option => (
