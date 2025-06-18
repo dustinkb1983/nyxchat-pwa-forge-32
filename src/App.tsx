@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,9 +29,9 @@ const queryClient = new QueryClient({
 });
 
 const App: React.FC = () => {
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Initialize app with mobile-optimized loading
     const timer = setTimeout(() => setIsLoading(false), 1500);
     
@@ -52,7 +52,7 @@ const App: React.FC = () => {
   }, []);
 
   // Handle viewport height for mobile
-  React.useEffect(() => {
+  useEffect(() => {
     const setVH = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
