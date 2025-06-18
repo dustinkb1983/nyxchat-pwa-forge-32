@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,9 +29,9 @@ const queryClient = new QueryClient({
 });
 
 const App: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Initialize app with longer loading strategy for better splash screen experience
     const timer = setTimeout(() => setIsLoading(false), 3000); // Increased from 1200ms to 3000ms
     

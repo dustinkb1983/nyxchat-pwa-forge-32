@@ -1,10 +1,10 @@
 
-import React from 'react';
+import * as React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 
-const MainLayout = () => {
+const MainLayout: React.FC = () => {
   const location = useLocation();
 
   return (
