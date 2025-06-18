@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, StopCircle, Moon, Sun, Menu } from "lucide-react";
+import { Send, Moon, Sun, Menu, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +8,6 @@ import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { useChat } from "@/contexts/ChatContext";
-import { AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSidebar } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -27,8 +26,10 @@ const ChatInterface = () => {
 
   const [inputValue, setInputValue] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const messages = currentConversation?.messages || [];
   const showWelcome = messages.length === 0;
@@ -51,6 +52,21 @@ const ChatInterface = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
+
+  // Monitor scroll position for scroll-to-bottom button
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollToBottom(!isNearBottom && messages.length > 3);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [messages.length]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -100,16 +116,21 @@ const ChatInterface = () => {
     toast.success(`Profile switched!`);
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setShowScrollToBottom(false);
+  };
+
   return (
-    <div className="flex flex-col h-full bg-background no-horizontal-scroll">
-      {/* Chat Header - cleaned up and centered */}
-      <header className="flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10" style={{ minHeight: "50px", height: "50px" }}>
+    <div className="flex flex-col h-full bg-background relative">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-2 border-b bg-card/90 backdrop-blur-md" style={{ minHeight: "50px", height: "50px" }}>
         <div className="flex items-center">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="h-8 w-8 ripple-button elegant-transition"
+            className="h-8 w-8 transition-transform duration-200 hover:scale-105"
             aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
@@ -121,13 +142,13 @@ const ChatInterface = () => {
           <img 
             src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
             alt="NyxChat" 
-            className="app-logo"
+            className="w-8 h-8 transition-all duration-200"
           />
           <h1 className="font-semibold text-base">NyxChat</h1>
           <Tooltip>
             <TooltipTrigger asChild>
               <div 
-                className={`w-2 h-2 rounded-full ${
+                className={`w-2 h-2 rounded-full transition-colors duration-200 ${
                   isOnline ? 'bg-green-500' : 'bg-red-500'
                 }`}
                 aria-label={isOnline ? "Online" : "Offline"}
@@ -144,7 +165,7 @@ const ChatInterface = () => {
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="h-8 w-8 ripple-button elegant-transition"
+            className="h-8 w-8 transition-transform duration-200 hover:scale-105"
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -152,31 +173,56 @@ const ChatInterface = () => {
         </div>
       </header>
 
-      {/* Chat Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-horizontal-scroll">
+      {/* Chat Body with Scroll Container */}
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth"
+        style={{ paddingBottom: '80px' }} // Space for sticky footer
+      >
         {showWelcome ? (
-          <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
+          <div className="opacity-0 animate-in fade-in duration-300">
+            <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
+          </div>
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
-            <AnimatePresence>
-              {messages.map((message, index) => (
+            {messages.map((message, index) => (
+              <div 
+                key={message.id}
+                className="opacity-0 animate-in fade-in duration-300"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <ChatMessage
-                  key={message.id}
                   message={message}
                   index={index}
                 />
-              ))}
-            </AnimatePresence>
+              </div>
+            ))}
             {isTyping && (
-              <TypingIndicator />
+              <div className="opacity-0 animate-in fade-in duration-300">
+                <TypingIndicator />
+              </div>
             )}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
-      {/* Chat Input */}
-      <div className="border-t bg-card/50 backdrop-blur-sm p-3 no-horizontal-scroll">
+      {/* Scroll to Bottom Button */}
+      {showScrollToBottom && (
+        <Button
+          onClick={scrollToBottom}
+          size="icon"
+          className="fixed bottom-24 right-4 z-10 h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+          style={{
+            animation: 'fade-in 0.3s ease-out',
+          }}
+        >
+          <ChevronDown className="h-5 w-5" />
+        </Button>
+      )}
+
+      {/* Sticky Chat Input Footer */}
+      <div className="sticky bottom-0 z-20 border-t bg-card/90 backdrop-blur-md p-3">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
@@ -186,26 +232,15 @@ const ChatInterface = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="min-h-[40px] max-h-32 resize-none pr-12 bg-background custom-scrollbar elegant-transition"
+                className="min-h-[40px] max-h-32 resize-none pr-12 bg-background transition-all duration-200"
                 disabled={isTyping}
               />
-              <div className="absolute right-2 bottom-2 flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setInputValue("")}
-                  disabled={!inputValue.trim()}
-                  className="h-7 w-7 p-0 ripple-button elegant-transition"
-                >
-                  <StopCircle className="h-3 w-3" />
-                </Button>
-              </div>
             </div>
             <Button
               onClick={handleSend}
               disabled={!inputValue.trim() || isTyping}
               size="icon"
-              className="h-10 w-10 rounded-full ripple-button elegant-transition elegant-hover"
+              className="h-10 w-10 rounded-full transition-all duration-200 hover:scale-105 disabled:hover:scale-100"
             >
               <Send className="h-4 w-4" />
             </Button>

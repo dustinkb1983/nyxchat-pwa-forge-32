@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
 import { availableModels } from '@/constants/models';
 import { useSidebar } from '@/components/ui/sidebar';
 import { toast } from 'sonner';
@@ -99,14 +97,24 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
     longPressActiveRef.current = true;
     setLongPressModel(modelId);
     
+    // Trigger haptic feedback on mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+    
     longPressTimerRef.current = setTimeout(() => {
       if (longPressActiveRef.current) {
+        // Stronger haptic feedback for long press
+        if ('vibrate' in navigator) {
+          navigator.vibrate([100, 50, 100]);
+        }
+        
         // Trigger long press action
         setPendingDeleteModel({ id: modelId, name: modelName, isCustom });
         setDeleteDialogOpen(true);
         setLongPressModel(null);
       }
-    }, 800); // 800ms long press duration
+    }, 500);
   };
 
   const handleLongPressEnd = () => {
@@ -117,14 +125,6 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-  };
-
-  const handleDeleteRequest = (e: React.MouseEvent, modelId: string, modelName: string, isCustom: boolean) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setPendingDeleteModel({ id: modelId, name: modelName, isCustom });
-    setDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
@@ -188,28 +188,17 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             <SelectItem 
               key={model.id} 
               value={model.id} 
-              className="text-sm"
+              className={`text-sm transition-all duration-200 ${longPressModel === model.id ? 'scale-95 opacity-70' : ''}`}
               onTouchStart={() => handleLongPressStart(model.id, model.name, model.isCustom || false)}
               onTouchEnd={handleLongPressEnd}
               onMouseDown={() => handleLongPressStart(model.id, model.name, model.isCustom || false)}
               onMouseUp={handleLongPressEnd}
               onMouseLeave={handleLongPressEnd}
             >
-              <div className="flex items-center justify-between w-full group">
-                <span className={`truncate pr-2 ${longPressModel === model.id ? 'opacity-60' : ''}`}>
+              <div className="flex items-center w-full">
+                <span className="truncate">
                   {model.name}
                 </span>
-                {showDeleteIcons && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity ripple-button ml-2 flex-shrink-0"
-                    onClick={(e) => handleDeleteRequest(e, model.id, model.name, model.isCustom || false)}
-                    title="Delete model"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                )}
               </div>
             </SelectItem>
           ))}

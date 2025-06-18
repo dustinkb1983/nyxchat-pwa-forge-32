@@ -1,40 +1,65 @@
 
-/* Optimized Page Transitions - Single trigger, consistent timing */
-.page-enter {
-  opacity: 0;
-  transform: translateY(16px);
+/* Simplified, Performance-Optimized Animations */
+
+/* Simple fade animations - hardware accelerated */
+@keyframes fade-in {
+  from { 
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.page-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1), transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes fade-out {
+  from { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to { 
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
-.page-exit {
-  opacity: 1;
-  transform: translateY(0);
+/* Utility classes for consistent animations */
+.animate-in {
+  animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.page-exit-active {
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+.animate-out {
+  animation: fade-out 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Message Animations - Simplified */
-.message-enter {
-  opacity: 0;
-  transform: translateY(8px) scale(0.98);
+.fade-in {
+  animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.message-enter-active {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+.fade-out {
+  animation: fade-out 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Typing Indicator - Reduced animation intensity */
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button hover effects - subtle and performant */
+button, [role="button"] {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover:not(:disabled), [role="button"]:hover {
+  transform: scale(1.05);
+}
+
+button:active:not(:disabled), [role="button"]:active {
+  transform: scale(0.98);
+}
+
+/* Typing indicator - simple and clean */
 .typing-indicator {
   display: flex;
   align-items: center;
@@ -46,17 +71,17 @@
   height: 6px;
   border-radius: 50%;
   background-color: hsl(var(--muted-foreground));
-  animation: typing-bounce 1.2s infinite ease-in-out;
+  animation: typing-bounce 1.4s infinite ease-in-out;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.24s; }
-.typing-dot:nth-child(2) { animation-delay: -0.12s; }
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
 .typing-dot:nth-child(3) { animation-delay: 0s; }
 
 @keyframes typing-bounce {
   0%, 80%, 100% {
-    transform: scale(0.9);
-    opacity: 0.6;
+    transform: scale(0.8);
+    opacity: 0.5;
   }
   40% {
     transform: scale(1);
@@ -64,44 +89,19 @@
   }
 }
 
-/* Sidebar Animations - Consistent timing */
-.sidebar-item {
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-item:hover {
-  transform: translateX(2px);
-  background-color: hsl(var(--accent));
-}
-
-/* Button Hover Effects - Subtle and consistent */
-.btn-hover {
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-hover:hover {
-  transform: translateY(-0.5px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Modal Animations - Single, smooth transitions */
+/* Modal animations - simple scale and fade */
 .modal-overlay {
-  animation: fade-in 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fade-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-content {
-  animation: scale-in 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modal-scale-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scale-in {
+@keyframes modal-scale-in {
   from { 
     opacity: 0;
-    transform: scale(0.96) translateY(4px);
+    transform: scale(0.95) translateY(8px);
   }
   to { 
     opacity: 1;
@@ -109,211 +109,83 @@
   }
 }
 
-/* Shimmer Loading - Optimized performance */
-.shimmer {
-  background: linear-gradient(-45deg, #f0f0f0 40%, #ffffff 50%, #f0f0f0 60%);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite;
+/* Scroll smooth behavior */
+.scroll-smooth {
+  scroll-behavior: smooth;
 }
 
-.dark .shimmer {
-  background: linear-gradient(-45deg, #2a2a2a 40%, #3a3a3a 50%, #2a2a2a 60%);
-  background-size: 200% 100%;
+/* Backdrop blur support with fallback */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+@supports not (backdrop-filter: blur()) {
+  .backdrop-blur-md {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .dark .backdrop-blur-md {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
 }
 
 /* Consistent border radius */
-.bg-card,
-.bg-background,
-.rounded-xl,
-.rounded-lg,
+.rounded-xl {
+  border-radius: 12px;
+}
+
+.rounded-lg {
+  border-radius: 8px;
+}
+
 .rounded-md {
-  border-radius: 14px !important;
+  border-radius: 6px;
 }
 
-.sidebar,
-.sidebar-header,
-.sidebar-content,
-.sidebar-footer {
-  border-radius: 14px;
+/* Long press feedback */
+.long-press-active {
+  transform: scale(0.95);
+  opacity: 0.8;
+  transition: all 0.1s ease-out;
 }
 
-/* Enhanced button interactions - Subtle and performant */
-button, [role="button"] {
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+/* Context menu animations */
+.context-menu-enter {
+  animation: context-menu-in 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button:hover:not(:disabled), [role="button"]:hover {
-  transform: translateY(-0.5px);
-}
-
-button:active:not(:disabled), [role="button"]:active {
-  transform: translateY(0);
-}
-
-/* Switch animations - Consistent timing */
-.ripple-button[role="switch"] {
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ripple-button[role="switch"]:active {
-  transform: scale(0.98);
-}
-
-/* PWA install prompt - Smooth entrance */
-@keyframes slideUp {
+@keyframes context-menu-in {
   from {
-    transform: translateY(100%);
     opacity: 0;
+    transform: scale(0.95);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: scale(1);
   }
 }
 
-.pwa-prompt-enter {
-  animation: slideUp 250ms cubic-bezier(0.4, 0, 0.2, 1);
+/* Ensure hardware acceleration for key elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
-/* Offline indicator - Clean transitions */
-.offline-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: hsl(var(--destructive));
-  color: hsl(var(--destructive-foreground));
-  padding: 0.5rem;
-  text-align: center;
-  font-size: 0.875rem;
-  z-index: 9999;
-  transform: translateY(-100%);
-  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+/* Remove any conflicting animations */
+* {
+  box-sizing: border-box;
 }
 
-.offline-indicator.show {
-  transform: translateY(0);
+/* Clean focus states */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Refined status dot - Subtle animation */
-.status-dot {
-  position: relative;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  animation: subtle-pulse 2s ease-in-out infinite;
-}
-
-.status-dot::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 50%;
-  background: inherit;
-  opacity: 0.2;
-  animation: subtle-glow 2s ease-in-out infinite;
-}
-
-@keyframes subtle-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes subtle-glow {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50% { opacity: 0.25; transform: scale(1.1); }
-}
-
-/* Elegant transitions - Standardized */
-.elegant-transition {
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.elegant-hover:hover {
-  transform: translateY(-0.5px);
-  box-shadow: 0 2px 8px hsl(var(--foreground) / 0.08);
-}
-
-/* Logo styling - Clean transitions */
-.app-logo {
-  width: 32px;
-  height: 32px;
-  filter: brightness(0) saturate(100%);
-  transition: filter 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dark .app-logo {
-  filter: brightness(0) saturate(100%) invert(95%);
-}
-
-/* Enhanced ripple effect - Cleaner implementation */
-.ripple-button {
-  position: relative;
-  overflow: hidden;
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ripple-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1);
-  transform: translate(-50%, -50%);
-  transition: width 300ms ease-out, height 300ms ease-out;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.ripple-button:active::before {
-  width: 200px;
-  height: 200px;
-  transition: width 0.1s ease-out, height 0.1s ease-out;
-}
-
-.dark .ripple-button::before {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Button press animation - Subtle feedback */
-.ripple-button:active {
-  transform: scale(0.98);
-  transition: transform 100ms ease-out;
-}
-
-.ripple-button:not(:active) {
-  transform: scale(1);
-  transition: transform 150ms ease-out;
-}
-
-/* Text truncation utility */
-.truncate-mobile {
-  @apply truncate max-w-[150px];
-}
-
-@media (max-width: 640px) {
-  .truncate-mobile {
-    @apply max-w-[120px];
-  }
-}
-
-/* Consistent tab styling */
-.memory-tabs [role="tablist"] {
-  @apply rounded-lg;
-}
-
-.memory-tabs [role="tab"] {
-  @apply rounded-md;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+/* Ensure smooth scrolling on mobile */
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
