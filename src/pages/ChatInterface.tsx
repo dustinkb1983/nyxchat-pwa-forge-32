@@ -22,14 +22,15 @@ const ChatInterface = () => {
   } = useChat();
   const { theme, toggleTheme } = useTheme();
   const { state, toggleSidebar } = useSidebar();
-  const isCollapsed = state === 'collapsed';
 
   const [inputValue, setInputValue] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const messages = currentConversation?.messages || [];
   const showWelcome = messages.length === 0;
@@ -48,10 +49,31 @@ const ChatInterface = () => {
     };
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Handle mobile keyboard visibility
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+    let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
+    
+    const handleViewportChange = () => {
+      if (window.visualViewport) {
+        const currentHeight = window.visualViewport.height;
+        const heightDiff = initialViewportHeight - currentHeight;
+        setKeyboardHeight(Math.max(0, heightDiff));
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      return () => window.visualViewport?.removeEventListener('resize', handleViewportChange);
+    }
+  }, []);
+
+  // Auto-scroll to bottom when new messages arrive or keyboard opens
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [messages, isTyping, keyboardHeight]);
 
   // Monitor scroll position for scroll-to-bottom button
   useEffect(() => {
@@ -64,7 +86,7 @@ const ChatInterface = () => {
       setShowScrollToBottom(!isNearBottom && messages.length > 3);
     };
 
-    container.addEventListener('scroll', handleScroll);
+    container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
   }, [messages.length]);
 
@@ -72,7 +94,8 @@ const ChatInterface = () => {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
     }
   }, [inputValue]);
 
@@ -82,7 +105,6 @@ const ChatInterface = () => {
     const message = inputValue.trim();
     setInputValue("");
     
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -92,7 +114,6 @@ const ChatInterface = () => {
 
   const handleQuickPrompt = (prompt: string) => {
     setInputValue(prompt);
-    // Focus the textarea after setting the value
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -101,10 +122,8 @@ const ChatInterface = () => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       if (e.shiftKey) {
-        // Shift+Enter: new line (default behavior)
         return;
       } else {
-        // Enter: send message
         e.preventDefault();
         handleSend();
       }
@@ -117,14 +136,21 @@ const ChatInterface = () => {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     setShowScrollToBottom(false);
   };
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
+    <div 
+      ref={chatContainerRef}
+      className="flex flex-col bg-background relative"
+      style={{ 
+        height: 'calc(var(--vh, 1vh) * 100)',
+        paddingBottom: keyboardHeight ? `${keyboardHeight}px` : '0px'
+      }}
+    >
       {/* Sticky Header */}
-      <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-2 border-b bg-card/90 backdrop-blur-md" style={{ minHeight: "50px", height: "50px" }}>
+      <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md shrink-0">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -137,10 +163,9 @@ const ChatInterface = () => {
           </Button>
         </div>
         
-        {/* Centered title with logo and clean status indicator */}
         <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
           <img 
-            src={theme === 'dark' ? '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
+            src={theme === 'dark' ? './lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : './lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
             alt="NyxChat" 
             className="w-8 h-8 transition-all duration-200"
           />
@@ -173,11 +198,14 @@ const ChatInterface = () => {
         </div>
       </header>
 
-      {/* Chat Body with Scroll Container */}
+      {/* Chat Messages Container */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth"
-        style={{ paddingBottom: '80px' }} // Space for sticky footer
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth overscroll-contain"
+        style={{ 
+          paddingBottom: '100px',
+          WebkitOverflowScrolling: 'touch'
+        }}
       >
         {showWelcome ? (
           <div className="opacity-0 animate-in fade-in duration-300">
@@ -222,7 +250,7 @@ const ChatInterface = () => {
       )}
 
       {/* Sticky Chat Input Footer */}
-      <div className="sticky bottom-0 z-20 border-t bg-card/90 backdrop-blur-md p-3">
+      <div className="sticky bottom-0 z-20 border-t bg-card/95 backdrop-blur-md p-3 shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">
@@ -231,16 +259,17 @@ const ChatInterface = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="min-h-[40px] max-h-32 resize-none pr-12 bg-background transition-all duration-200"
+                placeholder="Type your message..."
+                className="min-h-[44px] max-h-[120px] resize-none pr-12 bg-background transition-all duration-200 text-base"
                 disabled={isTyping}
+                style={{ fontSize: '16px' }}
               />
             </div>
             <Button
               onClick={handleSend}
               disabled={!inputValue.trim() || isTyping}
               size="icon"
-              className="h-10 w-10 rounded-full transition-all duration-200 hover:scale-105 disabled:hover:scale-100"
+              className="h-11 w-11 rounded-full transition-all duration-200 hover:scale-105 disabled:hover:scale-100 shrink-0"
             >
               <Send className="h-4 w-4" />
             </Button>

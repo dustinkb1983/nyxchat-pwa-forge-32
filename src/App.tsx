@@ -32,15 +32,15 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    // Initialize app with longer loading strategy for better splash screen experience
-    const timer = setTimeout(() => setIsLoading(false), 3000); // Increased from 1200ms to 3000ms
+    // Initialize app with mobile-optimized loading
+    const timer = setTimeout(() => setIsLoading(false), 1500);
     
     // Preload critical resources
     const preloadImages = [
-      '/icon-192.png',
-      '/icon-512.png',
-      '/lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png',
-      '/lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'
+      './icon-192.png',
+      './icon-512.png',
+      './lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png',
+      './lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'
     ];
     
     preloadImages.forEach(src => {
@@ -49,6 +49,23 @@ const App: React.FC = () => {
     });
     
     return () => clearTimeout(timer);
+  }, []);
+
+  // Handle viewport height for mobile
+  React.useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+    };
   }, []);
 
   return (
@@ -63,7 +80,7 @@ const App: React.FC = () => {
             ) : (
               <BrowserRouter>
                 <ChatProvider>
-                  <div className="min-h-screen bg-background transition-colors duration-300">
+                  <div className="min-h-screen bg-background transition-colors duration-300" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
                     <Routes>
                       <Route path="/" element={<MainLayout />}>
                         <Route index element={<ChatInterface />} />

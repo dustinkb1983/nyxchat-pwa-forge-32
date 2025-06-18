@@ -38,6 +38,9 @@
     --sidebar-accent-foreground: 240 10% 10%;
     --sidebar-border: 240 10% 85%;
     --sidebar-ring: 240 10% 10%;
+    
+    /* Mobile viewport height variable */
+    --vh: 1vh;
   }
 
   .dark {
@@ -82,10 +85,45 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Mobile optimizations */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection in input areas */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 }
 
-/* PWA-specific styles for different display modes */
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Better touch targets */
+  button, 
+  [role="button"],
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+  
+  /* Improve scrolling performance */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* PWA-specific styles */
 .display-standalone {
   /* Standalone PWA adjustments */
   --pwa-safe-area-top: env(safe-area-inset-top, 0px);
@@ -96,40 +134,6 @@
   /* iOS standalone adjustments */
   --pwa-safe-area-top: env(safe-area-inset-top, 20px);
   --pwa-safe-area-bottom: env(safe-area-inset-bottom, 34px);
-}
-
-/* PWA safe area handling */
-@supports (padding: max(0px)) {
-  .pwa-safe-top {
-    padding-top: max(var(--pwa-safe-area-top, 0px), 1rem);
-  }
-  
-  .pwa-safe-bottom {
-    padding-bottom: max(var(--pwa-safe-area-bottom, 0px), 1rem);
-  }
-}
-
-/* Enhanced mobile optimizations for PWA */
-@media (max-width: 768px) {
-  .display-standalone,
-  .display-standalone-ios {
-    /* Full height for PWA */
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-  
-  /* Better touch targets for PWA */
-  button, 
-  [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Improve tap highlighting */
-  button:active,
-  [role="button"]:active {
-    background-color: hsl(var(--accent) / 0.8);
-  }
 }
 
 /* Custom scrollbar styling */
@@ -156,198 +160,15 @@
   background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* Prevent horizontal scroll */
-.no-horizontal-scroll {
-  overflow-x: hidden;
+/* Text truncation utility */
+.truncate-mobile {
+  @apply truncate max-w-[150px];
 }
 
-/* Unified modal styling */
-.modal-unified {
-  @apply bg-background border border-border shadow-lg;
-}
-
-.modal-header {
-  @apply border-b border-border;
-}
-
-.modal-title {
-  @apply text-lg font-semibold text-foreground;
-}
-
-.modal-body {
-  @apply text-foreground;
-}
-
-.modal-body h3 {
-  @apply text-base font-medium;
-}
-
-.modal-body h4 {
-  @apply text-sm font-medium;
-}
-
-/* Mobile-specific optimizations */
-@media (max-width: 768px) {
-  .settings-mobile {
-    @apply px-3 py-4;
+@media (max-width: 640px) {
+  .truncate-mobile {
+    @apply max-w-[120px];
   }
-  
-  .mobile-tight-spacing {
-    @apply space-y-3;
-  }
-  
-  .mobile-button {
-    @apply py-2 px-3 text-sm;
-  }
-
-  .mobile-card {
-    @apply m-2 rounded-lg;
-  }
-
-  .mobile-input {
-    @apply text-sm;
-  }
-
-  .mobile-select {
-    @apply text-sm;
-  }
-
-  .card-header {
-    @apply px-4 py-3;
-  }
-
-  .card-content {
-    @apply px-4 pb-4;
-  }
-
-  /* Sidebar mobile optimizations */
-  .sidebar-mobile-title {
-    @apply text-sm font-medium;
-  }
-
-  .sidebar-mobile-item {
-    @apply text-sm;
-  }
-
-  /* Profile manager mobile */
-  .profile-mobile-title {
-    @apply text-base font-medium;
-  }
-
-  .profile-mobile-button {
-    @apply text-xs px-2 py-1.5;
-  }
-
-  /* Memory tabs mobile */
-  .memory-tabs-mobile {
-    @apply rounded-lg;
-  }
-
-  .memory-tab-mobile {
-    @apply text-sm px-3 py-2;
-  }
-}
-
-/* Textarea scrollbar styling */
-textarea.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
-}
-
-/* Enhanced ripple effect for buttons with theme-aware colors */
-.ripple-button {
-  position: relative;
-  overflow: hidden;
-  transform: perspective(1px) translateZ(0);
-}
-
-.ripple-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.15);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease-out, height 0.4s ease-out;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.ripple-button:active::before {
-  width: 200px;
-  height: 200px;
-  transition: width 0.1s ease-out, height 0.1s ease-out;
-}
-
-.dark .ripple-button::before {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Button press animation */
-.ripple-button:active {
-  transform: scale(0.98);
-  transition: transform 0.1s ease-out;
-}
-
-.ripple-button:not(:active) {
-  transform: scale(1);
-  transition: transform 0.2s ease-out;
-}
-
-/* Refined status dot with subtle glow */
-.status-dot {
-  position: relative;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  animation: subtle-pulse 2s ease-in-out infinite;
-}
-
-.status-dot::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 50%;
-  background: inherit;
-  opacity: 0.2;
-  animation: subtle-glow 2s ease-in-out infinite;
-}
-
-@keyframes subtle-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
-
-@keyframes subtle-glow {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50% { opacity: 0.25; transform: scale(1.15); }
-}
-
-/* Elegant transitions */
-.elegant-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.elegant-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.1);
-}
-
-/* Logo styling */
-.app-logo {
-  width: 32px;
-  height: 32px;
-  filter: brightness(0) saturate(100%);
-}
-
-.dark .app-logo {
-  filter: brightness(0) saturate(100%) invert(95%);
 }
 
 /* Enhanced button interactions */
@@ -363,29 +184,55 @@ button:active:not(:disabled), [role="button"]:active {
   transform: translateY(0);
 }
 
-/* Switch animations */
-.ripple-button[role="switch"] {
-  transition: all 0.2s ease-out;
+/* Mobile keyboard handling */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
 }
 
-.ripple-button[role="switch"]:active {
-  transform: scale(0.95);
+/* Prevent horizontal scroll */
+.no-horizontal-scroll {
+  overflow-x: hidden;
 }
 
-/* PWA install prompt animations */
-@keyframes slideUp {
+/* Optimized animations for mobile */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
   from {
-    transform: translateY(100%);
     opacity: 0;
+    transform: translateY(8px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.pwa-prompt-enter {
-  animation: slideUp 0.3s ease-out;
+/* Context menu animations */
+.context-menu-enter {
+  animation: contextMenuIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes contextMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Long press feedback */
+.long-press-active {
+  transform: scale(0.95);
+  opacity: 0.8;
+  transition: all 0.1s ease-out;
 }
 
 /* Offline indicator */
@@ -406,24 +253,4 @@ button:active:not(:disabled), [role="button"]:active {
 
 .offline-indicator.show {
   transform: translateY(0);
-}
-
-/* Text truncation utility */
-.truncate-mobile {
-  @apply truncate max-w-[150px];
-}
-
-@media (max-width: 640px) {
-  .truncate-mobile {
-    @apply max-w-[120px];
-  }
-}
-
-/* Consistent tab styling */
-.memory-tabs [role="tablist"] {
-  @apply rounded-lg;
-}
-
-.memory-tabs [role="tab"] {
-  @apply rounded-md;
 }

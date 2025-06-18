@@ -9,20 +9,18 @@ const MainLayout: React.FC = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background flex-col">
-        <div className="flex flex-1 w-full">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col items-stretch mx-2 md:mx-4 my-2 rounded-xl bg-card shadow transition-colors duration-300 overflow-hidden">
-            <div className="flex-1 overflow-y-auto">
-              <div
-                key={location.pathname}
-                className="h-full w-full opacity-0 animate-in fade-in duration-300"
-              >
-                <Outlet />
-              </div>
+      <div className="flex w-full bg-background" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
+        <AppSidebar />
+        <main className="flex-1 flex flex-col bg-card shadow transition-colors duration-300 overflow-hidden relative">
+          <div className="flex-1 overflow-hidden">
+            <div
+              key={location.pathname}
+              className="h-full w-full opacity-0 animate-in fade-in duration-300"
+            >
+              <Outlet />
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </SidebarProvider>
   );
