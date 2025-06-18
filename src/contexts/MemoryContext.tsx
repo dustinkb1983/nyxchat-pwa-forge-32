@@ -11,6 +11,7 @@ interface MemoryContextType {
   addMemory: (entry: Omit<MemoryEntry, 'id' | 'createdAt' | 'lastAccessed'>) => Promise<void>;
   updateMemory: (id: string, updates: Partial<MemoryEntry>) => Promise<void>;
   deleteMemory: (id: string) => Promise<void>;
+  clearAllMemories: () => Promise<void>;
   getRelevantMemories: (limit?: number) => MemoryEntry[];
   refreshMemories: () => Promise<void>;
 }
@@ -72,6 +73,16 @@ export function MemoryProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const clearAllMemories = async () => {
+    try {
+      // Delete all memories from IndexedDB
+      await Promise.all(memories.map(memory => dbManager.deleteMemoryEntry(memory.id)));
+      setMemories([]);
+    } catch (error) {
+      console.error('Failed to clear all memories:', error);
+    }
+  };
+
   const getRelevantMemories = (limit = 10) => {
     return memories
       .sort((a, b) => b.importance - a.importance)
@@ -88,6 +99,7 @@ export function MemoryProvider({ children }: { children: React.ReactNode }) {
       addMemory,
       updateMemory,
       deleteMemory,
+      clearAllMemories,
       getRelevantMemories,
       refreshMemories,
     }}>

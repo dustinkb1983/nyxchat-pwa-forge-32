@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,20 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Trash2, Edit3, X } from 'lucide-react';
-import { useMemory } from '@/contexts/MemoryContext';
+import { useMemory, MemoryEntry } from '@/contexts/MemoryContext';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
-
-interface Memory {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  timestamp: number;
-  type: 'user' | 'ai' | 'general';
-}
 
 export const MemoryManager = () => {
   const { memories, addMemory, updateMemory, deleteMemory, clearAllMemories } = useMemory();
@@ -27,22 +19,22 @@ export const MemoryManager = () => {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
+  const [selectedMemory, setSelectedMemory] = useState<MemoryEntry | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showNewMemoryForm, setShowNewMemoryForm] = useState(false);
   
   const [newMemory, setNewMemory] = useState({
-    title: '',
     content: '',
-    tags: '',
-    type: 'general' as const
+    category: 'other' as const,
+    importance: 5,
+    tags: ''
   });
 
   const [editMemory, setEditMemory] = useState({
-    title: '',
     content: '',
-    tags: '',
-    type: 'general' as const
+    category: 'other' as const,
+    importance: 5,
+    tags: ''
   });
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -54,12 +46,20 @@ export const MemoryManager = () => {
     const storedMemories = localStorage.getItem('memories');
     if (storedMemories) {
       try {
-        const parsedMemories = JSON.parse(storedMemories) as Memory[];
+        const parsedMemories = JSON.parse(storedMemories) as MemoryEntry[];
         // Ensure that the loaded memories are valid
         if (Array.isArray(parsedMemories)) {
-          // Dispatch each memory individually to ensure the context is updated correctly
+          // Convert old format to new format if needed
           parsedMemories.forEach(memory => {
-            addMemory(memory);
+            if (!memory.category) {
+              const convertedMemory = {
+                content: memory.content,
+                category: 'other' as const,
+                importance: memory.importance || 5,
+                tags: memory.tags || []
+              };
+              addMemory(convertedMemory);
+            }
           });
         } else {
           console.error('Invalid memories data in local storage:', parsedMemories);
@@ -76,16 +76,15 @@ export const MemoryManager = () => {
   }, [memories]);
 
   const filteredMemories = memories.filter(memory =>
-    memory.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     memory.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    memory.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    (memory.tags && memory.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
   );
 
   const handleAddMemory = () => {
-    if (!newMemory.title.trim() || !newMemory.content.trim()) {
+    if (!newMemory.content.trim()) {
       toast({
         title: "Validation Error",
-        description: "Title and content are required.",
+        description: "Content is required.",
         variant: "destructive"
       });
       return;
@@ -96,15 +95,15 @@ export const MemoryManager = () => {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
 
-    const memory: Omit<Memory, 'id' | 'timestamp'> = {
-      title: newMemory.title,
+    const memory: Omit<MemoryEntry, 'id' | 'createdAt' | 'lastAccessed'> = {
       content: newMemory.content,
-      tags,
-      type: newMemory.type
+      category: newMemory.category,
+      importance: newMemory.importance,
+      tags
     };
 
     addMemory(memory);
-    setNewMemory({ title: '', content: '', tags: '', type: 'general' });
+    setNewMemory({ content: '', category: 'other', importance: 5, tags: '' });
     setShowNewMemoryForm(false);
     
     toast({
@@ -114,10 +113,10 @@ export const MemoryManager = () => {
   };
 
   const handleUpdateMemory = () => {
-    if (!selectedMemory || !editMemory.title.trim() || !editMemory.content.trim()) {
+    if (!selectedMemory || !editMemory.content.trim()) {
       toast({
         title: "Validation Error",
-        description: "Title and content are required.",
+        description: "Content is required.",
         variant: "destructive"
       });
       return;
@@ -128,16 +127,15 @@ export const MemoryManager = () => {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
 
-    const updatedMemory: Memory = {
-      ...selectedMemory,
-      title: editMemory.title,
+    const updatedMemory: Partial<MemoryEntry> = {
       content: editMemory.content,
-      tags,
-      type: editMemory.type
+      category: editMemory.category,
+      importance: editMemory.importance,
+      tags
     };
 
     updateMemory(selectedMemory.id, updatedMemory);
-    setSelectedMemory(updatedMemory);
+    setSelectedMemory({ ...selectedMemory, ...updatedMemory } as MemoryEntry);
     setIsEditing(false);
     
     toast({
@@ -184,19 +182,27 @@ export const MemoryManager = () => {
     });
   };
 
-  const handleEditStart = (memory: Memory) => {
+  const handleEditStart = (memory: MemoryEntry) => {
     setEditMemory({
-      title: memory.title,
       content: memory.content,
-      tags: memory.tags.join(', '),
-      type: memory.type
+      category: memory.category,
+      importance: memory.importance,
+      tags: memory.tags?.join(', ') || ''
     });
     setIsEditing(true);
   };
 
+  const categoryOptions = [
+    { value: 'personal', label: 'Personal' },
+    { value: 'preferences', label: 'Preferences' },
+    { value: 'context', label: 'Context' },
+    { value: 'knowledge', label: 'Knowledge' },
+    { value: 'other', label: 'Other' }
+  ] as const;
+
   return (
     <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'p-2' : 'p-6'}`}>
-      {/* Header with close button - single X */}
+      {/* Header with close button */}
       <div className="flex items-center justify-between mb-3">
         <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>Memory Manager</h1>
         <Button
@@ -255,18 +261,34 @@ export const MemoryManager = () => {
               {showNewMemoryForm && (
                 <Card className="border-dashed">
                   <CardContent className={`${isMobile ? 'p-3 space-y-2' : 'p-4 space-y-3'}`}>
-                    <Input
-                      placeholder="Memory title..."
-                      value={newMemory.title}
-                      onChange={(e) => setNewMemory(prev => ({ ...prev, title: e.target.value }))}
-                      className={isMobile ? 'h-7 text-xs' : 'h-8'}
-                    />
                     <Textarea
                       placeholder="Memory content..."
                       value={newMemory.content}
                       onChange={(e) => setNewMemory(prev => ({ ...prev, content: e.target.value }))}
                       className={`resize-none ${isMobile ? 'min-h-16 text-xs' : 'min-h-20'}`}
                     />
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={newMemory.category}
+                        onChange={(e) => setNewMemory(prev => ({ ...prev, category: e.target.value as any }))}
+                        className={`border border-input bg-background px-2 py-1 rounded ${isMobile ? 'h-7 text-xs' : 'h-8'}`}
+                      >
+                        {categoryOptions.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="10"
+                        placeholder="Importance (1-10)"
+                        value={newMemory.importance}
+                        onChange={(e) => setNewMemory(prev => ({ ...prev, importance: parseInt(e.target.value) || 5 }))}
+                        className={isMobile ? 'h-7 text-xs' : 'h-8'}
+                      />
+                    </div>
                     <Input
                       placeholder="Tags (comma-separated)..."
                       value={newMemory.tags}
@@ -305,13 +327,18 @@ export const MemoryManager = () => {
                   <CardContent className={`${isMobile ? 'p-3' : 'p-4'}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <h3 className={`font-medium truncate ${isMobile ? 'text-sm' : 'text-base'}`}>
-                          {memory.title}
-                        </h3>
-                        <p className={`text-muted-foreground mt-1 line-clamp-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className={isMobile ? 'text-xs px-1 py-0' : 'text-xs'}>
+                            {memory.category}
+                          </Badge>
+                          <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                            Importance: {memory.importance}
+                          </span>
+                        </div>
+                        <p className={`text-foreground mt-1 line-clamp-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                           {memory.content}
                         </p>
-                        {memory.tags.length > 0 && (
+                        {memory.tags && memory.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {memory.tags.map((tag, index) => (
                               <Badge 
@@ -379,18 +406,34 @@ export const MemoryManager = () => {
                 <div className="h-full overflow-y-auto">
                   {isEditing ? (
                     <div className="space-y-4">
-                      <Input
-                        placeholder="Memory title..."
-                        value={editMemory.title}
-                        onChange={(e) => setEditMemory(prev => ({ ...prev, title: e.target.value }))}
-                        className="h-8"
-                      />
                       <Textarea
                         placeholder="Memory content..."
                         value={editMemory.content}
                         onChange={(e) => setEditMemory(prev => ({ ...prev, content: e.target.value }))}
                         className="resize-none min-h-32"
                       />
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          value={editMemory.category}
+                          onChange={(e) => setEditMemory(prev => ({ ...prev, category: e.target.value as any }))}
+                          className="border border-input bg-background px-2 py-1 rounded h-8"
+                        >
+                          {categoryOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          placeholder="Importance (1-10)"
+                          value={editMemory.importance}
+                          onChange={(e) => setEditMemory(prev => ({ ...prev, importance: parseInt(e.target.value) || 5 }))}
+                          className="h-8"
+                        />
+                      </div>
                       <Input
                         placeholder="Tags (comma-separated)..."
                         value={editMemory.tags}
@@ -416,10 +459,14 @@ export const MemoryManager = () => {
                   ) : (
                     <div className="space-y-4">
                       <div>
-                        <h2 className="text-xl font-semibold mb-2">{selectedMemory.title}</h2>
-                        <Badge variant="outline" className="text-xs mb-4">
-                          {selectedMemory.type}
-                        </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-xs">
+                            {selectedMemory.category}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            Importance: {selectedMemory.importance}
+                          </Badge>
+                        </div>
                       </div>
                       
                       <div>
@@ -429,7 +476,7 @@ export const MemoryManager = () => {
                         </p>
                       </div>
                       
-                      {selectedMemory.tags.length > 0 && (
+                      {selectedMemory.tags && selectedMemory.tags.length > 0 && (
                         <div>
                           <h3 className="font-medium mb-2">Tags</h3>
                           <div className="flex flex-wrap gap-2">
@@ -445,7 +492,7 @@ export const MemoryManager = () => {
                       <div>
                         <h3 className="font-medium mb-2">Created</h3>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(selectedMemory.timestamp).toLocaleString()}
+                          {selectedMemory.createdAt.toLocaleString()}
                         </p>
                       </div>
                     </div>
