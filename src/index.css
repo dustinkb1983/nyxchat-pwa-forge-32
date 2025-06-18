@@ -83,6 +83,7 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     /* Mobile optimizations */
@@ -92,6 +93,17 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
+    /* Ensure body is always visible */
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure root container is visible */
+  #root {
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
   }
   
   /* Allow text selection in input areas */
@@ -121,22 +133,15 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Ensure sticky elements work on mobile */
+  .sticky {
+    position: -webkit-sticky;
+    position: sticky;
+  }
 }
 
-/* PWA-specific styles */
-.display-standalone {
-  /* Standalone PWA adjustments */
-  --pwa-safe-area-top: env(safe-area-inset-top, 0px);
-  --pwa-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.display-standalone-ios {
-  /* iOS standalone adjustments */
-  --pwa-safe-area-top: env(safe-area-inset-top, 20px);
-  --pwa-safe-area-bottom: env(safe-area-inset-bottom, 34px);
-}
-
-/* Custom scrollbar styling */
+/* Enhanced custom scrollbar styling */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
@@ -158,17 +163,6 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--muted-foreground) / 0.5);
-}
-
-/* Text truncation utility */
-.truncate-mobile {
-  @apply truncate max-w-[150px];
-}
-
-@media (max-width: 640px) {
-  .truncate-mobile {
-    @apply max-w-[120px];
-  }
 }
 
 /* Enhanced button interactions */
@@ -196,61 +190,53 @@ button:active:not(:disabled), [role="button"]:active {
   overflow-x: hidden;
 }
 
-/* Optimized animations for mobile */
+/* Remove conflicting fade animations that might cause flashing */
 .fade-in {
-  animation: fadeIn 0.3s ease-out;
+  opacity: 1;
+  animation: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Ensure smooth transitions for keyboard interactions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Context menu animations */
-.context-menu-enter {
-  animation: contextMenuIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes contextMenuIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+/* WebView compatibility */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Safari/WebView specific styles */
+  body {
+    -webkit-text-size-adjust: 100%;
   }
 }
 
-/* Long press feedback */
-.long-press-active {
-  transform: scale(0.95);
-  opacity: 0.8;
-  transition: all 0.1s ease-out;
+/* Prevent layout shifts */
+* {
+  box-sizing: border-box;
 }
 
-/* Offline indicator */
-.offline-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: hsl(var(--destructive));
-  color: hsl(var(--destructive-foreground));
-  padding: 0.5rem;
-  text-align: center;
-  font-size: 0.875rem;
-  z-index: 9999;
-  transform: translateY(-100%);
-  transition: transform 0.3s ease-out;
+/* Ensure no elements are accidentally hidden */
+[style*="opacity: 0"], [style*="visibility: hidden"] {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-.offline-indicator.show {
-  transform: translateY(0);
+/* Override any potential hiding classes */
+.hidden:not(.intentionally-hidden) {
+  display: block !important;
+}
+
+/* Ensure backdrop blur works in all contexts */
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@supports not (backdrop-filter: blur()) {
+  .backdrop-blur-md {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+  
+  .dark .backdrop-blur-md {
+    background-color: rgba(0, 0, 0, 0.95);
+  }
 }

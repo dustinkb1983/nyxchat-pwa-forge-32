@@ -27,6 +27,7 @@ const ChatInterface = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +50,7 @@ const ChatInterface = () => {
     };
   }, []);
 
-  // Handle mobile keyboard visibility
+  // Enhanced mobile keyboard handling with smooth transitions
   useEffect(() => {
     let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
     
@@ -57,23 +58,54 @@ const ChatInterface = () => {
       if (window.visualViewport) {
         const currentHeight = window.visualViewport.height;
         const heightDiff = initialViewportHeight - currentHeight;
-        setKeyboardHeight(Math.max(0, heightDiff));
+        const newKeyboardHeight = Math.max(0, heightDiff);
+        
+        setKeyboardHeight(newKeyboardHeight);
+        setIsKeyboardOpen(newKeyboardHeight > 50); // Threshold for keyboard detection
+        
+        // Smooth scroll to bottom when keyboard opens
+        if (newKeyboardHeight > 50) {
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+          }, 150);
+        }
+      }
+    };
+
+    // Fallback for browsers without visualViewport
+    const handleResize = () => {
+      if (!window.visualViewport) {
+        const currentHeight = window.innerHeight;
+        const heightDiff = initialViewportHeight - currentHeight;
+        const newKeyboardHeight = Math.max(0, heightDiff);
+        
+        setKeyboardHeight(newKeyboardHeight);
+        setIsKeyboardOpen(newKeyboardHeight > 100);
       }
     };
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleViewportChange);
-      return () => window.visualViewport?.removeEventListener('resize', handleViewportChange);
+    } else {
+      window.addEventListener('resize', handleResize);
     }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+      } else {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive or keyboard opens
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     const timer = setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 100);
     return () => clearTimeout(timer);
-  }, [messages, isTyping, keyboardHeight]);
+  }, [messages, isTyping]);
 
   // Monitor scroll position for scroll-to-bottom button
   useEffect(() => {
@@ -143,14 +175,14 @@ const ChatInterface = () => {
   return (
     <div 
       ref={chatContainerRef}
-      className="flex flex-col bg-background relative"
+      className="flex flex-col bg-background relative transition-all duration-300 ease-out"
       style={{ 
         height: 'calc(var(--vh, 1vh) * 100)',
-        paddingBottom: keyboardHeight ? `${keyboardHeight}px` : '0px'
+        transform: isKeyboardOpen ? `translateY(-${Math.min(keyboardHeight * 0.3, 100)}px)` : 'translateY(0)',
       }}
     >
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md shrink-0">
+      {/* Sticky Header - Always visible */}
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md shrink-0 transition-all duration-300">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -201,14 +233,14 @@ const ChatInterface = () => {
       {/* Chat Messages Container */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth overscroll-contain"
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth overscroll-contain custom-scrollbar"
         style={{ 
-          paddingBottom: '100px',
+          paddingBottom: isKeyboardOpen ? '120px' : '100px',
           WebkitOverflowScrolling: 'touch'
         }}
       >
         {showWelcome ? (
-          <div className="opacity-0 animate-in fade-in duration-300">
+          <div className="opacity-100 transition-opacity duration-300">
             <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
           </div>
         ) : (
@@ -216,8 +248,7 @@ const ChatInterface = () => {
             {messages.map((message, index) => (
               <div 
                 key={message.id}
-                className="opacity-0 animate-in fade-in duration-300"
-                style={{ animationDelay: `${index * 50}ms` }}
+                className="opacity-100 transition-opacity duration-300"
               >
                 <ChatMessage
                   message={message}
@@ -226,7 +257,7 @@ const ChatInterface = () => {
               </div>
             ))}
             {isTyping && (
-              <div className="opacity-0 animate-in fade-in duration-300">
+              <div className="opacity-100 transition-opacity duration-300">
                 <TypingIndicator />
               </div>
             )}
@@ -240,17 +271,22 @@ const ChatInterface = () => {
         <Button
           onClick={scrollToBottom}
           size="icon"
-          className="fixed bottom-24 right-4 z-10 h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+          className="fixed right-4 z-20 h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
           style={{
-            animation: 'fade-in 0.3s ease-out',
+            bottom: isKeyboardOpen ? `${120 + keyboardHeight * 0.1}px` : '120px',
           }}
         >
           <ChevronDown className="h-5 w-5" />
         </Button>
       )}
 
-      {/* Sticky Chat Input Footer */}
-      <div className="sticky bottom-0 z-20 border-t bg-card/95 backdrop-blur-md p-3 shrink-0">
+      {/* Sticky Chat Input Footer - Always visible */}
+      <div 
+        className="sticky bottom-0 z-30 border-t bg-card/95 backdrop-blur-md p-3 shrink-0 transition-all duration-300 ease-out"
+        style={{
+          transform: isKeyboardOpen ? 'translateY(0)' : 'translateY(0)',
+        }}
+      >
         <div className="max-w-4xl mx-auto">
           <div className="flex items-end gap-3">
             <div className="flex-1 relative">

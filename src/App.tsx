@@ -14,7 +14,6 @@ import MemoryManager from "@/pages/MemoryManager";
 import ProfileManager from "@/pages/ProfileManager";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
-import { SplashScreen } from "@/components/ui/SplashScreen";
 import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import "./animations.css";
 
@@ -29,11 +28,11 @@ const queryClient = new QueryClient({
 });
 
 const App: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Changed from true to false to remove flash
 
   useEffect(() => {
-    // Initialize app with mobile-optimized loading
-    const timer = setTimeout(() => setIsLoading(false), 1500);
+    // Faster initialization without artificial delay
+    const timer = setTimeout(() => setIsLoading(false), 100);
     
     // Preload critical resources
     const preloadImages = [
@@ -75,26 +74,22 @@ const App: React.FC = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            {isLoading ? (
-              <SplashScreen />
-            ) : (
-              <BrowserRouter>
-                <ChatProvider>
-                  <div className="min-h-screen bg-background transition-colors duration-300" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
-                    <Routes>
-                      <Route path="/" element={<MainLayout />}>
-                        <Route index element={<ChatInterface />} />
-                        <Route path="memory" element={<MemoryManager />} />
-                        <Route path="profiles" element={<ProfileManager />} />
-                        <Route path="settings" element={<Settings />} />
-                      </Route>
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                    <PWAInstallPrompt />
-                  </div>
-                </ChatProvider>
-              </BrowserRouter>
-            )}
+            <BrowserRouter>
+              <ChatProvider>
+                <div className="min-h-screen bg-background transition-colors duration-300" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+                  <Routes>
+                    <Route path="/" element={<MainLayout />}>
+                      <Route index element={<ChatInterface />} />
+                      <Route path="memory" element={<MemoryManager />} />
+                      <Route path="profiles" element={<ProfileManager />} />
+                      <Route path="settings" element={<Settings />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <PWAInstallPrompt />
+                </div>
+              </ChatProvider>
+            </BrowserRouter>
           </TooltipProvider>
         </MemoryProvider>
       </ThemeProvider>
