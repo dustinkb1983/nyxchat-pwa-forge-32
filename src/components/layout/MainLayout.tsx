@@ -18,10 +18,15 @@ const MainLayout = () => {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={location.pathname}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.32, ease: 'easeOut' }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ 
+                    duration: 0.25, 
+                    ease: [0.4, 0, 0.2, 1],
+                    opacity: { duration: 0.2 },
+                    y: { duration: 0.25 }
+                  }}
                   className="h-full w-full"
                 >
                   <Outlet />
