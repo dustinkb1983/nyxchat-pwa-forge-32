@@ -161,7 +161,6 @@ const ChatInterface = () => {
       className="flex flex-col bg-background relative"
       style={{ 
         height: 'calc(var(--vh, 1vh) * 100)',
-        paddingBottom: '64px' // Account for fixed footer
       }}
     >
       {/* Fixed Header - Always visible */}
@@ -218,14 +217,21 @@ const ChatInterface = () => {
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth overscroll-contain custom-scrollbar"
         style={{ 
-          marginTop: '64px', // Account for fixed header
-          marginBottom: isKeyboardOpen ? `${Math.max(keyboardHeight - 64, 0)}px` : '0px',
+          marginTop: '64px',
+          paddingBottom: isKeyboardOpen ? `${keyboardHeight + 20}px` : '80px',
           WebkitOverflowScrolling: 'touch'
         }}
       >
         {showWelcome ? (
           <div className="opacity-100 transition-opacity duration-300">
-            <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
+            <WelcomeScreen 
+              onQuickPrompt={handleQuickPrompt}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              onSend={handleSend}
+              onKeyDown={handleKeyDown}
+              isTyping={isTyping}
+            />
           </div>
         ) : (
           <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
@@ -252,22 +258,24 @@ const ChatInterface = () => {
 
       {/* Floating Scroll to Bottom Button */}
       <ScrollToBottomButton
-        show={showScrollToBottom}
+        show={showScrollToBottom && !showWelcome}
         onClick={scrollToBottom}
         isKeyboardOpen={isKeyboardOpen}
         keyboardHeight={keyboardHeight}
       />
 
-      {/* Fixed Chat Footer */}
-      <ChatFooter
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        onSend={handleSend}
-        onKeyDown={handleKeyDown}
-        isTyping={isTyping}
-        isKeyboardOpen={isKeyboardOpen}
-        keyboardHeight={keyboardHeight}
-      />
+      {/* Fixed Chat Footer - Only render once */}
+      {!showWelcome && (
+        <ChatFooter
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          onSend={handleSend}
+          onKeyDown={handleKeyDown}
+          isTyping={isTyping}
+          isKeyboardOpen={isKeyboardOpen}
+          keyboardHeight={keyboardHeight}
+        />
+      )}
     </div>
   );
 };

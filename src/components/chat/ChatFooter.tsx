@@ -48,13 +48,18 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
     console.log('File attachment clicked');
   };
 
+  // Calculate bottom position to ensure footer stays above keyboard
+  const bottomPosition = isKeyboardOpen 
+    ? Math.max(keyboardHeight - 64, 12) // Ensure 12px minimum padding above keyboard
+    : 0;
+
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-md transition-all duration-300 ease-out"
+      className="fixed left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-md transition-all duration-300 ease-out"
       style={{
         height: '64px',
         padding: '0.75rem 1rem',
-        transform: isKeyboardOpen ? `translateY(-${Math.max(keyboardHeight - 64, 0)}px)` : 'translateY(0)',
+        bottom: `${bottomPosition}px`,
       }}
     >
       <div className="max-w-4xl mx-auto h-full">
