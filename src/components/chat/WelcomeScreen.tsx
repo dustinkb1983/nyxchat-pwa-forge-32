@@ -53,7 +53,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col px-4 text-center no-horizontal-scroll" style={{ paddingBottom: '80px' }}>
+    <div className="flex flex-col px-4 text-center no-horizontal-scroll" style={{ paddingBottom: '20px' }}>
       {/* Logo container with specified positioning */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

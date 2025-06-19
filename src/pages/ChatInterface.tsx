@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Moon, Sun, Menu } from "lucide-react";
 import { toast } from "sonner";
@@ -155,16 +154,18 @@ const ChatInterface = () => {
     setShowScrollToBottom(false);
   };
 
+  // Calculate the available height for the scrollable content
+  const scrollableHeight = isKeyboardOpen 
+    ? `calc(100vh - 64px - ${keyboardHeight + 64 + 12}px)` // header + footer + keyboard + padding
+    : `calc(100vh - 64px - 64px)`; // header + footer
+
   return (
     <div 
       ref={chatContainerRef}
-      className="flex flex-col bg-background relative"
-      style={{ 
-        height: 'calc(var(--vh, 1vh) * 100)',
-      }}
+      className="flex flex-col bg-background relative h-screen overflow-hidden"
     >
       {/* Fixed Header - Always visible */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md h-16">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -212,27 +213,25 @@ const ChatInterface = () => {
         </div>
       </header>
 
-      {/* Chat Messages Container */}
+      {/* Scrollable Content Container */}
       <div 
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth overscroll-contain custom-scrollbar"
         style={{ 
           marginTop: '64px',
-          paddingBottom: isKeyboardOpen ? `${keyboardHeight + 20}px` : '80px',
+          height: scrollableHeight,
           WebkitOverflowScrolling: 'touch'
         }}
       >
         {showWelcome ? (
-          <div className="opacity-100 transition-opacity duration-300">
-            <WelcomeScreen 
-              onQuickPrompt={handleQuickPrompt}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              onSend={handleSend}
-              onKeyDown={handleKeyDown}
-              isTyping={isTyping}
-            />
-          </div>
+          <WelcomeScreen 
+            onQuickPrompt={handleQuickPrompt}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            onSend={handleSend}
+            onKeyDown={handleKeyDown}
+            isTyping={isTyping}
+          />
         ) : (
           <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
             {messages.map((message, index) => (
@@ -264,18 +263,16 @@ const ChatInterface = () => {
         keyboardHeight={keyboardHeight}
       />
 
-      {/* Fixed Chat Footer - Only render once */}
-      {!showWelcome && (
-        <ChatFooter
-          inputValue={inputValue}
-          setInputValue={setInputValue}
-          onSend={handleSend}
-          onKeyDown={handleKeyDown}
-          isTyping={isTyping}
-          isKeyboardOpen={isKeyboardOpen}
-          keyboardHeight={keyboardHeight}
-        />
-      )}
+      {/* Fixed Chat Footer - Always present */}
+      <ChatFooter
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        onSend={handleSend}
+        onKeyDown={handleKeyDown}
+        isTyping={isTyping}
+        isKeyboardOpen={isKeyboardOpen}
+        keyboardHeight={keyboardHeight}
+      />
     </div>
   );
 };
