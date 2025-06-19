@@ -41,29 +41,33 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onQuickPrompt }) =
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center no-horizontal-scroll">
+    <div className="flex flex-col px-4 text-center no-horizontal-scroll">
+      {/* Logo container with specified positioning */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="mb-12"
+        className="flex items-center justify-center"
+        style={{ 
+          marginTop: '10vh',
+          height: '25vh'
+        }}
       >
-        <div className="mb-8">
-          <div className="w-32 h-32 mx-auto mb-6 flex items-center justify-center">
-            <img 
-              src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
-              alt="NyxChat Logo" 
-              className="w-24 h-24"
-            />
-          </div>
+        <div className="w-32 h-32 flex items-center justify-center">
+          <img 
+            src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
+            alt="NyxChat Logo" 
+            className="w-24 h-24"
+          />
         </div>
       </motion.div>
 
+      {/* Quick action buttons - positioned to maintain same distance from logo */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-2 gap-4 max-w-sm w-full"
+        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto"
       >
         {quickPrompts.map((item, index) => (
           <motion.div

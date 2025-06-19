@@ -1,12 +1,12 @@
-
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Moon, Sun, Menu, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
+import { ChatFooter } from "@/components/chat/ChatFooter";
+import { ScrollToBottomButton } from "@/components/chat/ScrollToBottomButton";
 import { useChat } from "@/contexts/ChatContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSidebar } from '@/components/ui/sidebar';
@@ -28,7 +28,6 @@ const ChatInterface = () => {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -61,9 +60,8 @@ const ChatInterface = () => {
         const newKeyboardHeight = Math.max(0, heightDiff);
         
         setKeyboardHeight(newKeyboardHeight);
-        setIsKeyboardOpen(newKeyboardHeight > 50); // Threshold for keyboard detection
+        setIsKeyboardOpen(newKeyboardHeight > 50);
         
-        // Smooth scroll to bottom when keyboard opens
         if (newKeyboardHeight > 50) {
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -72,7 +70,6 @@ const ChatInterface = () => {
       }
     };
 
-    // Fallback for browsers without visualViewport
     const handleResize = () => {
       if (!window.visualViewport) {
         const currentHeight = window.innerHeight;
@@ -122,33 +119,17 @@ const ChatInterface = () => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [messages.length]);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
-    }
-  }, [inputValue]);
-
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
 
     const message = inputValue.trim();
     setInputValue("");
-    
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
 
     await sendMessage(message);
   };
 
   const handleQuickPrompt = (prompt: string) => {
     setInputValue(prompt);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -233,9 +214,9 @@ const ChatInterface = () => {
       {/* Chat Messages Container */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth overscroll-contain custom-scrollbar"
+        className="flex-1 overflow-y-auto scroll-smooth overscroll-contain custom-scrollbar"
         style={{ 
-          paddingBottom: isKeyboardOpen ? '120px' : '100px',
+          paddingBottom: isKeyboardOpen ? '80px' : '80px',
           WebkitOverflowScrolling: 'touch'
         }}
       >
@@ -244,7 +225,7 @@ const ChatInterface = () => {
             <WelcomeScreen onQuickPrompt={handleQuickPrompt} />
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
             {messages.map((message, index) => (
               <div 
                 key={message.id}
@@ -266,55 +247,23 @@ const ChatInterface = () => {
         )}
       </div>
 
-      {/* Scroll to Bottom Button */}
-      {showScrollToBottom && (
-        <Button
-          onClick={scrollToBottom}
-          size="icon"
-          className="fixed right-4 z-20 h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
-          style={{
-            bottom: isKeyboardOpen ? `${120 + keyboardHeight * 0.1}px` : '120px',
-          }}
-        >
-          <ChevronDown className="h-5 w-5" />
-        </Button>
-      )}
+      {/* Floating Scroll to Bottom Button */}
+      <ScrollToBottomButton
+        show={showScrollToBottom}
+        onClick={scrollToBottom}
+        isKeyboardOpen={isKeyboardOpen}
+        keyboardHeight={keyboardHeight}
+      />
 
-      {/* Sticky Chat Input Footer - Always visible */}
-      <div 
-        className="sticky bottom-0 z-30 border-t bg-card/95 backdrop-blur-md p-3 shrink-0 transition-all duration-300 ease-out"
-        style={{
-          transform: isKeyboardOpen ? 'translateY(0)' : 'translateY(0)',
-        }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-end gap-3">
-            <div className="flex-1 relative">
-              <Textarea
-                ref={textareaRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
-                className="min-h-[44px] max-h-[120px] resize-none pr-12 bg-background transition-all duration-200 text-base"
-                disabled={isTyping}
-                style={{ fontSize: '16px' }}
-              />
-            </div>
-            <Button
-              onClick={handleSend}
-              disabled={!inputValue.trim() || isTyping}
-              size="icon"
-              className="h-11 w-11 rounded-full transition-all duration-200 hover:scale-105 disabled:hover:scale-100 shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex justify-end items-center mt-1 text-xs text-muted-foreground">
-            <span>{inputValue.length}/2000</span>
-          </div>
-        </div>
-      </div>
+      {/* Chat Footer */}
+      <ChatFooter
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        onSend={handleSend}
+        onKeyDown={handleKeyDown}
+        isTyping={isTyping}
+        isKeyboardOpen={isKeyboardOpen}
+      />
     </div>
   );
 };
