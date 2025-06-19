@@ -154,17 +154,20 @@ const ChatInterface = () => {
     setShowScrollToBottom(false);
   };
 
-  // Calculate the available height for the scrollable content
-  const scrollableHeight = isKeyboardOpen 
-    ? `calc(100vh - 64px - ${keyboardHeight + 64 + 12}px)` // header + footer + keyboard + padding
-    : `calc(100vh - 64px - 64px)`; // header + footer
+  // Calculate the height for the scrollable content container
+  const getScrollContainerHeight = () => {
+    if (isKeyboardOpen) {
+      return `calc(100vh - 64px - 64px - ${keyboardHeight}px)`; // viewport - header - footer - keyboard
+    }
+    return `calc(100vh - 64px - 64px)`; // viewport - header - footer
+  };
 
   return (
     <div 
       ref={chatContainerRef}
-      className="flex flex-col bg-background relative h-screen overflow-hidden"
+      className="flex flex-col bg-background h-screen overflow-hidden"
     >
-      {/* Fixed Header - Always visible */}
+      {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md h-16">
         <div className="flex items-center">
           <Button
@@ -213,46 +216,56 @@ const ChatInterface = () => {
         </div>
       </header>
 
-      {/* Scrollable Content Container */}
+      {/* Main Content Container - This is the scrollable area */}
       <div 
-        ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto scroll-smooth overscroll-contain custom-scrollbar"
+        className="flex-1 relative"
         style={{ 
           marginTop: '64px',
-          height: scrollableHeight,
-          WebkitOverflowScrolling: 'touch'
+          height: getScrollContainerHeight(),
+          overflow: 'hidden'
         }}
       >
-        {showWelcome ? (
-          <WelcomeScreen 
-            onQuickPrompt={handleQuickPrompt}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
-            onSend={handleSend}
-            onKeyDown={handleKeyDown}
-            isTyping={isTyping}
-          />
-        ) : (
-          <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
-            {messages.map((message, index) => (
-              <div 
-                key={message.id}
-                className="opacity-100 transition-opacity duration-300"
-              >
-                <ChatMessage
-                  message={message}
-                  index={index}
-                />
-              </div>
-            ))}
-            {isTyping && (
-              <div className="opacity-100 transition-opacity duration-300">
-                <TypingIndicator />
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
+        <div 
+          ref={messagesContainerRef}
+          className="h-full overflow-y-auto scroll-smooth custom-scrollbar"
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain'
+          }}
+        >
+          {showWelcome ? (
+            <div className="h-full">
+              <WelcomeScreen 
+                onQuickPrompt={handleQuickPrompt}
+                inputValue={inputValue}
+                setInputValue={setInputValue}
+                onSend={handleSend}
+                onKeyDown={handleKeyDown}
+                isTyping={isTyping}
+              />
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto space-y-6 px-4 py-4 pb-8">
+              {messages.map((message, index) => (
+                <div 
+                  key={message.id}
+                  className="opacity-100 transition-opacity duration-300"
+                >
+                  <ChatMessage
+                    message={message}
+                    index={index}
+                  />
+                </div>
+              ))}
+              {isTyping && (
+                <div className="opacity-100 transition-opacity duration-300">
+                  <TypingIndicator />
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Floating Scroll to Bottom Button */}
@@ -263,7 +276,7 @@ const ChatInterface = () => {
         keyboardHeight={keyboardHeight}
       />
 
-      {/* Fixed Chat Footer - Always present */}
+      {/* Fixed Footer - Always at bottom, above keyboard */}
       <ChatFooter
         inputValue={inputValue}
         setInputValue={setInputValue}

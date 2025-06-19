@@ -50,11 +50,11 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
 
   return (
     <div 
-      className="fixed left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-md"
+      className="fixed left-0 right-0 z-[100] border-t bg-card/95 backdrop-blur-md"
       style={{
         height: '64px',
         padding: '0.75rem 1rem',
-        bottom: isKeyboardOpen ? `${Math.max(keyboardHeight + 12, 12)}px` : '0px',
+        bottom: isKeyboardOpen ? `${keyboardHeight + 8}px` : '0px',
       }}
     >
       <div className="max-w-4xl mx-auto h-full">

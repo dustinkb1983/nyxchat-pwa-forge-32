@@ -44,26 +44,17 @@ const quickPrompts = [
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ 
   onQuickPrompt,
-  inputValue,
-  setInputValue,
-  onSend,
-  onKeyDown,
-  isTyping
 }) => {
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col px-4 text-center no-horizontal-scroll" style={{ paddingBottom: '20px' }}>
-      {/* Logo container with specified positioning */}
+    <div className="flex flex-col px-4 text-center h-full justify-center no-horizontal-scroll">
+      {/* Logo container */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex items-center justify-center"
-        style={{ 
-          marginTop: '10vh',
-          height: '25vh'
-        }}
+        className="flex items-center justify-center mb-8"
       >
         <div className="w-32 h-32 flex items-center justify-center">
           <img 
@@ -74,12 +65,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         </div>
       </motion.div>
 
-      {/* Quick action buttons - positioned to maintain same distance from logo */}
+      {/* Quick action buttons */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto"
+        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto mb-16"
       >
         {quickPrompts.map((item, index) => (
           <motion.div
