@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Moon, Sun, Menu } from "lucide-react";
 import { toast } from "sonner";
@@ -49,7 +50,7 @@ const ChatInterface = () => {
     };
   }, []);
 
-  // Enhanced mobile keyboard handling with smooth transitions
+  // Enhanced mobile keyboard handling with improved positioning
   useEffect(() => {
     let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
     
@@ -60,9 +61,10 @@ const ChatInterface = () => {
         const newKeyboardHeight = Math.max(0, heightDiff);
         
         setKeyboardHeight(newKeyboardHeight);
-        setIsKeyboardOpen(newKeyboardHeight > 50);
+        setIsKeyboardOpen(newKeyboardHeight > 100);
         
-        if (newKeyboardHeight > 50) {
+        // Auto-scroll when keyboard opens
+        if (newKeyboardHeight > 100) {
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
           }, 150);
@@ -77,7 +79,7 @@ const ChatInterface = () => {
         const newKeyboardHeight = Math.max(0, heightDiff);
         
         setKeyboardHeight(newKeyboardHeight);
-        setIsKeyboardOpen(newKeyboardHeight > 100);
+        setIsKeyboardOpen(newKeyboardHeight > 150);
       }
     };
 
@@ -156,14 +158,14 @@ const ChatInterface = () => {
   return (
     <div 
       ref={chatContainerRef}
-      className="flex flex-col bg-background relative transition-all duration-300 ease-out"
+      className="flex flex-col bg-background relative"
       style={{ 
         height: 'calc(var(--vh, 1vh) * 100)',
-        transform: isKeyboardOpen ? `translateY(-${Math.min(keyboardHeight * 0.3, 100)}px)` : 'translateY(0)',
+        paddingBottom: '64px' // Account for fixed footer
       }}
     >
-      {/* Sticky Header - Always visible */}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md shrink-0 transition-all duration-300">
+      {/* Fixed Header - Always visible */}
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md transition-all duration-300">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -216,7 +218,8 @@ const ChatInterface = () => {
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth overscroll-contain custom-scrollbar"
         style={{ 
-          paddingBottom: isKeyboardOpen ? '80px' : '80px',
+          marginTop: '64px', // Account for fixed header
+          marginBottom: isKeyboardOpen ? `${Math.max(keyboardHeight - 64, 0)}px` : '0px',
           WebkitOverflowScrolling: 'touch'
         }}
       >
@@ -255,7 +258,7 @@ const ChatInterface = () => {
         keyboardHeight={keyboardHeight}
       />
 
-      {/* Chat Footer */}
+      {/* Fixed Chat Footer */}
       <ChatFooter
         inputValue={inputValue}
         setInputValue={setInputValue}
@@ -263,6 +266,7 @@ const ChatInterface = () => {
         onKeyDown={handleKeyDown}
         isTyping={isTyping}
         isKeyboardOpen={isKeyboardOpen}
+        keyboardHeight={keyboardHeight}
       />
     </div>
   );

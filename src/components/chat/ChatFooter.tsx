@@ -11,6 +11,7 @@ interface ChatFooterProps {
   onKeyDown: (e: React.KeyboardEvent) => void;
   isTyping: boolean;
   isKeyboardOpen?: boolean;
+  keyboardHeight?: number;
 }
 
 export const ChatFooter: React.FC<ChatFooterProps> = ({
@@ -19,58 +20,60 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   onSend,
   onKeyDown,
   isTyping,
-  isKeyboardOpen = false
+  isKeyboardOpen = false,
+  keyboardHeight = 0
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
+  // Auto-resize textarea but constrain to single line initially
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '40px'; // Fixed height
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
+      if (scrollHeight > 40) {
+        textareaRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
+      }
     }
   }, [inputValue]);
 
   const handleClearInput = () => {
     setInputValue("");
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '40px';
       textareaRef.current.focus();
     }
   };
 
   const handleAttachFile = () => {
-    // Placeholder for file attachment functionality
     console.log('File attachment clicked');
   };
 
   return (
     <div 
-      className="sticky bottom-0 z-30 border-t bg-card/95 backdrop-blur-md shrink-0 transition-all duration-300 ease-out"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-md transition-all duration-300 ease-out"
       style={{
         height: '64px',
         padding: '0.75rem 1rem',
-        transform: isKeyboardOpen ? 'translateY(0)' : 'translateY(0)',
+        transform: isKeyboardOpen ? `translateY(-${Math.max(keyboardHeight - 64, 0)}px)` : 'translateY(0)',
       }}
     >
       <div className="max-w-4xl mx-auto h-full">
         <div className="flex items-center gap-3 h-full">
-          {/* Input area with icons */}
-          <div className="flex-1 relative bg-background rounded-lg border border-input flex items-center" style={{ padding: '0.5rem 1rem' }}>
+          {/* Input area with fixed height */}
+          <div className="flex-1 relative bg-background rounded-lg border border-input flex items-center min-h-[40px]" style={{ padding: '0.5rem 1rem' }}>
             <Textarea
               ref={textareaRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Type your message..."
-              className="flex-1 min-h-[36px] max-h-[120px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="flex-1 min-h-[40px] max-h-[120px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-5"
               disabled={isTyping}
-              style={{ fontSize: '1rem' }}
+              rows={1}
             />
             
             {/* Icons container */}
-            <div className="flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-1 ml-2">
               <Button
                 variant="ghost"
                 size="icon"

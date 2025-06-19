@@ -18,14 +18,19 @@ export const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({
 }) => {
   if (!show) return null;
 
+  const bottomOffset = isKeyboardOpen 
+    ? Math.max(80 + keyboardHeight - 64, 80) // Adjust for keyboard but maintain minimum distance
+    : 80;
+
   return (
     <Button
       onClick={onClick}
       size="icon"
-      className="fixed right-4 z-20 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105 opacity-0 animate-in fade-in"
+      className="fixed right-4 z-30 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
       style={{
-        bottom: isKeyboardOpen ? `${80 + keyboardHeight * 0.1}px` : '80px',
+        bottom: `${bottomOffset}px`,
         opacity: show ? 1 : 0,
+        visibility: show ? 'visible' : 'hidden',
       }}
     >
       <ChevronDown className="h-5 w-5" />
