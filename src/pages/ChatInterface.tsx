@@ -1,16 +1,24 @@
+
 import React, { useState, useRef, useEffect } from "react";
-import { Moon, Sun, Menu } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { WelcomeScreen } from "@/components/chat/WelcomeScreen";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { ChatFooter } from "@/components/chat/ChatFooter";
 import { ScrollToBottomButton } from "@/components/chat/ScrollToBottomButton";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { AppFooter } from "@/components/layout/AppFooter";
+import { ModelSwitcher } from "@/components/ui/ModelSwitcher";
+import { TokenCounter } from "@/components/ui/TokenCounter";
+import { SettingsModal } from "@/components/settings/SettingsModal";
 import { useChat } from "@/contexts/ChatContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useSidebar } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const SAMPLE_MODELS = [
+  { id: 'gpt-4', name: 'GPT-4', description: 'Most capable model' },
+  { id: 'gpt-3.5', name: 'GPT-3.5 Turbo', description: 'Fast and efficient' },
+  { id: 'claude-3', name: 'Claude 3', description: 'Great for analysis' },
+];
 
 const ChatInterface = () => {
   const {
@@ -20,14 +28,17 @@ const ChatInterface = () => {
     setCurrentProfile,
     sendMessage,
   } = useChat();
-  const { theme, toggleTheme } = useTheme();
-  const { state, toggleSidebar } = useSidebar();
+  const { setOpenMobile } = useSidebar();
 
   const [inputValue, setInputValue] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [currentModel, setCurrentModel] = useState('gpt-4');
+  const [tokenCount, setTokenCount] = useState(0);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +60,7 @@ const ChatInterface = () => {
     };
   }, []);
 
-  // Enhanced mobile keyboard handling with improved positioning
+  // Enhanced mobile keyboard handling
   useEffect(() => {
     let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
     
@@ -62,7 +73,6 @@ const ChatInterface = () => {
         setKeyboardHeight(newKeyboardHeight);
         setIsKeyboardOpen(newKeyboardHeight > 100);
         
-        // Auto-scroll when keyboard opens
         if (newKeyboardHeight > 100) {
           setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -120,6 +130,14 @@ const ChatInterface = () => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [messages.length]);
 
+  // Update token count when messages change
+  useEffect(() => {
+    const estimatedTokens = messages.reduce((total, msg) => {
+      return total + Math.ceil(msg.content.length / 4); // Rough estimate
+    }, 0);
+    setTokenCount(estimatedTokens);
+  }, [messages]);
+
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
 
@@ -154,73 +172,45 @@ const ChatInterface = () => {
     setShowScrollToBottom(false);
   };
 
-  // Calculate the height for the scrollable content container
   const getScrollContainerHeight = () => {
     if (isKeyboardOpen) {
-      return `calc(100vh - 64px - 64px - ${keyboardHeight}px)`; // viewport - header - footer - keyboard
+      return `calc(100vh - 64px - 64px - ${keyboardHeight}px)`;
     }
-    return `calc(100vh - 64px - 64px)`; // viewport - header - footer
+    return `calc(100vh - 64px - 64px)`;
   };
 
   return (
     <div 
       ref={chatContainerRef}
-      className="flex flex-col bg-background h-screen overflow-hidden"
+      className="flex flex-col bg-gradient-to-br from-background to-background/95 h-screen overflow-hidden"
     >
-      {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-md h-16">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="h-8 w-8 transition-transform duration-200 hover:scale-105"
-            aria-label="Toggle sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-          <img 
-            src={theme === 'dark' ? './lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png' : './lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png'} 
-            alt="NyxChat" 
-            className="w-8 h-8 transition-all duration-200"
-          />
-          <h1 className="font-semibold text-base">NyxChat</h1>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div 
-                className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                  isOnline ? 'bg-green-500' : 'bg-red-500'
-                }`}
-                aria-label={isOnline ? "Online" : "Offline"}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isOnline ? "Online" : "Offline"}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-8 w-8 transition-transform duration-200 hover:scale-105"
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
-        </div>
-      </header>
+      <AppHeader isOnline={isOnline} />
 
-      {/* Main Content Container - This is the scrollable area */}
+      {/* Enhanced toolbar for desktop */}
+      <div className="hidden md:flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm shadow-sm" style={{ marginTop: '64px' }}>
+        <div className="flex items-center gap-3">
+          <ModelSwitcher
+            currentModel={currentModel}
+            models={SAMPLE_MODELS}
+            onModelChange={setCurrentModel}
+          />
+          <TokenCounter tokens={tokenCount} maxTokens={4000} />
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
+          >
+            Settings
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Container */}
       <div 
         className="flex-1 relative"
         style={{ 
-          marginTop: '64px',
+          marginTop: showWelcome ? '64px' : '0px',
           height: getScrollContainerHeight(),
           overflow: 'hidden'
         }}
@@ -230,7 +220,8 @@ const ChatInterface = () => {
           className="h-full overflow-y-auto scroll-smooth custom-scrollbar"
           style={{ 
             WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain'
+            overscrollBehavior: 'contain',
+            paddingBottom: isKeyboardOpen ? '20px' : '20px'
           }}
         >
           {showWelcome ? (
@@ -245,7 +236,7 @@ const ChatInterface = () => {
               />
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto space-y-6 px-4 py-4 pb-8">
+            <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
               {messages.map((message, index) => (
                 <div 
                   key={message.id}
@@ -268,7 +259,6 @@ const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Floating Scroll to Bottom Button */}
       <ScrollToBottomButton
         show={showScrollToBottom && !showWelcome}
         onClick={scrollToBottom}
@@ -276,7 +266,6 @@ const ChatInterface = () => {
         keyboardHeight={keyboardHeight}
       />
 
-      {/* Fixed Footer - Always at bottom, above keyboard */}
       <ChatFooter
         inputValue={inputValue}
         setInputValue={setInputValue}
@@ -285,6 +274,13 @@ const ChatInterface = () => {
         isTyping={isTyping}
         isKeyboardOpen={isKeyboardOpen}
         keyboardHeight={keyboardHeight}
+      />
+
+      <AppFooter />
+      
+      <SettingsModal
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
       />
     </div>
   );

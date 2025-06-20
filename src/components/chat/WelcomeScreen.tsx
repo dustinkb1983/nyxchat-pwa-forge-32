@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -49,7 +49,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   return (
     <div className="flex flex-col px-4 text-center h-full justify-center no-horizontal-scroll">
-      {/* Logo container */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,17 +59,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <img 
             src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
             alt="NyxChat Logo" 
-            className="w-24 h-24"
+            className="w-24 h-24 drop-shadow-lg"
           />
         </div>
       </motion.div>
 
-      {/* Quick action buttons */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto mb-16"
+        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto mb-32"
       >
         {quickPrompts.map((item, index) => (
           <motion.div
@@ -82,7 +80,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           >
             <Button
               variant="outline"
-              className="h-20 w-full flex flex-col items-center justify-center gap-2 bg-card/50 border-border/50 hover:bg-card/80 transition-all duration-200"
+              className="h-20 w-full flex flex-col items-center justify-center gap-2 bg-card/50 border-2 border-border/50 hover:bg-card/80 hover:border-primary/30 hover:shadow-lg rounded-2xl transition-all duration-300 hover:scale-105"
               onClick={() => onQuickPrompt(item.prompt)}
               title={item.prompt}
             >

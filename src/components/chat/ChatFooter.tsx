@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect } from 'react';
-import { Send, Trash2, Paperclip } from 'lucide-react';
+import { Send, Paperclip, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -25,10 +25,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea but constrain to single line initially
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = '40px'; // Fixed height
+      textareaRef.current.style.height = '40px';
       const scrollHeight = textareaRef.current.scrollHeight;
       if (scrollHeight > 40) {
         textareaRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
@@ -36,73 +35,64 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
     }
   }, [inputValue]);
 
-  const handleClearInput = () => {
-    setInputValue("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '40px';
-      textareaRef.current.focus();
-    }
-  };
-
   const handleAttachFile = () => {
     console.log('File attachment clicked');
   };
 
+  const handleVoiceInput = () => {
+    console.log('Voice input clicked');
+  };
+
   return (
     <div 
-      className="fixed left-0 right-0 z-[100] border-t bg-card/95 backdrop-blur-md"
+      className="fixed left-0 right-0 z-[100] bg-card/95 backdrop-blur-md border-t shadow-lg"
       style={{
-        height: '64px',
-        padding: '0.75rem 1rem',
-        bottom: isKeyboardOpen ? `${keyboardHeight + 8}px` : '0px',
+        bottom: isKeyboardOpen ? `${keyboardHeight}px` : '0px',
+        padding: '12px 16px',
       }}
     >
-      <div className="max-w-4xl mx-auto h-full">
-        <div className="flex items-center gap-3 h-full">
-          {/* Input area with fixed height */}
-          <div className="flex-1 relative bg-background rounded-lg border border-input flex items-center min-h-[40px]" style={{ padding: '0.5rem 1rem' }}>
-            <Textarea
-              ref={textareaRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={onKeyDown}
-              placeholder="Type your message..."
-              className="flex-1 min-h-[40px] max-h-[120px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-5"
-              disabled={isTyping}
-              rows={1}
-            />
-            
-            {/* Icons container */}
-            <div className="flex items-center gap-1 ml-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClearInput}
-                disabled={!inputValue.trim()}
-                className="h-9 w-9 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-              
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-end gap-3">
+          <div className="flex-1 relative bg-background rounded-2xl border-2 border-input/50 shadow-sm hover:border-primary/30 transition-all duration-200 focus-within:border-primary/60 focus-within:shadow-md">
+            <div className="flex items-end p-3 gap-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleAttachFile}
-                className="h-9 w-9 text-muted-foreground hover:text-foreground transition-colors"
+                className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all duration-200"
               >
-                <Paperclip className="h-5 w-5" />
+                <Paperclip className="h-4 w-4" />
+              </Button>
+              
+              <Textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder="Type your message..."
+                className="flex-1 min-h-[40px] max-h-[120px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-6"
+                disabled={isTyping}
+                rows={1}
+              />
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleVoiceInput}
+                className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all duration-200"
+              >
+                <Mic className="h-4 w-4" />
               </Button>
             </div>
           </div>
           
-          {/* Send button */}
           <Button
             onClick={onSend}
             disabled={!inputValue.trim() || isTyping}
             size="icon"
-            className="h-11 w-11 rounded-full transition-all duration-200 hover:scale-105 disabled:hover:scale-100 shrink-0"
+            className="h-12 w-12 rounded-2xl transition-all duration-200 hover:scale-105 disabled:hover:scale-100 shrink-0 shadow-lg hover:shadow-xl disabled:shadow-sm"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5" />
           </Button>
         </div>
       </div>

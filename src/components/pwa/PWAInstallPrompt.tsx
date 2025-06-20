@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, X, Smartphone, Monitor } from 'lucide-react';
+import { Download, X, Smartphone, Monitor, Chrome } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -21,9 +21,9 @@ export const PWAInstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [installSource, setInstallSource] = useState<'browser' | 'ios' | 'android'>('browser');
+  const [sessionDismissed, setSessionDismissed] = useState(false);
 
   useEffect(() => {
-    // Check if app is already installed
     const checkInstalled = () => {
       if (window.matchMedia('(display-mode: standalone)').matches || 
           (window.navigator as any).standalone === true) {
@@ -33,7 +33,6 @@ export const PWAInstallPrompt = () => {
       return false;
     };
 
-    // Detect platform
     const detectPlatform = () => {
       const userAgent = navigator.userAgent.toLowerCase();
       if (/iphone|ipad|ipod/.test(userAgent)) {
@@ -48,41 +47,50 @@ export const PWAInstallPrompt = () => {
     if (checkInstalled()) return;
     detectPlatform();
 
-    // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
       
-      // Show prompt after user has interacted with the app
+      // Show prompt more aggressively - after 3 seconds and not permanently dismissed
       setTimeout(() => {
-        if (!isInstalled && !sessionStorage.getItem('pwa-prompt-dismissed')) {
+        if (!isInstalled && !sessionDismissed && !localStorage.getItem('pwa-never-show')) {
           setShowPrompt(true);
         }
-      }, 5000); // Wait 5 seconds before showing
+      }, 3000);
     };
 
-    // Listen for app installed event
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setShowPrompt(false);
       setDeferredPrompt(null);
+      localStorage.removeItem('pwa-never-show');
       console.log('NyxChat PWA was installed');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
+    // For iOS and unsupported browsers, show manual prompt
+    if (installSource === 'ios' || (!deferredPrompt && !isInstalled)) {
+      setTimeout(() => {
+        if (!isInstalled && !sessionDismissed && !localStorage.getItem('pwa-never-show')) {
+          setShowPrompt(true);
+        }
+      }, 5000);
+    }
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, [isInstalled]);
+  }, [isInstalled, sessionDismissed, deferredPrompt, installSource]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // Show manual installation instructions for iOS
       if (installSource === 'ios') {
-        alert('To install NyxChat:\n1. Tap the Share button\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" in the top-right corner');
+        alert('To install NyxChat:\n\n1. Tap the Share button (↗️)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" in the top-right corner\n\nEnjoy your native NyxChat experience!');
+      } else {
+        alert('To install NyxChat:\n\n1. Look for the install icon in your browser\'s address bar\n2. Or check your browser\'s menu for "Install" or "Add to Home Screen"\n3. Follow the prompts to install\n\nEnjoy your native NyxChat experience!');
       }
       return;
     }
@@ -93,9 +101,10 @@ export const PWAInstallPrompt = () => {
       
       if (outcome === 'accepted') {
         console.log('User accepted the install prompt');
+        localStorage.removeItem('pwa-never-show');
       } else {
         console.log('User dismissed the install prompt');
-        sessionStorage.setItem('pwa-prompt-dismissed', 'true');
+        setSessionDismissed(true);
       }
       
       setDeferredPrompt(null);
@@ -107,7 +116,12 @@ export const PWAInstallPrompt = () => {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    sessionStorage.setItem('pwa-prompt-dismissed', 'true');
+    setSessionDismissed(true);
+  };
+
+  const handleNeverShow = () => {
+    setShowPrompt(false);
+    localStorage.setItem('pwa-never-show', 'true');
   };
 
   const getInstallText = () => {
@@ -128,12 +142,11 @@ export const PWAInstallPrompt = () => {
       case 'android':
         return <Download className="h-5 w-5" />;
       default:
-        return <Monitor className="h-5 w-5" />;
+        return <Chrome className="h-5 w-5" />;
     }
   };
 
-  // Don't show if installed, dismissed, or conditions not met
-  if (isInstalled || !showPrompt || sessionStorage.getItem('pwa-prompt-dismissed')) {
+  if (isInstalled || !showPrompt || localStorage.getItem('pwa-never-show')) {
     return null;
   }
 
@@ -143,25 +156,25 @@ export const PWAInstallPrompt = () => {
         initial={{ opacity: 0, y: 100, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 100, scale: 0.9 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm"
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="fixed bottom-4 left-4 right-4 z-[200] md:left-auto md:right-4 md:max-w-sm"
       >
-        <Card className="border-2 border-primary/20 bg-card/95 backdrop-blur-sm shadow-xl">
+        <Card className="border-2 border-primary/30 bg-card/98 backdrop-blur-lg shadow-2xl rounded-2xl">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5 text-primary">
+              <div className="flex-shrink-0 mt-0.5 text-primary bg-primary/10 p-2 rounded-xl">
                 {getInstallIcon()}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm mb-1">Install NyxChat</h3>
-                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
-                  Get quick access, work offline, and enjoy a native app experience
+                <h3 className="font-semibold text-base mb-1">Install NyxChat</h3>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  Get instant access, work offline, and enjoy a native app experience on your device
                 </p>
                 <div className="flex gap-2">
                   <Button 
                     onClick={handleInstallClick}
                     size="sm"
-                    className="flex-1 h-8 text-xs font-medium"
+                    className="flex-1 h-9 text-sm font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
                   >
                     {getInstallText()}
                   </Button>
@@ -169,12 +182,18 @@ export const PWAInstallPrompt = () => {
                     onClick={handleDismiss}
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="h-9 w-9 p-0 rounded-xl border-2 hover:border-primary/30 transition-all duration-200"
                     title="Dismiss"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
+                <button
+                  onClick={handleNeverShow}
+                  className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200 underline-offset-2 hover:underline"
+                >
+                  Don't show again
+                </button>
               </div>
             </div>
           </CardContent>
