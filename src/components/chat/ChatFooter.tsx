@@ -38,8 +38,8 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   };
 
   return (
-    <div className="fixed left-0 right-0 bottom-0 z-50 bg-background/95 backdrop-blur-md border-t" style={{ height: '80px' }}>
-      <div className="h-full flex items-center justify-center px-4">
+    <div className="fixed left-0 right-0 bottom-0 z-50 bg-background/95 backdrop-blur-md border-t">
+      <div className="flex items-center justify-center px-4 py-3 min-h-[64px]">
         <div className="w-full max-w-4xl flex items-center gap-3">
           <div className="flex-1 relative">
             <div className="flex items-center bg-muted/50 rounded-full border-2 border-input/50 hover:border-primary/30 focus-within:border-primary/60 transition-all duration-200 px-4 py-2">

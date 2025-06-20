@@ -20,7 +20,7 @@ export const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({
       size="icon"
       className="fixed right-4 z-30 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
       style={{
-        bottom: '100px', // Position above the footer
+        bottom: 'calc(64px + 1rem)', // Position above the footer with proper spacing
         opacity: show ? 1 : 0,
         visibility: show ? 'visible' : 'hidden',
       }}

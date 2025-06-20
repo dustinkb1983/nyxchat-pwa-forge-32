@@ -37,8 +37,8 @@ export const AppFooter: React.FC = () => {
   };
 
   return (
-    <footer className="hidden md:flex fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t px-4 py-2 shadow-lg">
-      <div className="max-w-4xl mx-auto w-full flex items-center justify-center gap-2">
+    <footer className="hidden md:flex fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t shadow-lg">
+      <div className="max-w-4xl mx-auto w-full flex items-center justify-center gap-2 px-4 py-2 min-h-[48px]">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

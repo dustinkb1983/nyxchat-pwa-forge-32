@@ -51,12 +51,12 @@ export const PWAInstallPrompt = () => {
       e.preventDefault();
       setDeferredPrompt(e);
       
-      // Show prompt more aggressively - after 3 seconds and not permanently dismissed
+      // Show prompt more aggressively - after 10 seconds to avoid interfering with initial layout
       setTimeout(() => {
         if (!isInstalled && !sessionDismissed && !localStorage.getItem('pwa-never-show')) {
           setShowPrompt(true);
         }
-      }, 3000);
+      }, 10000);
     };
 
     const handleAppInstalled = () => {
@@ -69,15 +69,6 @@ export const PWAInstallPrompt = () => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
-
-    // For iOS and unsupported browsers, show manual prompt
-    if (installSource === 'ios' || (!deferredPrompt && !isInstalled)) {
-      setTimeout(() => {
-        if (!isInstalled && !sessionDismissed && !localStorage.getItem('pwa-never-show')) {
-          setShowPrompt(true);
-        }
-      }, 5000);
-    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -157,7 +148,8 @@ export const PWAInstallPrompt = () => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 100, scale: 0.9 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="fixed bottom-4 left-4 right-4 z-[200] md:left-auto md:right-4 md:max-w-sm"
+        className="fixed left-4 right-4 z-[100] md:left-auto md:right-4 md:max-w-sm"
+        style={{ bottom: 'calc(64px + 2rem)' }}
       >
         <Card className="border-2 border-primary/30 bg-card/98 backdrop-blur-lg shadow-2xl rounded-2xl">
           <CardContent className="p-4">

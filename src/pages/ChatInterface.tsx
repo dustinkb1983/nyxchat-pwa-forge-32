@@ -100,19 +100,13 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-background/95 overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-br from-background to-background/95 overflow-hidden">
       <AppHeader isOnline={isOnline} />
 
-      {/* Main Content - Fixed height with proper bottom padding */}
-      <div 
-        className="flex-1 relative"
-        style={{ 
-          height: 'calc(100vh - 64px - 80px)', // Account for header and footer
-          marginTop: '64px'
-        }}
-      >
+      {/* Main Content - Flexible layout with proper spacing */}
+      <div className="flex-1 flex flex-col min-h-0 pt-16">
         {showWelcome ? (
-          <div className="h-full overflow-hidden">
+          <div className="flex-1 overflow-hidden pb-20">
             <WelcomeScreen 
               onQuickPrompt={handleQuickPrompt}
               inputValue={inputValue}
@@ -125,7 +119,7 @@ const ChatInterface = () => {
         ) : (
           <div 
             ref={messagesContainerRef}
-            className="h-full overflow-y-auto scroll-smooth custom-scrollbar"
+            className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar pb-20"
             style={{ 
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain'
