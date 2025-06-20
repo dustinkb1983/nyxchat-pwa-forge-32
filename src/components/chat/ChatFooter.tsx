@@ -49,7 +49,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
       <div className="flex items-end justify-center px-4 py-2">
         <div className="w-full max-w-4xl flex items-end gap-3">
           <div className="flex-1 relative">
-            <div className="flex items-end bg-card/60 rounded-3xl border-2 border-border/30 hover:border-primary/40 focus-within:border-primary/60 transition-elegant shadow-elegant backdrop-blur-md px-5 py-2"> {/* Increased px from 4 to 5 to fix hidden text */}
+            <div className="flex items-end bg-card/60 rounded-3xl border-2 border-border/30 hover:border-primary/40 focus-within:border-primary/60 transition-elegant shadow-elegant backdrop-blur-md px-5 py-2">
               <Textarea
                 ref={textareaRef}
                 value={inputValue}
@@ -62,7 +62,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
                 style={{ height: '32px' }}
               />
               
-              <div className="flex items-center gap-1 ml-3 pb-0.5"> {/* Reduced gap from 2 to 1 for mobile */}
+              <div className="flex items-center gap-0.5 ml-2 pb-0.5">
                 <Button
                   variant="ghost"
                   size="icon"

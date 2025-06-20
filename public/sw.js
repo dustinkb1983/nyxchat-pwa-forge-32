@@ -1,9 +1,9 @@
 
-// Enhanced PWA Service Worker for NyxChat v5 - Fixed Installation
-const CACHE_NAME = "nyxchat-pwa-v5";
-const STATIC_CACHE = "nyxchat-static-v5";
-const DYNAMIC_CACHE = "nyxchat-dynamic-v5";
-const IMAGE_CACHE = "nyxchat-images-v5";
+// Enhanced PWA Service Worker for NyxChat APK v6
+const CACHE_NAME = "nyxchat-apk-v6";
+const STATIC_CACHE = "nyxchat-static-v6";
+const DYNAMIC_CACHE = "nyxchat-dynamic-v6";
+const IMAGE_CACHE = "nyxchat-images-v6";
 
 const CORE_ASSETS = [
   "./",
@@ -15,7 +15,7 @@ const CORE_ASSETS = [
 
 // Install event - cache core assets
 self.addEventListener("install", event => {
-  console.log("Service Worker: Installing v5...");
+  console.log("Service Worker: Installing APK v6...");
   event.waitUntil(
     caches.open(STATIC_CACHE).then(cache => {
       console.log("Service Worker: Caching core assets");
@@ -26,18 +26,17 @@ self.addEventListener("install", event => {
       );
     })
   );
-  // Force activation of new service worker
   self.skipWaiting();
 });
 
 // Activate event - clean old caches
 self.addEventListener("activate", event => {
-  console.log("Service Worker: Activating v5...");
+  console.log("Service Worker: Activating APK v6...");
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (!cacheName.includes("v5")) {
+          if (!cacheName.includes("v6")) {
             console.log("Service Worker: Clearing old cache", cacheName);
             return caches.delete(cacheName);
           }
@@ -45,17 +44,21 @@ self.addEventListener("activate", event => {
       );
     })
   );
-  // Take control of all pages immediately
   self.clients.claim();
 });
 
-// Enhanced fetch event with better error handling
+// Enhanced fetch event for APK context
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   
   const url = new URL(event.request.url);
   
-  // Skip cross-origin requests that aren't essential resources
+  // Handle capacitor:// and file:// protocols for APK
+  if (url.protocol === 'capacitor:' || url.protocol === 'file:') {
+    return;
+  }
+  
+  // Skip external requests in APK mode
   if (url.origin !== self.location.origin && !isEssentialResource(event.request)) {
     return;
   }
@@ -75,7 +78,7 @@ async function handleFetch(request) {
       return await cacheFirst(request, IMAGE_CACHE);
     }
     
-    // Network first for API calls and dynamic content
+    // Network first for API calls with better offline fallback
     return await networkFirst(request);
     
   } catch (error) {
@@ -89,9 +92,9 @@ async function cacheFirst(request, cacheName) {
   const cached = await cache.match(request);
   
   if (cached) {
-    // Refresh cache in background
+    // Refresh cache in background for APK context
     fetch(request).then(response => {
-      if (response.status === 200) {
+      if (response && response.status === 200) {
         cache.put(request, response.clone());
       }
     }).catch(() => {});
@@ -100,7 +103,7 @@ async function cacheFirst(request, cacheName) {
   
   try {
     const response = await fetch(request);
-    if (response.status === 200) {
+    if (response && response.status === 200) {
       await cache.put(request, response.clone());
     }
     return response;
@@ -112,7 +115,7 @@ async function cacheFirst(request, cacheName) {
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    if (response.status === 200) {
+    if (response && response.status === 200) {
       const cache = await caches.open(DYNAMIC_CACHE);
       await cache.put(request, response.clone());
     }
@@ -162,17 +165,16 @@ function isEssentialResource(request) {
          request.url.includes('.ico');
 }
 
-// Handle app installation
+// APK-specific event handlers
 self.addEventListener('beforeinstallprompt', event => {
-  console.log('Service Worker: beforeinstallprompt event');
+  console.log('Service Worker: beforeinstallprompt event (APK mode)');
 });
 
-// Handle successful installation
 self.addEventListener('appinstalled', event => {
-  console.log('Service Worker: App successfully installed');
+  console.log('Service Worker: App successfully installed as APK');
 });
 
-// Background sync for offline actions
+// Enhanced background sync for APK
 self.addEventListener('sync', event => {
   if (event.tag === 'background-sync') {
     event.waitUntil(handleBackgroundSync());
@@ -180,16 +182,22 @@ self.addEventListener('sync', event => {
 });
 
 async function handleBackgroundSync() {
-  console.log('Service Worker: Processing background sync');
-  // Handle any queued actions when back online
+  console.log('Service Worker: Processing background sync (APK mode)');
 }
 
-// Handle notification clicks
+// Handle notification clicks in APK
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
     clients.openWindow('./').catch(err => 
-      console.error('Failed to open window:', err)
+      console.error('Failed to open window in APK:', err)
     )
   );
+});
+
+// APK-specific message handling
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
