@@ -62,7 +62,7 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
                 style={{ height: '32px' }}
               />
               
-              <div className="flex items-center gap-0.5 ml-2 pb-0.5">
+              <div className="flex items-center gap-2 ml-2 pb-0.5">
                 <Button
                   variant="ghost"
                   size="icon"

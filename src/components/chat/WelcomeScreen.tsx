@@ -48,25 +48,28 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col h-full px-4">
-      {/* Logo Section - adjusted mobile positioning */}
+    <div className="flex flex-col h-full px-4 bg-black">
+      {/* Logo Section - bigger logo with app name */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex items-center justify-center pt-12 md:pt-16 pb-6 md:pb-8"
+        className="flex flex-col items-center justify-center pt-20 md:pt-24 pb-8 md:pb-12"
       >
-        <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center space-y-4">
           <img 
-            src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
+            src="/lovable-uploads/c4ccfc25-8070-4b46-b114-db5d4bdfd2f7.png"
             alt="NyxChat Logo" 
-            className="w-52 h-52 md:w-56 md:h-56 drop-shadow-lg mx-auto"
+            className="w-64 h-64 md:w-72 md:h-72 drop-shadow-lg mx-auto"
           />
+          <h1 className="text-4xl md:text-5xl font-bold text-white">
+            NyxChat
+          </h1>
         </div>
       </motion.div>
 
       {/* Spacer to push buttons down */}
-      <div className="flex-1 min-h-[6rem] md:min-h-[2rem]"></div>
+      <div className="flex-1 min-h-[4rem] md:min-h-[2rem]"></div>
 
       {/* Quick Actions with tighter corner radius */}
       <motion.div
