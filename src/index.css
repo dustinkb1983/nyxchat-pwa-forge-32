@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -41,6 +42,9 @@
     
     /* Mobile viewport height variable */
     --vh: 1vh;
+    
+    /* Inter font family */
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   .dark {
@@ -86,6 +90,7 @@
   
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter);
     /* Mobile optimizations */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: none;
@@ -96,6 +101,16 @@
     /* Ensure body is always visible */
     opacity: 1 !important;
     visibility: visible !important;
+  }
+  
+  /* Standardize font across all UI elements */
+  button, 
+  input, 
+  textarea, 
+  select, 
+  [role="button"],
+  .ui-element {
+    font-family: var(--font-inter);
   }
   
   /* Ensure root container is visible */
@@ -240,4 +255,3 @@ button:active:not(:disabled), [role="button"]:active {
     background-color: rgba(0, 0, 0, 0.95);
   }
 }
-

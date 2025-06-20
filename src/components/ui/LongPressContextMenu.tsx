@@ -31,16 +31,11 @@ export const LongPressContextMenu: React.FC<LongPressContextMenuProps> = ({
     touchStartTimeRef.current = Date.now();
     setIsLongPress(false);
     
-    // Trigger haptic feedback on mobile
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-    
     longPressTimerRef.current = setTimeout(() => {
       setIsLongPress(true);
-      // Stronger haptic feedback for long press
+      // Only vibrate on actual long press completion
       if ('vibrate' in navigator) {
-        navigator.vibrate([100, 50, 100]);
+        navigator.vibrate(50); // Reduced intensity, single vibration
       }
     }, 500);
   }, [disabled]);
