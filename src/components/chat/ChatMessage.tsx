@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Bot, AlertCircle, Copy, RefreshCw, Check } from 'lucide-react';
@@ -62,7 +63,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
   };
 
   const validRemarkPlugins = [remarkGfm];
-  // The rehypeRaw plugin must be passed in an array.
   const validRehypePlugins = [rehypeRaw];
 
   return (
@@ -101,7 +101,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 + 0.1 }}
       >
-        <Card className={`p-4 group/card relative ${
+        <Card className={`p-4 relative ${
           isUser
             ? 'bg-primary text-primary-foreground ml-auto'
             : isError
@@ -122,18 +122,43 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
           }`}>
             {new Date(message.timestamp).toLocaleTimeString()}
           </div>
-
-          <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+        </Card>
+        
+        {/* Action buttons moved outside the bubble for AI messages only */}
+        {!isUser && (
+          <div className="flex gap-1 mt-2 justify-start">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-3 text-xs hover:bg-accent/80 transition-all duration-200" 
+              onClick={handleCopy}
+            >
+              {copied ? <Check className="h-3 w-3 mr-1 text-green-500" /> : <Copy className="h-3 w-3 mr-1" />}
+              {copied ? 'Copied' : 'Copy'}
+            </Button>
             {isError && (
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleRetry} disabled={isTyping} title="Retry">
-                <RefreshCw className="h-3 w-3" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-3 text-xs hover:bg-accent/80 transition-all duration-200" 
+                onClick={handleRetry} 
+                disabled={isTyping}
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Retry
               </Button>
             )}
+          </div>
+        )}
+
+        {/* Copy button for user messages (if needed) - kept in original position */}
+        {isUser && (
+          <div className="absolute top-1 right-1 opacity-0 group-hover/message:opacity-100 transition-opacity">
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy} title="Copy">
               {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
             </Button>
           </div>
-        </Card>
+        )}
       </motion.div>
 
       {isUser && (

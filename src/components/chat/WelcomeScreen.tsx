@@ -48,7 +48,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col px-4 text-center h-full justify-center no-horizontal-scroll">
+    <div className="flex flex-col px-4 text-center justify-center no-horizontal-scroll" style={{ height: 'calc(100vh - 144px)' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -68,7 +68,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto mb-32"
+        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto"
       >
         {quickPrompts.map((item, index) => (
           <motion.div
