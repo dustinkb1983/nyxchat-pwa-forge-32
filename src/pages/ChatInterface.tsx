@@ -106,7 +106,7 @@ const ChatInterface = () => {
       {/* Main Content - Fixed mobile layout */}
       <div className="flex-1 flex flex-col min-h-0 pt-16">
         {showWelcome ? (
-          <div className="flex-1 overflow-hidden pb-[80px]"> {/* Fixed bottom padding for mobile */}
+          <div className="flex-1 overflow-hidden pb-[64px]"> {/* Reduced from pb-[80px] to match smaller footer */}
             <WelcomeScreen 
               onQuickPrompt={handleQuickPrompt}
               inputValue={inputValue}
@@ -119,7 +119,7 @@ const ChatInterface = () => {
         ) : (
           <div 
             ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar pb-[80px]" // Fixed bottom padding
+            className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar pb-[64px]" // Reduced from pb-[80px]
             style={{ 
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain'
