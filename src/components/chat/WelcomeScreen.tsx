@@ -48,18 +48,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col px-4 text-center justify-center no-horizontal-scroll" style={{ height: 'calc(100vh - 144px)' }}>
+    <div className="flex flex-col px-4 text-center justify-center h-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="flex items-center justify-center mb-8"
       >
-        <div className="w-32 h-32 flex items-center justify-center">
+        <div className="w-48 h-48 flex items-center justify-center">
           <img 
             src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
             alt="NyxChat Logo" 
-            className="w-24 h-24 drop-shadow-lg"
+            className="w-32 h-32 drop-shadow-lg"
           />
         </div>
       </motion.div>

@@ -49,12 +49,11 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
       className="fixed left-0 right-0 z-[100] bg-card/95 backdrop-blur-md border-t shadow-lg"
       style={{
         bottom: isKeyboardOpen ? `${keyboardHeight}px` : '0px',
-        minHeight: '80px', // Fixed minimum height to prevent jumping
-        height: 'auto',
+        height: '80px', // Fixed height to prevent jumping
       }}
     >
-      <div className="max-w-4xl mx-auto p-4">
-        <div className="flex items-end gap-3">
+      <div className="max-w-4xl mx-auto p-4 h-full flex items-center">
+        <div className="flex items-end gap-3 w-full">
           <div className="flex-1 relative bg-background rounded-2xl border-2 border-input/50 shadow-sm hover:border-primary/30 transition-all duration-200 focus-within:border-primary/60 focus-within:shadow-md">
             <div className="flex items-end p-3 gap-2">
               <Button

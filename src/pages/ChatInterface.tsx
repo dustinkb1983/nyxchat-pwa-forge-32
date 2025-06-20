@@ -8,24 +8,14 @@ import { ChatFooter } from "@/components/chat/ChatFooter";
 import { ScrollToBottomButton } from "@/components/chat/ScrollToBottomButton";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppFooter } from "@/components/layout/AppFooter";
-import { ModelSwitcher } from "@/components/ui/ModelSwitcher";
-import { TokenCounter } from "@/components/ui/TokenCounter";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 import { useChat } from "@/contexts/ChatContext";
 import { useSidebar } from '@/components/ui/sidebar';
-
-const SAMPLE_MODELS = [
-  { id: 'gpt-4', name: 'GPT-4', description: 'Most capable model' },
-  { id: 'gpt-3.5', name: 'GPT-3.5 Turbo', description: 'Fast and efficient' },
-  { id: 'claude-3', name: 'Claude 3', description: 'Great for analysis' },
-];
 
 const ChatInterface = () => {
   const {
     currentConversation,
     isTyping,
-    currentProfile,
-    setCurrentProfile,
     sendMessage,
   } = useChat();
   const { setOpenMobile } = useSidebar();
@@ -36,8 +26,6 @@ const ChatInterface = () => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [currentModel, setCurrentModel] = useState('gpt-4');
-  const [tokenCount, setTokenCount] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -130,14 +118,6 @@ const ChatInterface = () => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [messages.length]);
 
-  // Update token count when messages change
-  useEffect(() => {
-    const estimatedTokens = messages.reduce((total, msg) => {
-      return total + Math.ceil(msg.content.length / 4); // Rough estimate
-    }, 0);
-    setTokenCount(estimatedTokens);
-  }, [messages]);
-
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
 
@@ -161,11 +141,6 @@ const ChatInterface = () => {
       }
     }
   };
-  
-  const handleProfileChange = (profileId: string) => {
-    setCurrentProfile(profileId);
-    toast.success(`Profile switched!`);
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -174,9 +149,9 @@ const ChatInterface = () => {
 
   const getScrollContainerHeight = () => {
     if (isKeyboardOpen) {
-      return `calc(100vh - 64px - 64px - ${keyboardHeight}px)`;
+      return `calc(100vh - 64px - 80px - ${keyboardHeight}px)`;
     }
-    return `calc(100vh - 64px - 64px)`;
+    return `calc(100vh - 64px - 80px)`;
   };
 
   return (
@@ -186,56 +161,34 @@ const ChatInterface = () => {
     >
       <AppHeader isOnline={isOnline} />
 
-      {/* Enhanced toolbar for desktop */}
-      <div className="hidden md:flex items-center justify-between px-4 py-2 border-b bg-card/50 backdrop-blur-sm shadow-sm" style={{ marginTop: '64px' }}>
-        <div className="flex items-center gap-3">
-          <ModelSwitcher
-            currentModel={currentModel}
-            models={SAMPLE_MODELS}
-            onModelChange={setCurrentModel}
-          />
-          <TokenCounter tokens={tokenCount} maxTokens={4000} />
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSettingsOpen(true)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
-          >
-            Settings
-          </button>
-        </div>
-      </div>
-
       {/* Main Content Container */}
       <div 
         className="flex-1 relative"
         style={{ 
-          marginTop: showWelcome ? '64px' : '0px',
+          marginTop: '64px',
           height: getScrollContainerHeight(),
           overflow: 'hidden'
         }}
       >
-        <div 
-          ref={messagesContainerRef}
-          className="h-full overflow-y-auto scroll-smooth custom-scrollbar"
-          style={{ 
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain',
-            paddingBottom: isKeyboardOpen ? '20px' : '20px'
-          }}
-        >
-          {showWelcome ? (
-            <div className="h-full">
-              <WelcomeScreen 
-                onQuickPrompt={handleQuickPrompt}
-                inputValue={inputValue}
-                setInputValue={setInputValue}
-                onSend={handleSend}
-                onKeyDown={handleKeyDown}
-                isTyping={isTyping}
-              />
-            </div>
-          ) : (
+        {showWelcome ? (
+          <WelcomeScreen 
+            onQuickPrompt={handleQuickPrompt}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            onSend={handleSend}
+            onKeyDown={handleKeyDown}
+            isTyping={isTyping}
+          />
+        ) : (
+          <div 
+            ref={messagesContainerRef}
+            className="h-full overflow-y-auto scroll-smooth custom-scrollbar"
+            style={{ 
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+              paddingBottom: isKeyboardOpen ? '20px' : '20px'
+            }}
+          >
             <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
               {messages.map((message, index) => (
                 <div 
@@ -255,8 +208,8 @@ const ChatInterface = () => {
               )}
               <div ref={messagesEndRef} />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <ScrollToBottomButton

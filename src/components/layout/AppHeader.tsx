@@ -35,7 +35,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ isOnline = true }) => {
             alt="NyxChat" 
             className="w-8 h-8 transition-all duration-200 drop-shadow-sm"
           />
-          <h1 className="font-semibold text-lg bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+          <h1 className={`font-semibold text-lg transition-colors duration-200 ${
+            theme === 'dark' ? 'text-white' : 'text-black'
+          }`}>
             NyxChat
           </h1>
         </div>
