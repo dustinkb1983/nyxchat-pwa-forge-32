@@ -23,8 +23,6 @@ const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -45,53 +43,6 @@ const ChatInterface = () => {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Enhanced mobile keyboard handling
-  useEffect(() => {
-    let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
-    
-    const handleViewportChange = () => {
-      if (window.visualViewport) {
-        const currentHeight = window.visualViewport.height;
-        const heightDiff = initialViewportHeight - currentHeight;
-        const newKeyboardHeight = Math.max(0, heightDiff);
-        
-        setKeyboardHeight(newKeyboardHeight);
-        setIsKeyboardOpen(newKeyboardHeight > 100);
-        
-        if (newKeyboardHeight > 100) {
-          setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-          }, 150);
-        }
-      }
-    };
-
-    const handleResize = () => {
-      if (!window.visualViewport) {
-        const currentHeight = window.innerHeight;
-        const heightDiff = initialViewportHeight - currentHeight;
-        const newKeyboardHeight = Math.max(0, heightDiff);
-        
-        setKeyboardHeight(newKeyboardHeight);
-        setIsKeyboardOpen(newKeyboardHeight > 150);
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportChange);
-    } else {
-      window.addEventListener('resize', handleResize);
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleViewportChange);
-      } else {
-        window.removeEventListener('resize', handleResize);
-      }
     };
   }, []);
 
@@ -147,13 +98,6 @@ const ChatInterface = () => {
     setShowScrollToBottom(false);
   };
 
-  const getScrollContainerHeight = () => {
-    if (isKeyboardOpen) {
-      return `calc(100vh - 64px - 80px - ${keyboardHeight}px)`;
-    }
-    return `calc(100vh - 64px - 80px)`;
-  };
-
   return (
     <div 
       ref={chatContainerRef}
@@ -166,7 +110,8 @@ const ChatInterface = () => {
         className="flex-1 relative"
         style={{ 
           marginTop: '64px',
-          height: getScrollContainerHeight(),
+          paddingBottom: '100px', // Fixed padding for footer
+          height: 'calc(100vh - 64px)',
           overflow: 'hidden'
         }}
       >
@@ -185,8 +130,7 @@ const ChatInterface = () => {
             className="h-full overflow-y-auto scroll-smooth custom-scrollbar"
             style={{ 
               WebkitOverflowScrolling: 'touch',
-              overscrollBehavior: 'contain',
-              paddingBottom: isKeyboardOpen ? '20px' : '20px'
+              overscrollBehavior: 'contain'
             }}
           >
             <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
@@ -215,8 +159,6 @@ const ChatInterface = () => {
       <ScrollToBottomButton
         show={showScrollToBottom && !showWelcome}
         onClick={scrollToBottom}
-        isKeyboardOpen={isKeyboardOpen}
-        keyboardHeight={keyboardHeight}
       />
 
       <ChatFooter
@@ -225,8 +167,6 @@ const ChatInterface = () => {
         onSend={handleSend}
         onKeyDown={handleKeyDown}
         isTyping={isTyping}
-        isKeyboardOpen={isKeyboardOpen}
-        keyboardHeight={keyboardHeight}
       />
 
       <AppFooter />

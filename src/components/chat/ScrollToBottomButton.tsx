@@ -6,29 +6,20 @@ import { Button } from '@/components/ui/button';
 interface ScrollToBottomButtonProps {
   show: boolean;
   onClick: () => void;
-  isKeyboardOpen?: boolean;
-  keyboardHeight?: number;
 }
 
 export const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({
   show,
-  onClick,
-  isKeyboardOpen = false,
-  keyboardHeight = 0
+  onClick
 }) => {
   if (!show) return null;
-
-  const bottomOffset = isKeyboardOpen 
-    ? Math.max(80 + keyboardHeight - 64, 80) // Adjust for keyboard but maintain minimum distance
-    : 80;
 
   return (
     <Button
       onClick={onClick}
       size="icon"
-      className="fixed right-4 z-30 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+      className="fixed right-4 bottom-28 z-30 h-10 w-10 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all duration-200 hover:scale-105"
       style={{
-        bottom: `${bottomOffset}px`,
         opacity: show ? 1 : 0,
         visibility: show ? 'visible' : 'hidden',
       }}

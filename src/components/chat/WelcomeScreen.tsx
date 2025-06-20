@@ -48,27 +48,29 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col px-4 text-center justify-center h-full">
+    <div className="flex flex-col px-4 text-center justify-center items-center h-full">
+      {/* Logo Section - Larger and closer to footer */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex items-center justify-center mb-8"
+        className="flex items-center justify-center mb-16"
       >
-        <div className="w-48 h-48 flex items-center justify-center">
+        <div className="w-80 h-80 flex items-center justify-center">
           <img 
             src={theme === 'dark' ? '/lovable-uploads/ef071ded-72e2-42cb-a46b-47bf922f911f.png' : '/lovable-uploads/de22cf8d-553d-4c51-a283-91a089a844be.png'} 
             alt="NyxChat Logo" 
-            className="w-32 h-32 drop-shadow-lg"
+            className="w-64 h-64 drop-shadow-lg"
           />
         </div>
       </motion.div>
 
+      {/* Quick Actions - Positioned closer to footer */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto"
+        className="grid grid-cols-2 gap-4 max-w-sm w-full mx-auto mb-8"
       >
         {quickPrompts.map((item, index) => (
           <motion.div
