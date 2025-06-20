@@ -27,7 +27,6 @@ const ChatInterface = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const messages = currentConversation?.messages || [];
   const showWelcome = messages.length === 0;
@@ -48,16 +47,18 @@ const ChatInterface = () => {
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    const timer = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [messages, isTyping]);
+    if (!showWelcome) {
+      const timer = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages, isTyping, showWelcome]);
 
   // Monitor scroll position for scroll-to-bottom button
   useEffect(() => {
     const container = messagesContainerRef.current;
-    if (!container) return;
+    if (!container || showWelcome) return;
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
@@ -67,7 +68,7 @@ const ChatInterface = () => {
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [messages.length]);
+  }, [messages.length, showWelcome]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isTyping) return;
@@ -99,31 +100,28 @@ const ChatInterface = () => {
   };
 
   return (
-    <div 
-      ref={chatContainerRef}
-      className="flex flex-col bg-gradient-to-br from-background to-background/95 h-screen overflow-hidden"
-    >
+    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-background/95 overflow-hidden">
       <AppHeader isOnline={isOnline} />
 
-      {/* Main Content Container */}
+      {/* Main Content - Fixed height with proper bottom padding */}
       <div 
         className="flex-1 relative"
         style={{ 
-          marginTop: '64px',
-          paddingBottom: '100px', // Fixed padding for footer
-          height: 'calc(100vh - 64px)',
-          overflow: 'hidden'
+          height: 'calc(100vh - 64px - 80px)', // Account for header and footer
+          marginTop: '64px'
         }}
       >
         {showWelcome ? (
-          <WelcomeScreen 
-            onQuickPrompt={handleQuickPrompt}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
-            onSend={handleSend}
-            onKeyDown={handleKeyDown}
-            isTyping={isTyping}
-          />
+          <div className="h-full overflow-hidden">
+            <WelcomeScreen 
+              onQuickPrompt={handleQuickPrompt}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              onSend={handleSend}
+              onKeyDown={handleKeyDown}
+              isTyping={isTyping}
+            />
+          </div>
         ) : (
           <div 
             ref={messagesContainerRef}
@@ -133,7 +131,7 @@ const ChatInterface = () => {
               overscrollBehavior: 'contain'
             }}
           >
-            <div className="max-w-4xl mx-auto space-y-6 px-4 py-4">
+            <div className="max-w-4xl mx-auto space-y-6 px-4 py-4 pb-8">
               {messages.map((message, index) => (
                 <div 
                   key={message.id}
