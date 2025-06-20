@@ -20,7 +20,10 @@ export const MemoryManagerModal: React.FC<MemoryManagerModalProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0" aria-describedby="memory-manager-description">
+      <DialogContent 
+        className="max-w-4xl max-h-[90vh] overflow-hidden p-0 [&>button]:hidden" 
+        aria-describedby="memory-manager-description"
+      >
         <VisuallyHidden>
           <DialogTitle>Memory Manager</DialogTitle>
           <div id="memory-manager-description">

@@ -1,7 +1,7 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import './styles/modern-ui.css';
 
 @layer base {
   :root {
@@ -240,3 +240,4 @@ button:active:not(:disabled), [role="button"]:active {
     background-color: rgba(0, 0, 0, 0.95);
   }
 }
+

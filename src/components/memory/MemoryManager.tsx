@@ -200,34 +200,36 @@ export const MemoryManager = () => {
   ] as const;
 
   return (
-    <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'p-2' : 'p-6'}`}>
+    <div className={`h-full flex flex-col no-horizontal-scroll ${isMobile ? 'p-3' : 'p-6'} bg-gradient-to-br from-background via-background to-background/95`}>
       {/* Header with close button */}
-      <div className="flex items-center justify-between mb-3">
-        <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>Memory Manager</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className={`font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent ${isMobile ? 'text-xl' : 'text-3xl'}`}>
+          Memory Manager
+        </h1>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate('/')}
-          className={`${isMobile ? 'h-7 w-7' : 'h-8 w-8'} ripple-button`}
+          className={`${isMobile ? 'h-8 w-8' : 'h-9 w-9'} rounded-xl hover:bg-accent/50 transition-elegant hover:-translate-y-0.5 active:translate-y-0`}
         >
-          <X className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
+          <X className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
         </Button>
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 ${isMobile ? 'space-y-2' : 'grid grid-cols-1 lg:grid-cols-2 gap-6'} min-h-0`}>
+      <div className={`flex-1 ${isMobile ? 'space-y-4' : 'grid grid-cols-1 lg:grid-cols-2 gap-6'} min-h-0`}>
         {/* Left Panel - Memory List */}
-        <Card className="flex flex-col min-h-0">
-          <CardHeader className={isMobile ? 'pb-2 p-3' : 'pb-4'}>
+        <Card className="flex flex-col min-h-0 card-modern shadow-elegant-lg border-border/20 backdrop-blur-xl">
+          <CardHeader className={isMobile ? 'pb-3 p-4' : 'pb-4'}>
             <div className="flex items-center justify-between">
-              <CardTitle className={isMobile ? 'text-base' : 'text-lg'}>
+              <CardTitle className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent`}>
                 Memories ({filteredMemories.length})
               </CardTitle>
               <div className="flex gap-2">
                 <Button
                   onClick={() => setShowNewMemoryForm(true)}
                   size={isMobile ? "sm" : "default"}
-                  className={`${isMobile ? 'h-7 w-7 text-xs' : 'h-8 w-8'} ripple-button`}
+                  className={`${isMobile ? 'h-8 w-8 text-xs' : 'h-9 w-9'} rounded-xl transition-elegant hover:-translate-y-0.5 active:translate-y-0`}
                 >
                   <Plus className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 </Button>
@@ -235,7 +237,7 @@ export const MemoryManager = () => {
                   onClick={handleClearAllRequest}
                   variant="destructive"
                   size={isMobile ? "sm" : "default"}
-                  className={`${isMobile ? 'h-7 text-xs' : 'h-8 text-sm'} ripple-button`}
+                  className={`${isMobile ? 'h-8 text-xs' : 'h-9 text-sm'} rounded-xl transition-elegant hover:-translate-y-0.5 active:translate-y-0`}
                   disabled={memories.length === 0}
                 >
                   Clear All
@@ -245,26 +247,26 @@ export const MemoryManager = () => {
             
             {/* Search */}
             <div className="relative">
-              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/70 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
               <Input
                 placeholder="Search memories..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`${isMobile ? 'pl-8 h-7 text-xs' : 'pl-10 h-9'}`}
+                className={`${isMobile ? 'pl-8 h-8 text-xs' : 'pl-10 h-10'} rounded-xl border-2 border-border/30 focus:border-primary/60 transition-elegant bg-background/50 backdrop-blur-sm`}
               />
             </div>
           </CardHeader>
 
-          <CardContent className={`flex-1 overflow-hidden ${isMobile ? 'p-3' : 'p-6'}`}>
-            <div className="h-full overflow-y-auto space-y-2">
+          <CardContent className={`flex-1 overflow-hidden ${isMobile ? 'p-4' : 'p-6'}`}>
+            <div className="h-full overflow-y-auto space-y-3 scrollbar-modern">
               {showNewMemoryForm && (
-                <Card className="border-dashed">
-                  <CardContent className={`${isMobile ? 'p-3 space-y-2' : 'p-4 space-y-3'}`}>
+                <Card className="border-2 border-dashed border-border/50 card-modern shadow-elegant">
+                  <CardContent className={`${isMobile ? 'p-4 space-y-3' : 'p-5 space-y-4'}`}>
                     <Textarea
                       placeholder="Memory content..."
                       value={newMemory.content}
                       onChange={(e) => setNewMemory(prev => ({ ...prev, content: e.target.value }))}
-                      className={`resize-none ${isMobile ? 'min-h-16 text-xs' : 'min-h-20'}`}
+                      className={`resize-none rounded-xl border-2 border-border/30 focus:border-primary/60 transition-elegant bg-background/50 ${isMobile ? 'min-h-16 text-xs' : 'min-h-20'}`}
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <select
@@ -318,8 +320,8 @@ export const MemoryManager = () => {
               {filteredMemories.map((memory) => (
                 <Card 
                   key={memory.id} 
-                  className={`cursor-pointer transition-colors hover:bg-accent/50 ${
-                    selectedMemory?.id === memory.id ? 'ring-2 ring-primary' : ''
+                  className={`cursor-pointer transition-elegant hover:shadow-elegant-lg hover:-translate-y-1 card-modern ${
+                    selectedMemory?.id === memory.id ? 'ring-2 ring-primary/50 shadow-elegant-lg' : ''
                   }`}
                   onClick={() => setSelectedMemory(memory)}
                 >
@@ -378,9 +380,8 @@ export const MemoryManager = () => {
           </CardContent>
         </Card>
 
-        {/* Right Panel - Memory Details (Desktop only) */}
         {!isMobile && (
-          <Card className="flex flex-col min-h-0">
+          <Card className="flex flex-col min-h-0 card-modern shadow-elegant-lg border-border/20 backdrop-blur-xl">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
