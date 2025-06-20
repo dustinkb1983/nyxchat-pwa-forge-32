@@ -1,42 +1,43 @@
 
-// Enhanced PWA Service Worker for NyxChat v4 - Mobile Optimized
-const CACHE_NAME = "nyxchat-pwa-v4";
-const STATIC_CACHE = "nyxchat-static-v4";
-const DYNAMIC_CACHE = "nyxchat-dynamic-v4";
-const IMAGE_CACHE = "nyxchat-images-v4";
+// Enhanced PWA Service Worker for NyxChat v5 - Fixed Installation
+const CACHE_NAME = "nyxchat-pwa-v5";
+const STATIC_CACHE = "nyxchat-static-v5";
+const DYNAMIC_CACHE = "nyxchat-dynamic-v5";
+const IMAGE_CACHE = "nyxchat-images-v5";
 
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
-  "./icon-512.png",
-  "./lovable-uploads/2fe14165-cccc-44c9-a268-7ab4c910b4d8.png",
-  "./lovable-uploads/f1345f48-4cf9-47e5-960c-3b6d62925c7f.png"
+  "./icon-512.png"
 ];
 
 // Install event - cache core assets
 self.addEventListener("install", event => {
-  console.log("Service Worker: Installing v4...");
+  console.log("Service Worker: Installing v5...");
   event.waitUntil(
     caches.open(STATIC_CACHE).then(cache => {
       console.log("Service Worker: Caching core assets");
       return Promise.allSettled(
-        CORE_ASSETS.map(asset => cache.add(asset))
+        CORE_ASSETS.map(asset => 
+          cache.add(asset).catch(err => console.warn(`Failed to cache ${asset}:`, err))
+        )
       );
     })
   );
+  // Force activation of new service worker
   self.skipWaiting();
 });
 
 // Activate event - clean old caches
 self.addEventListener("activate", event => {
-  console.log("Service Worker: Activating v4...");
+  console.log("Service Worker: Activating v5...");
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (!cacheName.includes("v4")) {
+          if (!cacheName.includes("v5")) {
             console.log("Service Worker: Clearing old cache", cacheName);
             return caches.delete(cacheName);
           }
@@ -44,17 +45,18 @@ self.addEventListener("activate", event => {
       );
     })
   );
+  // Take control of all pages immediately
   self.clients.claim();
 });
 
-// Enhanced fetch event with mobile-optimized caching
+// Enhanced fetch event with better error handling
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   
   const url = new URL(event.request.url);
   
-  // Skip cross-origin requests that aren't images or fonts
-  if (url.origin !== self.location.origin && !isStaticResource(event.request)) {
+  // Skip cross-origin requests that aren't essential resources
+  if (url.origin !== self.location.origin && !isEssentialResource(event.request)) {
     return;
   }
 
@@ -69,12 +71,12 @@ async function handleFetch(request) {
     }
     
     // Cache first for images and fonts
-    if (isStaticResource(request)) {
+    if (isEssentialResource(request)) {
       return await cacheFirst(request, IMAGE_CACHE);
     }
     
-    // Network first for everything else with offline fallback
-    return await networkFirstWithFallback(request);
+    // Network first for API calls and dynamic content
+    return await networkFirst(request);
     
   } catch (error) {
     console.warn("Service Worker: Fetch failed", error);
@@ -82,12 +84,17 @@ async function handleFetch(request) {
   }
 }
 
-// Cache strategies
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
   
   if (cached) {
+    // Refresh cache in background
+    fetch(request).then(response => {
+      if (response.status === 200) {
+        cache.put(request, response.clone());
+      }
+    }).catch(() => {});
     return cached;
   }
   
@@ -98,11 +105,11 @@ async function cacheFirst(request, cacheName) {
     }
     return response;
   } catch (error) {
-    return cached || new Response('Offline', { status: 503 });
+    return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
   }
 }
 
-async function networkFirstWithFallback(request) {
+async function networkFirst(request) {
   try {
     const response = await fetch(request);
     if (response.status === 200) {
@@ -120,13 +127,19 @@ async function networkFirstWithFallback(request) {
 async function handleOfflineFallback(request) {
   if (request.destination === 'document') {
     const cache = await caches.open(STATIC_CACHE);
-    return cache.match('./') || new Response('Offline', { status: 503 });
+    return cache.match('./') || new Response('App is offline', { 
+      status: 503, 
+      statusText: 'Service Unavailable',
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
   
-  return new Response('Offline', { status: 503 });
+  return new Response('Resource unavailable offline', { 
+    status: 503, 
+    statusText: 'Service Unavailable' 
+  });
 }
 
-// Helper functions
 function isStaticAsset(request) {
   const url = new URL(request.url);
   return url.pathname.includes('.js') || 
@@ -136,7 +149,7 @@ function isStaticAsset(request) {
          url.pathname === './manifest.json';
 }
 
-function isStaticResource(request) {
+function isEssentialResource(request) {
   return request.destination === 'image' || 
          request.destination === 'font' ||
          request.url.includes('.png') ||
@@ -145,8 +158,19 @@ function isStaticResource(request) {
          request.url.includes('.svg') ||
          request.url.includes('.webp') ||
          request.url.includes('.woff') ||
-         request.url.includes('.woff2');
+         request.url.includes('.woff2') ||
+         request.url.includes('.ico');
 }
+
+// Handle app installation
+self.addEventListener('beforeinstallprompt', event => {
+  console.log('Service Worker: beforeinstallprompt event');
+});
+
+// Handle successful installation
+self.addEventListener('appinstalled', event => {
+  console.log('Service Worker: App successfully installed');
+});
 
 // Background sync for offline actions
 self.addEventListener('sync', event => {
@@ -157,12 +181,15 @@ self.addEventListener('sync', event => {
 
 async function handleBackgroundSync() {
   console.log('Service Worker: Processing background sync');
+  // Handle any queued actions when back online
 }
 
 // Handle notification clicks
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('./')
+    clients.openWindow('./').catch(err => 
+      console.error('Failed to open window:', err)
+    )
   );
 });

@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useChat } from '@/contexts/ChatContext';
 import { Message } from '@/lib/indexedDB';
@@ -45,7 +45,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, index }) => {
       return !inline && match ? (
         <div className="relative">
           <SyntaxHighlighter
-            style={theme === 'dark' ? vscDarkPlus : oneLight}
+            style={theme === 'dark' ? oneDark : oneLight}
             language={match[1]}
             PreTag="div"
             {...props}
